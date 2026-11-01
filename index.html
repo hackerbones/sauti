@@ -316,6 +316,8 @@
   .modal input{width:100%;background:#3e3e3e;border:1px solid transparent;border-radius:4px;padding:12px 14px;outline:0;margin-bottom:18px;font-size:14px}
   .modal input:focus{border-color:#535353;background:#333}
   .modal .row-btns{display:flex;justify-content:flex-end;gap:8px}
+  .modal input[type=range]{width:auto;flex:1;padding:0;margin:0;border:0;height:4px;border-radius:4px;background:linear-gradient(to right,var(--accent) var(--p,0%),#4d4d4d var(--p,0%))}
+  .modal input[type=range]::-webkit-slider-thumb{opacity:1;width:14px;height:14px}
   .btn{height:40px;padding:0 20px;border-radius:500px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--text)}
   .btn:hover{transform:scale(1.04)}
   .btn.primary{background:#fff;color:#000}
@@ -412,6 +414,7 @@
     </div>
     <div class="tright">
       <button class="pill ghost" id="ytSetupBtn" title="Connect YouTube">▶ YouTube</button>
+      <button class="navbtn" id="settingsBtn" title="Settings" style="width:40px;height:40px;background:var(--panel2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       <button class="pill white" id="installBtn">Install app</button>
     </div>
   </header>
@@ -556,8 +559,56 @@ const S = {
 const objectUrls = new Map();     // id -> blob url for offline audio/art
 
 /* ---------- Playback engine: <audio> for Audius/local, YouTube IFrame player for YouTube ---------- */
-const audio = new Audio(); audio.preload = 'auto';
-audio.volume = store.get('vol', 80) / 100;
+const players = [new Audio(), new Audio()];
+players.forEach(a => { a.preload = 'auto'; });
+let audio = players[0];                         // the element that is "the current song"
+let userVol = store.get('vol', 80) / 100, isMuted = false;
+S.xfade = store.get('xfade', 0);                // crossfade seconds (0 = off)
+let fade = null;                                // { from, timer } while a crossfade is running
+const otherPlayer = () => players[0] === audio ? players[1] : players[0];
+function setVols(){ players.forEach(a => { a.muted = isMuted; }); if (!fade) audio.volume = userVol; }
+function cancelFade(){
+  if (!fade) return;
+  clearInterval(fade.timer); fade.from.pause(); fade.from.removeAttribute('src'); fade.from.load();
+  fade = null; audio.volume = userVol;
+}
+async function srcFor(t){
+  if (S.downloads.has(t.id)) {
+    if (!objectUrls.has(t.id)) { const rec = await dbGet(t.id); if (rec?.audio) objectUrls.set(t.id, URL.createObjectURL(rec.audio)); }
+    if (objectUrls.get(t.id)) return objectUrls.get(t.id);
+  }
+  if (t.source !== 'audius') return null;
+  await getHost().catch(() => {}); return streamUrl(t.id);
+}
+function nextIndexAuto(){
+  if (S.repeat === 'one') return -1;
+  if (S.qi + 1 < S.queue.length) return S.qi + 1;
+  return S.repeat === 'all' && S.queue.length > 1 ? 0 : -1;
+}
+let xfadeStarting = false;
+async function maybeCrossfade(){
+  if (!S.xfade || fade || xfadeStarting || mode !== 'audio' || audio.paused) return;
+  const d = audio.duration, left = d - audio.currentTime;
+  if (!isFinite(d) || d < S.xfade * 2 + 5 || left > S.xfade) return;
+  const ni = nextIndexAuto(); if (ni < 0) return;
+  const nt = S.queue[ni]; if (!nt || nt.source === 'youtube') return;
+  xfadeStarting = true;
+  try {
+    const src = await srcFor(nt); if (!src || mode !== 'audio') return;
+    const from = audio, to = otherPlayer();
+    to.src = src; to.volume = 0; to.muted = isMuted;
+    try { await to.play(); } catch { return; }
+    const ms = Math.max(1000, Math.min(left, S.xfade) * 1000), start = performance.now();
+    audio = to; S.qi = ni;
+    fade = { from, timer: setInterval(() => {
+      const k = Math.min(1, (performance.now() - start) / ms);
+      const ease = k * k * (3 - 2 * k);
+      from.volume = Math.max(0, userVol * (1 - ease)); to.volume = userVol * ease;
+      if (k >= 1) cancelFade();
+    }, 40) };
+    updateNow(); renderQueue(); highlight(); mediaSession(nt); syncPlay(); tickUI();
+  } finally { xfadeStarting = false; }
+}
 let mode = 'audio';                 // 'audio' | 'yt'
 let yt = null, ytReady = null, ytState = -1, ytTick = null;
 
@@ -586,9 +637,9 @@ const pPaused = () => mode === 'yt' ? !(ytState === 1 || ytState === 3) : audio.
 const pTime = () => mode === 'yt' ? (yt?.getCurrentTime?.() || 0) : audio.currentTime;
 const pDur = () => mode === 'yt' ? (yt?.getDuration?.() || current()?.duration || 0) : (audio.duration || current()?.duration || 0);
 function pPlay(){ if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
-function pPause(){ if (mode === 'yt') yt?.pauseVideo(); else audio.pause(); }
-function pSeek(sec){ sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
-function applyVolume(){ const v = Math.round(audio.volume * 100); if (yt?.setVolume) { yt.setVolume(v); audio.muted ? yt.mute() : yt.unMute(); } }
+function pPause(){ if (mode === 'yt') yt?.pauseVideo(); else { cancelFade(); audio.pause(); } }
+function pSeek(sec){ sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
+function applyVolume(){ const v = Math.round(userVol * 100); if (yt?.setVolume) { yt.setVolume(v); isMuted ? yt.mute() : yt.unMute(); } }
 function showYT(on, t){
   $('#ytPanel').classList.toggle('show', on); document.body.classList.toggle('yt-on', on);
   if (on && t) { $('#ytTitle').textContent = `${t.title} · ${t.artist}`; $('#ytOpen').href = `https://www.youtube.com/watch?v=${t.ytId}`; }
@@ -599,6 +650,7 @@ $('#ytClose').onclick = () => { yt?.stopVideo(); ytState = -1; showYT(false); sy
 const current = () => S.queue[S.qi];
 async function playIndex(i){
   if (i < 0 || i >= S.queue.length) return;
+  cancelFade(); otherPlayer().pause();
   S.qi = i; const t = current();
   if (t.source === 'youtube') {
     audio.pause(); audio.removeAttribute('src'); mode = 'yt'; showYT(true, t);
@@ -608,13 +660,10 @@ async function playIndex(i){
   } else {
     if (mode === 'yt') { yt?.stopVideo(); ytState = -1; showYT(false); }
     mode = 'audio';
-    let src;
-    if (S.downloads.has(t.id)) {
-      if (!objectUrls.has(t.id)) { const rec = await dbGet(t.id); if (rec?.audio) objectUrls.set(t.id, URL.createObjectURL(rec.audio)); }
-      src = objectUrls.get(t.id);
-    }
-    if (!src) { if (t.source !== 'audius') { toast('File missing'); return; } await getHost().catch(()=>{}); src = streamUrl(t.id); }
-    audio.src = src;
+    const src = await srcFor(t);
+    if (!src) { toast('File missing'); return; }
+    if (current() !== t) return;
+    audio.volume = userVol; audio.src = src;
     try { await audio.play(); } catch (e) { if (e.name !== 'AbortError') toast('Playback blocked — press play'); }
   }
   updateNow(); renderQueue(); highlight(); mediaSession(t); syncPlay();
@@ -642,19 +691,22 @@ function tickUI(){
   if (!seeking) { const p = d ? c / d * 1000 : 0; $('#seek').value = p; $('#seek').style.setProperty('--p', p/10 + '%'); const ns = document.getElementById('npSeek'); if (ns) { ns.value = p; ns.style.setProperty('--p', p/10 + '%'); } }
   const nc = document.getElementById('npCur'); if (nc) { nc.textContent = fmt(c); document.getElementById('npDur').textContent = fmt(d); }
 }
-audio.addEventListener('timeupdate', () => { if (mode === 'audio') tickUI(); });
-audio.addEventListener('ended', () => { if (mode === 'audio') next(true); });
-audio.addEventListener('play', syncPlay); audio.addEventListener('pause', syncPlay);
-audio.addEventListener('error', () => { if (mode === 'audio' && audio.getAttribute('src')) { toast("Couldn't load this track — skipping"); setTimeout(() => next(true), 800); } });
+players.forEach(el => {
+  el.addEventListener('timeupdate', () => { if (el === audio && mode === 'audio') { tickUI(); maybeCrossfade(); } });
+  el.addEventListener('ended', () => { if (el === audio && mode === 'audio') next(true); });
+  el.addEventListener('play', () => { if (el === audio) syncPlay(); });
+  el.addEventListener('pause', () => { if (el === audio) syncPlay(); });
+  el.addEventListener('error', () => { if (el === audio && mode === 'audio' && el.getAttribute('src')) { toast("Couldn't load this track — skipping"); setTimeout(() => next(true), 800); } });
+});
 
 let seeking = false;
 const seek = $('#seek');
 seek.addEventListener('input', () => { seeking = true; seek.style.setProperty('--p', seek.value/10 + '%'); $('#cur').textContent = fmt(seek.value/1000 * pDur()); });
 seek.addEventListener('change', () => { seeking = false; if (pDur()) pSeek(seek.value/1000 * pDur()); });
 const vol = $('#vol');
-const syncVol = () => { vol.value = Math.round(audio.volume*100); vol.style.setProperty('--p', vol.value + '%'); $('#muteBtn').innerHTML = audio.muted || audio.volume === 0 ? I.mute : I.vol; applyVolume(); };
-vol.addEventListener('input', () => { audio.volume = vol.value/100; audio.muted = false; store.set('vol', +vol.value); syncVol(); });
-$('#muteBtn').onclick = () => { audio.muted = !audio.muted; syncVol(); };
+const syncVol = () => { vol.value = Math.round(userVol*100); vol.style.setProperty('--p', vol.value + '%'); $('#muteBtn').innerHTML = isMuted || userVol === 0 ? I.mute : I.vol; setVols(); applyVolume(); };
+vol.addEventListener('input', () => { userVol = vol.value/100; isMuted = false; store.set('vol', +vol.value); syncVol(); });
+$('#muteBtn').onclick = () => { isMuted = !isMuted; syncVol(); };
 syncVol();
 
 function syncPlay(){ const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; const np = document.getElementById('npPlay'); if (np) np.innerHTML = paused ? I.play : I.pause; try { highlight(); } catch {} document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
@@ -1271,6 +1323,28 @@ function renderLibraryInto(chipsEl, listEl){
   listEl.querySelectorAll('[data-artist]').forEach(b => b.onclick = () => openArtist(b.dataset.artist));
 }
 function renderSidePls(){ const c = $('#libChips'), l = $('#sidePls'); if (c && l) renderLibraryInto(c, l); }
+
+/* ---------- Settings ---------- */
+function openSettings(){
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  const label = v => +v ? `${v} sec` : 'Off';
+  bg.innerHTML = `<div class="modal" style="max-width:460px"><h3>Settings</h3>
+    <div style="margin:18px 0 6px;display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px">Crossfade songs</b><span id="xfVal" style="color:var(--accent);font-weight:700">${label(S.xfade)}</span></div>
+    <p style="margin-bottom:12px">Blend the end of one song into the start of the next. Works between Audius songs and your downloaded or imported files.</p>
+    <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)">Off<input type="range" id="xfIn" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%">12s</div>
+    <div style="margin:26px 0 6px"><b style="font-size:15px">YouTube</b></div>
+    <p style="margin-bottom:12px">${ytKey() ? 'Connected — search any song.' : 'Not connected. Add a free API key to search and stream almost any song.'}</p>
+    <button class="btn" id="setYT" style="border:1px solid #7c7c7c">${ytKey() ? 'Manage YouTube key' : 'Connect YouTube'}</button>
+    <div class="row-btns" style="margin-top:24px"><button class="btn primary" id="setDone">Done</button></div></div>`;
+  document.body.appendChild(bg);
+  const done = () => bg.remove();
+  bg.onclick = e => { if (e.target === bg) done(); };
+  $('#setDone').onclick = done;
+  $('#setYT').onclick = () => { done(); $('#ytSetupBtn').click(); };
+  const xf = $('#xfIn');
+  xf.oninput = () => { S.xfade = +xf.value; store.set('xfade', S.xfade); xf.style.setProperty('--p', S.xfade/12*100 + '%'); $('#xfVal').textContent = label(S.xfade); };
+}
+$('#settingsBtn').onclick = openSettings;
 
 /* ---------- Top search box + history ---------- */
 const hist = [];
