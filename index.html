@@ -97,7 +97,7 @@
   .lib-foot a{color:var(--muted)}
 
   /* main */
-  main{grid-area:main;overflow-y:auto;position:relative}
+  main.panel{grid-area:main;overflow-y:auto;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
   .grad{background:linear-gradient(180deg,var(--hc,#333) 0,rgba(18,18,18,0) 340px);min-height:100%}
   .pad{padding:16px 24px 40px}
   .greet{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:8px 0 18px}
