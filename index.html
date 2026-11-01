@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="icon" type="image/png" href="icons/icon-192.png" />
+<link rel="icon" type="image/svg+xml" href="icons/logo.svg" />
+<link rel="alternate icon" type="image/png" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -12,236 +13,422 @@
 <meta name="apple-mobile-web-app-title" content="Sauti" />
 <meta name="description" content="Stream full-length music for free and download tracks for offline listening." />
 <title>Sauti — Stream & Download Music</title>
-<meta name="theme-color" content="#0d0b10" />
+<meta name="theme-color" content="#000000" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0d0b10; --panel:#16131b; --panel2:#1f1a26; --line:#2a2433;
-    --text:#f2eef7; --muted:#9a91a8; --accent:#ff7a3d; --accent2:#ffb347; --good:#3ddc97;
-    --radius:14px;
+    --bg:#000; --panel:#121212; --panel2:#1f1f1f; --hover:#2a2a2a; --line:#2a2a2a;
+    --text:#fff; --muted:#b3b3b3; --dim:#7a7a7a; --accent:#ff7a3d; --accent2:#ffb347; --good:#3ddc97;
+    --radius:8px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
-  body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   input{font:inherit;color:inherit}
-  .app{display:grid;grid-template-columns:230px 1fr;grid-template-rows:1fr 92px;height:100vh}
-  /* sidebar */
-  aside{grid-row:1;background:var(--panel);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:6px}
-  .brand{font-family:'Space Grotesk';font-weight:700;font-size:26px;letter-spacing:-.5px;padding:0 10px 18px;display:flex;align-items:center;gap:10px}
-  .brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-style:normal;font-size:16px;color:#1a0d05}
-  .nav{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;color:var(--muted);font-weight:500;text-align:left;width:100%}
-  .nav:hover{color:var(--text);background:var(--panel2)}
-  .nav.on{color:var(--text);background:var(--panel2)}
-  .nav.on svg{color:var(--accent)}
-  .nav .count{margin-left:auto;font-size:12px;background:var(--line);padding:2px 8px;border-radius:20px}
-  .side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:10px;line-height:1.5}
-  .side-foot a{color:var(--accent2)}
+  a{color:inherit}
   svg{width:20px;height:20px;flex:none}
+  ::-webkit-scrollbar{width:12px;height:12px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border:3px solid transparent;background-clip:padding-box;border-radius:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ---------- layout ---------- */
+  .app{display:grid;height:100vh;height:100dvh;padding:8px;gap:8px;padding-top:max(8px,env(safe-area-inset-top));
+    grid-template-columns:300px minmax(0,1fr) 0;grid-template-rows:56px minmax(0,1fr) 80px;
+    grid-template-areas:"top top top" "lib main np" "player player player"}
+  body.np-open .app{grid-template-columns:300px minmax(0,1fr) 320px}
+  .panel{background:var(--panel);border-radius:var(--radius);overflow:hidden;min-height:0}
+
+  /* top bar */
+  .topbar{grid-area:top;display:flex;align-items:center;gap:8px;padding:0 8px}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;letter-spacing:-.5px;padding:0 8px;white-space:nowrap}
+  .logo i{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-style:normal;font-size:16px;color:#1a0d05}
+  .navbtn{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);display:grid;place-items:center;color:var(--muted)}
+  .navbtn:hover{color:var(--text)}
+  .navbtn:disabled{opacity:.4;cursor:default}
+  .center{flex:1;display:flex;justify-content:center;align-items:center;gap:8px;min-width:0}
+  .homebtn{width:48px;height:48px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;color:var(--muted);flex:none}
+  .homebtn:hover{background:var(--hover);color:var(--text);transform:scale(1.04)}
+  .homebtn.on{color:var(--text)}
+  .homebtn svg{width:24px;height:24px}
+  .search{flex:1;max-width:480px;height:48px;display:flex;align-items:center;gap:10px;background:var(--panel2);border-radius:500px;padding:0 16px;border:2px solid transparent;color:var(--muted)}
+  .search:hover{background:var(--hover);border-color:#3a3a3a}
+  .search:focus-within{border-color:var(--text);color:var(--text)}
+  .search svg{width:22px;height:22px}
+  .search input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:15px;color:var(--text)}
+  .search input::placeholder{color:var(--muted)}
+  .search .clear{color:var(--muted);font-size:18px;display:none}
+  .search.has .clear{display:block}
+  .tright{display:flex;align-items:center;gap:8px}
+  .pill{height:32px;padding:0 16px;border-radius:500px;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .pill.white{background:#fff;color:#000}
+  .pill.white:hover{transform:scale(1.04)}
+  .pill.ghost{color:var(--muted)}
+  .pill.ghost:hover{color:var(--text);transform:scale(1.04)}
+  #installBtn{display:none}
+  #installBtn.show{display:inline-flex}
+
+  /* library sidebar */
+  .lib{grid-area:lib;display:flex;flex-direction:column}
+  .lib-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px}
+  .lib-head h2{font-size:16px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .lib-head h2 svg{width:24px;height:24px}
+  .roundic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+  .roundic:hover{background:var(--panel2);color:var(--text)}
+  .lib-chips{display:flex;gap:8px;padding:8px 16px;flex-wrap:wrap}
+  .chip{height:32px;padding:0 12px;border-radius:500px;background:var(--panel2);font-size:14px;color:var(--text);white-space:nowrap}
+  .chip:hover{background:var(--hover)}
+  .chip.on{background:var(--text);color:#000}
+  .lib-list{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .li{display:flex;align-items:center;gap:12px;padding:8px;border-radius:6px;cursor:pointer;width:100%;text-align:left}
+  .li:hover{background:var(--panel2)}
+  .li.on{background:var(--hover)}
+  .li .lart{width:48px;height:48px;border-radius:4px;flex:none;object-fit:cover;overflow:hidden}
+  .li .lart.round{border-radius:50%}
+  .li .ltxt{min-width:0}
+  .li .lname{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .li.on .lname{color:var(--accent)}
+  .li .lsub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .tile-liked{background:linear-gradient(135deg,#450af5,#c4efd9);display:grid;place-items:center;color:#fff}
+  .tile-dl{background:linear-gradient(135deg,#0d7a52,#3ddc97);display:grid;place-items:center;color:#fff}
+  .tile-follow{background:linear-gradient(135deg,#a23b06,#ffb347);display:grid;place-items:center;color:#fff}
+  .lib-foot{padding:12px 16px;font-size:11px;color:var(--dim);line-height:1.5;border-top:1px solid #1d1d1d}
+  .lib-foot a{color:var(--muted)}
+
   /* main */
-  main{grid-row:1;overflow-y:auto;padding:26px 34px 40px}
-  .top{display:flex;gap:14px;align-items:center;margin-bottom:26px}
-  .search{flex:1;max-width:520px;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:11px 18px}
-  .search:focus-within{border-color:var(--accent)}
-  .search input{flex:1;background:none;border:0;outline:0}
-  .btn{padding:10px 16px;border-radius:30px;background:var(--panel2);border:1px solid var(--line);font-weight:500;display:inline-flex;gap:8px;align-items:center;white-space:nowrap}
-  .btn:hover{border-color:var(--muted)}
-  a.btn{color:var(--text);text-decoration:none}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#1a0d05;font-weight:600}
-  h1{font-family:'Space Grotesk';font-size:34px;letter-spacing:-1px;margin-bottom:6px}
-  .sub{color:var(--muted);margin-bottom:20px}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
-  .chip{padding:7px 14px;border-radius:20px;background:var(--panel);border:1px solid var(--line);font-size:13px;color:var(--muted)}
-  .chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
-  /* hero */
-  .hero{display:flex;gap:24px;align-items:flex-end;padding:24px;border-radius:20px;margin-bottom:28px;background:radial-gradient(circle at 15% 20%,rgba(255,122,61,.35),transparent 55%),radial-gradient(circle at 90% 90%,rgba(255,179,71,.18),transparent 50%),var(--panel)}
-  .hero img,.hero .ph{width:150px;height:150px;border-radius:14px;object-fit:cover;box-shadow:0 20px 40px rgba(0,0,0,.4)}
-  .hero .tag{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2);margin-bottom:6px}
-  .hero h2{font-family:'Space Grotesk';font-size:30px;line-height:1.1;margin-bottom:6px}
-  .hero p{color:var(--muted);margin-bottom:14px}
-  /* track list */
+  main{grid-area:main;overflow-y:auto;position:relative}
+  .grad{background:linear-gradient(180deg,var(--hc,#333) 0,rgba(18,18,18,0) 340px);min-height:100%}
+  .pad{padding:16px 24px 40px}
+  .greet{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:8px 0 18px}
+  h2.sec{font-size:24px;font-weight:700;letter-spacing:-.3px;margin:32px 0 14px;display:flex;justify-content:space-between;align-items:baseline}
+  h2.sec small{font-size:14px;font-weight:700;color:var(--muted)}
+  .sub{color:var(--muted);font-size:14px;margin:-8px 0 14px}
+
+  /* home tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+  .tile{display:flex;align-items:center;gap:0;height:64px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;cursor:pointer;position:relative;text-align:left}
+  .tile:hover{background:rgba(255,255,255,.18)}
+  .tile .tart{width:64px;height:64px;flex:none;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .tile .tname{font-weight:700;font-size:15px;padding:0 56px 0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .cplay{right:12px;bottom:auto;top:12px;width:40px;height:40px}
+
+  /* card shelves */
+  .shelf{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(160px,180px);gap:4px;overflow-x:auto;margin:0 -12px;padding:0 0 8px}
+  .card{padding:12px;border-radius:6px;cursor:pointer;position:relative;text-align:left;min-width:0}
+  .card:hover{background:var(--panel2)}
+  .card .cart{width:100%;aspect-ratio:1;border-radius:6px;object-fit:cover;display:block;box-shadow:0 8px 24px rgba(0,0,0,.5);margin-bottom:10px;overflow:hidden}
+  .card .cart.round{border-radius:50%}
+  .cart.ph,.tart.ph,.lart.ph,.part.ph{display:grid;place-items:center}
+  .card .cname{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .csub{font-size:13px;color:var(--muted);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cplay{position:absolute;right:20px;top:calc(100% - 110px);width:48px;height:48px;border-radius:50%;background:var(--accent);color:#000;display:grid;place-items:center;box-shadow:0 8px 16px rgba(0,0,0,.4);opacity:0;transform:translateY(8px);transition:.2s}
+  .card:hover .cplay,.tile:hover .cplay{opacity:1;transform:none}
+  .cplay:hover{transform:scale(1.06)!important;background:var(--accent2)}
+  .cplay svg{width:22px;height:22px}
+  .browse{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+  .gcard{position:relative;aspect-ratio:1.6;border-radius:8px;overflow:hidden;padding:14px;font-size:22px;font-weight:800;text-align:left;cursor:pointer;letter-spacing:-.3px}
+  .gcard::after{content:'♪';position:absolute;right:-6px;bottom:-14px;font-size:84px;transform:rotate(25deg);opacity:.35}
+
+  /* page header */
+  .phead{display:flex;align-items:flex-end;gap:24px;padding:72px 24px 24px;background:linear-gradient(180deg,transparent 0,rgba(0,0,0,.45) 100%)}
+  .phead .part{width:232px;height:232px;flex:none;border-radius:6px;box-shadow:0 4px 60px rgba(0,0,0,.5);object-fit:cover;overflow:hidden}
+  .phead .part.round{border-radius:50%}
+  .phead .part svg{width:80px;height:80px}
+  .kind{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+  .ptitle{font-size:clamp(32px,6.2vw,92px);font-weight:900;letter-spacing:-.04em;line-height:1;margin:8px 0 14px;word-break:break-word}
+  .ptitle.sm{font-size:clamp(28px,4.5vw,64px)}
+  .pmeta{font-size:14px;color:rgba(255,255,255,.75);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .pmeta b{color:var(--text)}
+  .dot::before{content:'•';margin-right:6px}
+  .artist-banner{position:relative;height:clamp(240px,34vh,400px);display:flex;align-items:flex-end;padding:24px;background:var(--hc) center/cover no-repeat}
+  .artist-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55))}
+  .artist-banner > *{position:relative}
+  .artist-banner .ptitle{text-shadow:0 2px 20px rgba(0,0,0,.35)}
+  .verified{width:24px;height:24px;color:#4da3ff}
+  .abar{display:flex;align-items:center;gap:20px;padding:24px;background:linear-gradient(180deg,rgba(0,0,0,.25),transparent 140px)}
+  .bigplay{width:56px;height:56px;border-radius:50%;background:var(--accent);color:#000;display:grid;place-items:center;box-shadow:0 8px 16px rgba(0,0,0,.3);flex:none}
+  .bigplay:hover{transform:scale(1.05);background:var(--accent2)}
+  .bigplay svg{width:26px;height:26px}
+  .abar .ic{width:40px;height:40px;color:var(--muted)}
+  .abar .ic svg{width:28px;height:28px}
+  .abar .ic:hover{color:var(--text);transform:scale(1.05)}
+  .abar .ic.on{color:var(--accent)}
+  .outline{height:32px;padding:0 16px;border-radius:500px;border:1px solid #7c7c7c;font-size:14px;font-weight:700}
+  .outline:hover{border-color:#fff;transform:scale(1.04)}
+  .outline.following{border-color:var(--accent);color:var(--accent)}
+  .follow-mini{margin-top:8px;padding:4px 12px;font-size:12px;font-weight:700;border-radius:500px;border:1px solid #7c7c7c}
+  .follow-mini:hover{border-color:#fff}
+  .follow-mini.following{border-color:var(--accent);color:var(--accent)}
+  .content{padding:0 24px 40px}
+
+  /* track table */
   .list{display:flex;flex-direction:column}
-  .row{display:grid;grid-template-columns:34px 48px 1fr 120px 60px 150px;gap:14px;align-items:center;padding:8px 12px;border-radius:10px}
-  .row:hover{background:var(--panel)}
+  .thead,.row{display:grid;grid-template-columns:32px minmax(0,4fr) minmax(0,2fr) minmax(150px,1fr);gap:16px;align-items:center;padding:0 16px}
+  .thead{height:36px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--line);margin-bottom:8px;position:sticky;top:0;background:var(--panel);z-index:2}
+  .thead .r{text-align:right;display:flex;justify-content:flex-end}
+  .thead svg{width:16px;height:16px}
+  .row{height:56px;border-radius:4px;cursor:default}
+  .row:hover{background:rgba(255,255,255,.1)}
+  .row.sel{background:rgba(255,255,255,.2)}
+  .num{color:var(--muted);text-align:center;font-size:15px;position:relative;display:grid;place-items:center}
+  .num .pi{display:none;color:var(--text)}
+  .num .pi svg{width:16px;height:16px}
+  .row:hover .num .n{display:none}
+  .row:hover .num .pi{display:block}
   .row.playing .t-title{color:var(--accent)}
-  .row .num{color:var(--muted);text-align:center;font-size:13px}
-  .row .art{width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--panel2)}
-  .ph{display:grid;place-items:center;background:linear-gradient(135deg,#3a2a48,#241c2c);color:var(--muted)}
-  .t-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .t-artist{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row .genre{color:var(--muted);font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-  .row .dur{color:var(--muted);font-size:13px;text-align:right}
-  .acts{display:flex;justify-content:flex-end;gap:2px}
-  .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
-  .ic:hover{color:var(--text);background:var(--panel2)}
+  .row.playing .num .n{color:var(--accent)}
+  .tt{display:flex;align-items:center;gap:12px;min-width:0}
+  .art{width:40px;height:40px;border-radius:4px;object-fit:cover;background:var(--panel2);flex:none}
+  .ph{display:grid;place-items:center;background:linear-gradient(135deg,#3a3a3a,#242424);color:var(--muted)}
+  .tx{min-width:0}
+  .t-title{font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .t-artist{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .row:hover .t-artist{color:var(--text)}
+  .a-link{cursor:pointer}
+  .a-link:hover{text-decoration:underline;color:var(--text)}
+  .genre{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .end{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+  .dur{color:var(--muted);font-size:14px;width:44px;text-align:right;font-variant-numeric:tabular-nums}
+  .acts{display:flex;align-items:center;gap:0}
+  .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+  .ic:hover{color:var(--text)}
+  .ic svg{width:18px;height:18px}
+  .acts .ic{opacity:0}
+  .row:hover .acts .ic,.acts .ic.on,.acts .ic.done,.acts .ic:disabled{opacity:1}
   .ic.on{color:var(--accent)}
   .ic.done{color:var(--good)}
-  .ic:disabled{opacity:.6;cursor:default}
-  .ring{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
+  .ic:disabled{cursor:default}
+  .ring{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite;display:inline-block}
   @keyframes spin{to{transform:rotate(360deg)}}
   .eq{display:inline-flex;gap:2px;align-items:flex-end;height:14px}
   .eq b{width:3px;background:var(--accent);animation:eq 1s ease-in-out infinite}
   .eq b:nth-child(2){animation-delay:-.4s}.eq b:nth-child(3){animation-delay:-.7s}
   .paused .eq b{animation-play-state:paused}
   @keyframes eq{0%,100%{height:3px}50%{height:14px}}
-  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
-  .empty h3{color:var(--text);font-family:'Space Grotesk';font-size:20px;margin-bottom:8px}
-  .storage{font-size:13px;color:var(--muted);margin:-8px 0 18px}
-  .drop{border:2px dashed var(--line);border-radius:var(--radius);padding:18px;text-align:center;color:var(--muted);margin-bottom:20px;font-size:14px}
+  .offline-badge{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--good);color:#000;font-size:10px;font-weight:900;margin-right:6px;vertical-align:-2px}
+  .yt-badge{display:inline-block;font-size:9px;font-weight:800;color:#fff;background:#e62117;border-radius:3px;padding:1px 4px;margin-right:6px;vertical-align:1px}
+  .feed-date{color:var(--muted);font-size:13px}
+  .empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:15px}
+  .empty h3{color:var(--text);font-size:24px;font-weight:700;margin-bottom:10px}
+  .empty .pill{margin-top:20px}
+  .loader{display:grid;place-items:center;padding:60px}
+  .loader .ring{width:32px;height:32px;border-width:3px}
+  .drop{border:2px dashed #3a3a3a;border-radius:8px;padding:16px;text-align:center;color:var(--muted);margin:0 0 16px;font-size:14px}
   .drop.over{border-color:var(--accent);color:var(--text)}
-  /* player */
-  footer{grid-column:1/-1;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;padding:0 22px;gap:20px}
-  .now{display:flex;gap:12px;align-items:center;min-width:0}
-  .now img,.now .ph{width:56px;height:56px;border-radius:9px;object-fit:cover}
-  .now div{min-width:0}
-  .ctrl{display:flex;flex-direction:column;align-items:center;gap:6px}
-  .ctrl .btns{display:flex;align-items:center;gap:10px}
-  .play{width:44px;height:44px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center}
-  .play:hover{transform:scale(1.05)}
-  .bar{display:flex;align-items:center;gap:10px;width:100%;max-width:560px;font-size:12px;color:var(--muted)}
-  .bar span{width:40px;text-align:center}
-  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--line) var(--p,0%));outline:0;cursor:pointer}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--text)}
-  input[type=range]::-moz-range-thumb{width:13px;height:13px;border:0;border-radius:50%;background:var(--text)}
-  .right{display:flex;justify-content:flex-end;align-items:center;gap:6px}
-  .right input{max-width:110px}
-  /* queue drawer */
-  .drawer{position:fixed;right:0;top:0;bottom:92px;width:340px;background:var(--panel);border-left:1px solid var(--line);transform:translateX(100%);transition:transform .25s;padding:20px;overflow-y:auto;z-index:5}
-  .drawer.open{transform:none}
-  .drawer h3{font-family:'Space Grotesk';margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
-  .q-item{display:flex;gap:10px;align-items:center;padding:7px;border-radius:8px;cursor:pointer}
-  .q-item:hover{background:var(--panel2)}
+  .seg{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .about{margin-top:32px;border-radius:8px;overflow:hidden;background:var(--panel2);max-width:680px;cursor:default}
+  .about .acover{height:200px;background:var(--hc,#333) center/cover}
+  .about .abody{padding:20px;color:var(--muted);font-size:15px;line-height:1.55;white-space:pre-line}
+  .about .abody b{color:var(--text);font-size:16px;display:block;margin-bottom:6px;white-space:normal}
+
+  /* now playing panel */
+  .np{grid-area:np;display:flex;flex-direction:column}
+  body:not(.np-open) .np{display:none}
+  .np-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;font-weight:700}
+  .np-body{flex:1;overflow-y:auto;padding:8px 16px 20px}
+  .np-art{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.5);display:grid;place-items:center;font-size:64px}
+  .np-title{display:flex;align-items:center;gap:8px;margin:18px 0 4px}
+  .np-title > div{flex:1;min-width:0}
+  .np-title .t-title{font-size:24px;font-weight:800;letter-spacing:-.3px}
+  .np-title .t-artist{font-size:15px}
+  .np-card{background:var(--panel2);border-radius:8px;overflow:hidden;margin-top:18px}
+  .np-card .nc-cover{height:160px;background:var(--hc,#333) center/cover;position:relative}
+  .np-card .nc-cover span{position:absolute;left:14px;top:12px;font-weight:700;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+  .np-card .nc-body{padding:14px 16px 16px}
+  .np-card .nc-body b{font-size:16px}
+  .np-card .nc-body p{color:var(--muted);font-size:14px;line-height:1.5;margin-top:8px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+  .np-card .nc-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .np-card h4{font-size:15px;padding:14px 16px 6px;display:flex;justify-content:space-between}
+  .np-card h4 button{font-size:13px;color:var(--muted);font-weight:700}
+  .q-item{display:flex;gap:12px;align-items:center;padding:8px;border-radius:6px;cursor:pointer}
+  .q-item:hover{background:var(--hover)}
   .q-item.cur .t-title{color:var(--accent)}
-  .q-item img,.q-item .ph{width:40px;height:40px;border-radius:6px;object-fit:cover;flex:none}
+  .q-item .art{width:48px;height:48px}
   .q-item > div{min-width:0;flex:1}
-  .a-link{cursor:pointer}
-  .a-link:hover{color:var(--text);text-decoration:underline}
-  .back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-weight:500;margin-bottom:14px}
-  .back:hover{color:var(--text)}
-  .artist-head{position:relative;border-radius:20px;overflow:hidden;margin-bottom:24px;background:var(--panel)}
-  .artist-cover{height:190px;background:linear-gradient(135deg,#3a2a48,#241c2c) center/cover no-repeat}
-  .artist-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,var(--panel) 18%,transparent 70%)}
-  .artist-info{position:relative;display:flex;gap:22px;align-items:flex-end;padding:0 26px 24px;margin-top:-90px;z-index:1}
-  .avatar{width:140px;height:140px;border-radius:50%;object-fit:cover;border:4px solid var(--panel);background:var(--panel2);flex:none;display:grid;place-items:center;font-size:44px;font-family:'Space Grotesk';color:var(--muted)}
-  .artist-info h1{margin:0;display:flex;align-items:center;gap:8px}
-  .verified{width:22px;height:22px;color:#4da3ff}
-  .stats{color:var(--muted);font-size:14px;margin:4px 0 12px;display:flex;gap:14px;flex-wrap:wrap}
-  .stats b{color:var(--text)}
-  .bio{color:var(--muted);font-size:14px;line-height:1.55;max-width:720px;padding:0 26px 22px;position:relative;white-space:pre-line}
-  .artist-btns{display:flex;gap:8px;flex-wrap:wrap}
-  .btn.following{border-color:var(--accent);color:var(--accent)}
-  .follow-mini{margin-top:8px;padding:5px 12px;font-size:12px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
-  .follow-mini:hover{border-color:var(--muted);color:var(--text)}
-  .follow-mini.following{border-color:var(--accent);color:var(--accent)}
-  .feed-date{color:var(--muted);font-size:12px}
-  .side-sec{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.5px;padding:18px 12px 6px}
-  .side-sec button{font-size:18px;line-height:1;color:var(--muted);padding:0 4px}
-  .side-sec button:hover{color:var(--text)}
-  .side-pls{display:flex;flex-direction:column;gap:2px;overflow-y:auto;min-height:0;flex:1}
-  .side-pl{text-align:left;padding:7px 12px;border-radius:8px;color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .side-pl:hover,.side-pl.on{color:var(--text);background:var(--panel2)}
-  .mosaic{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;background:linear-gradient(135deg,#ff7a3d,#7a3dff);flex:none}
-  .mosaic img{width:100%;height:100%;object-fit:cover;display:block}
-  .mosaic.one{grid-template-columns:1fr}
-  .mosaic .ph{width:100%;height:100%;font-size:40px;background:none;color:rgba(255,255,255,.85)}
-  .pl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px}
-  .pl-card{padding:12px;border-radius:14px;background:var(--panel);cursor:pointer;text-align:left}
-  .pl-card:hover{background:var(--panel2)}
-  .pl-card .mosaic{width:100%;aspect-ratio:1;border-radius:10px;margin-bottom:10px}
-  .pl-new{display:grid;place-items:center;border:2px dashed var(--line);background:none;color:var(--muted);min-height:220px;font-weight:600}
-  .pl-new:hover{border-color:var(--accent);color:var(--text);background:none}
-  .menu{position:fixed;z-index:20;min-width:220px;max-height:340px;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
-  .menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:14px}
-  .menu button:hover{background:var(--line)}
-  .menu hr{border:0;border-top:1px solid var(--line);margin:5px 0}
-  .menu .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:6px 12px 2px}
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:grid;place-items:center;padding:20px}
-  .modal{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;width:100%;max-width:380px}
-  .modal h3{font-family:'Space Grotesk';font-size:20px;margin-bottom:6px}
-  .modal p{color:var(--muted);font-size:14px;margin-bottom:14px}
-  .modal input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;margin-bottom:16px}
-  .modal input:focus{border-color:var(--accent)}
-  .modal .row-btns{display:flex;justify-content:flex-end;gap:8px}
-  .yt-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;color:#fff;background:#e62117;border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:middle}
-  #ytPanel{position:fixed;right:16px;bottom:104px;width:356px;z-index:8;background:#000;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.55);display:none}
+  .q-label{font-size:16px;font-weight:700;margin:18px 0 6px}
+  .np-ctrl{display:none}
+
+  /* player bar */
+  footer{grid-area:player;display:grid;grid-template-columns:minmax(180px,30%) minmax(0,40%) minmax(180px,30%);align-items:center;padding:0 8px}
+  .now{display:flex;gap:14px;align-items:center;min-width:0}
+  .now .art{width:56px;height:56px;border-radius:4px;cursor:pointer}
+  .now > div{min-width:0}
+  .now .t-title{font-size:14px}
+  .now .t-artist{font-size:12px}
+  .ctrl{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .ctrl .btns{display:flex;align-items:center;gap:16px}
+  .ctrl .ic{width:32px;height:32px}
+  .ctrl .ic svg{width:16px;height:16px}
+  .ctrl .ic.on{color:var(--accent);position:relative}
+  .ctrl .ic.on::after{content:'';position:absolute;bottom:0;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--accent)}
+  .play{width:32px;height:32px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center}
+  .play:hover{transform:scale(1.06)}
+  .play svg{width:16px;height:16px}
+  .bar{display:flex;align-items:center;gap:8px;width:100%;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .bar span{min-width:40px;text-align:center}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;background:linear-gradient(to right,var(--text) var(--p,0%),#4d4d4d var(--p,0%));outline:0;cursor:pointer}
+  input[type=range]:hover{background:linear-gradient(to right,var(--accent) var(--p,0%),#4d4d4d var(--p,0%))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;opacity:0}
+  input[type=range]:hover::-webkit-slider-thumb{opacity:1}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#fff}
+  .right{display:flex;justify-content:flex-end;align-items:center;gap:4px}
+  .right .ic svg{width:18px;height:18px}
+  .right input{max-width:96px}
+
+  .mosaic{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden;background:linear-gradient(135deg,#3a3a3a,#242424)}
+  .mosaic.one{grid-template-columns:1fr;grid-template-rows:1fr}
+  .mosaic img{width:100%;height:100%;object-fit:cover;display:block;min-height:0}
+  .mosaic .ph{width:100%;height:100%;background:none;color:var(--muted);font-size:clamp(18px,40%,64px);display:grid;place-items:center}
+  .li .mosaic .ph{font-size:20px}
+  .phead .mosaic .ph{font-size:72px}
+  .card .mosaic .ph{font-size:48px}
+  .tile .mosaic .ph{font-size:24px}
+  .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover}
+
+  /* tab bar (mobile) */
+  .tabbar{display:none}
+  .drawer{display:none}
+
+  /* youtube mini window */
+  #ytPanel{position:fixed;left:324px;bottom:96px;width:356px;z-index:8;background:#000;border-radius:8px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.7);display:none}
   #ytPanel.show{display:block}
-  body.yt-on main{padding-bottom:260px}
-  #ytPanel .yt-bar{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--panel2);font-size:12px;color:var(--muted)}
+  #ytPanel .yt-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#181818;font-size:12px;color:var(--muted)}
   #ytPanel .yt-bar span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #ytPanel .yt-bar a{color:var(--muted);text-decoration:none}
   #ytPanel .yt-bar button{color:var(--muted);font-size:14px;padding:2px 6px}
-  #ytPanel .yt-bar button:hover{color:var(--text)}
+  #ytPanel .yt-bar button:hover,#ytPanel .yt-bar a:hover{color:var(--text)}
   #ytBox{width:356px;height:200px}
   #ytBox iframe{width:100%;height:100%;display:block;border:0}
-  .setup{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:640px}
-  .setup h3{font-family:'Space Grotesk';font-size:22px;margin-bottom:8px}
+  body.yt-on main .pad,body.yt-on main .content{padding-bottom:260px}
+
+  /* menus, dialogs, toast */
+  .menu{position:fixed;z-index:20;min-width:230px;max-height:360px;overflow-y:auto;background:#282828;border-radius:4px;padding:4px;box-shadow:0 16px 24px rgba(0,0,0,.3),0 6px 8px rgba(0,0,0,.2)}
+  .menu button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:2px;font-size:14px;color:rgba(255,255,255,.9)}
+  .menu button:hover{background:#3e3e3e}
+  .menu button svg{width:16px;height:16px}
+  .menu hr{border:0;border-top:1px solid #3e3e3e;margin:4px 0}
+  .menu .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:8px 12px 4px}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;display:grid;place-items:center;padding:20px}
+  .modal{background:#282828;border-radius:8px;padding:24px;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.5)}
+  .modal h3{font-size:24px;font-weight:700;margin-bottom:8px}
+  .modal p{color:var(--muted);font-size:14px;margin-bottom:16px}
+  .modal input{width:100%;background:#3e3e3e;border:1px solid transparent;border-radius:4px;padding:12px 14px;outline:0;margin-bottom:18px;font-size:14px}
+  .modal input:focus{border-color:#535353;background:#333}
+  .modal .row-btns{display:flex;justify-content:flex-end;gap:8px}
+  .btn{height:40px;padding:0 20px;border-radius:500px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--text)}
+  .btn:hover{transform:scale(1.04)}
+  .btn.primary{background:#fff;color:#000}
+  .btn.danger{background:#e5484d;color:#fff}
+  .btn svg{width:16px;height:16px}
+  .setup{background:#282828;border-radius:8px;padding:24px;max-width:640px}
+  .setup h3{font-size:24px;font-weight:700;margin-bottom:8px}
   .setup p,.setup li{color:var(--muted);font-size:14px;line-height:1.6}
   .setup ol{padding-left:20px;margin:12px 0 18px}
   .setup a{color:var(--accent2)}
-  .setup code{background:var(--bg);padding:1px 6px;border-radius:5px;color:var(--text);font-size:13px}
+  .setup code{background:#121212;padding:1px 6px;border-radius:4px;color:var(--text);font-size:13px}
   .setup .key-row{display:flex;gap:8px;flex-wrap:wrap}
-  .setup input{flex:1;min-width:220px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;color:var(--text)}
-  .setup input:focus{border-color:var(--accent)}
-  .src-seg{margin:0 0 18px}
-  .btn.danger{background:#e5484d;border-color:#e5484d;color:#fff}
-  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:3px;margin-bottom:16px}
-  .seg button{padding:7px 16px;border-radius:30px;font-size:13px;color:var(--muted)}
-  .seg button.on{background:var(--text);color:var(--bg)}
-  .artists{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;margin-bottom:26px}
-  .a-card{flex:none;width:130px;text-align:center;padding:12px 8px;border-radius:14px;cursor:pointer}
-  .a-card:hover{background:var(--panel)}
-  .a-card .avatar{width:100px;height:100px;margin:0 auto 10px;border:0;font-size:32px}
-  .a-card .t-title{font-size:14px}
-  h2.sec{font-family:'Space Grotesk';font-size:20px;margin-bottom:12px}
-  .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:30px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;z-index:10}
+  .setup input{flex:1;min-width:220px;background:#3e3e3e;border:1px solid transparent;border-radius:4px;padding:11px 14px;outline:0;color:var(--text)}
+  .setup input:focus{border-color:#535353}
+  .toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%) translateY(20px);background:#2e77d0;color:#fff;padding:12px 18px;border-radius:8px;font-size:14px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;z-index:40;max-width:90vw;text-align:center}
   .toast.show{opacity:1;transform:translateX(-50%)}
-  .offline-badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--good);border:1px solid var(--good);border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:middle}
-  .app{height:100dvh;padding-top:env(safe-area-inset-top)}
-  footer{padding-bottom:env(safe-area-inset-bottom)}
-  #installBtn{display:none;margin-top:10px}
-  #installBtn.show{display:inline-flex}
-  @media (max-width:820px){
-    .artist-info{flex-direction:column;align-items:flex-start;padding:0 18px 18px;margin-top:-70px}
-    .avatar{width:110px;height:110px}
-    .bio{padding:0 18px 18px}
-    .app{grid-template-columns:1fr;grid-template-rows:auto 1fr 140px}
-    aside{grid-row:1;flex-direction:row;padding:8px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
-    .brand,.side-foot{display:none}
-    .nav{width:auto;white-space:nowrap}
-    main{grid-row:2;padding:18px}
-    .row{grid-template-columns:48px 1fr 150px}
-    .side-sec,.side-pls{display:none}
-    .row .num,.row .genre,.row .dur{display:none}
-    .hero img,.hero .ph{width:100px;height:100px}
-    footer{grid-template-columns:1fr auto;grid-template-rows:auto auto;padding:10px 14px;gap:8px}
-    .ctrl{grid-column:1/-1;grid-row:2}
-    .right input{display:none}
-    .drawer{width:100%;bottom:140px}
-    #ytPanel{right:8px;left:8px;bottom:150px;width:auto}
-    #ytBox{width:100%;height:200px}
+
+  /* medium screens */
+  @media (max-width:1100px){
+    .app,body.np-open .app{grid-template-columns:76px minmax(0,1fr) 0}
+    body.np-open .np{display:none}
+    .lib .lib-head h2 span,.lib .lib-chips,.lib .li .ltxt,.lib .lib-foot{display:none}
+    .lib .lib-head{justify-content:center;padding:16px 8px 8px}
+    .lib .lib-head .roundic{display:none}
+    .lib .li{justify-content:center;padding:6px}
+    #ytPanel{left:100px}
   }
+  /* phones */
+  @media (max-width:760px){
+    body{overflow:hidden}
+    .app,body.np-open .app{padding:0;gap:0;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"top" "main" "player" "tabs"}
+    .panel{border-radius:0}
+    .lib{display:none}
+    .topbar{min-width:0;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:var(--bg)}
+    .logo span,.tright .pill.ghost,.homebtn,#backNav,#fwdNav{display:none}
+    .search{height:40px}
+    .pad{padding:12px 16px 32px}
+    .content{padding:0 8px 32px}
+    .abar{padding:16px}
+    .phead{flex-direction:column;align-items:flex-start;padding:24px 16px 16px;gap:16px}
+    .phead .part{width:180px;height:180px;align-self:center}
+    .thead{display:none}
+    .row{grid-template-columns:minmax(0,1fr) auto;padding:0 8px;height:60px}
+    .row .num,.row .genre{display:none}
+    .row .dur{display:none}
+    .acts .ic{opacity:1}
+    .tiles{grid-template-columns:1fr 1fr}
+    .tile{height:56px}.tile .tart{width:56px;height:56px}.tile .tname{font-size:13px;padding-right:8px}.tile .cplay{display:none}
+    .greet{font-size:24px}
+    .shelf{grid-auto-columns:140px}
+    /* mini player */
+    footer{min-width:0;grid-template-columns:minmax(0,1fr) auto;margin:0 8px;border-radius:6px;background:#3a2a20;padding:6px 8px;position:relative;height:56px}
+    .now .art{width:42px;height:42px}
+    .ctrl{position:static}
+    .ctrl .btns #shuffleBtn,.ctrl .btns #prevBtn,.ctrl .btns #repeatBtn{display:none}
+    .ctrl .bar{position:absolute;left:8px;right:8px;bottom:0}
+    .ctrl .bar span{display:none}
+    .ctrl .bar input{height:2px;pointer-events:none}
+    .ctrl .bar input::-webkit-slider-thumb{display:none}
+    .play{background:none;color:#fff;width:40px;height:40px}.play svg{width:24px;height:24px}
+    .right #queueBtn,.right #muteBtn,.right #vol{display:none}
+    .right{display:none}
+    .tabbar{grid-area:tabs;display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(0,0,0,.6),#000)}
+    .tabbar button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted);padding:4px 16px}
+    .tabbar button svg{width:24px;height:24px}
+    .tabbar button.on{color:var(--text)}
+    /* full-screen now playing */
+    body.np-open .np{display:flex;position:fixed;inset:0;z-index:15;border-radius:0;background:linear-gradient(180deg,var(--npc,#3a2a20),#121212 70%)}
+    .np-ctrl{display:block;margin-top:14px}
+    .np-ctrl .bar{margin-bottom:6px}
+    .np-ctrl .bar span{font-size:11px}
+    .np-ctrl .btns{display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+    .np-ctrl .btns .ic svg{width:24px;height:24px}
+    .np-ctrl .play{width:64px;height:64px;background:#fff;color:#000}
+    .np-ctrl .play svg{width:28px;height:28px}
+    #ytPanel{left:8px;right:8px;bottom:150px;width:auto}
+    #ytBox{width:100%;height:200px}
+    .toast{bottom:150px}
+    .menu{left:8px!important;right:8px;min-width:0}
+  }
+  @media (hover:none){ .acts .ic{opacity:1} .cplay{opacity:1;transform:none} }
 </style>
 </head>
 <body>
+<div id="splash" style="position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .4s"><div style="animation:splashPulse 1.2s ease-in-out infinite;filter:drop-shadow(0 10px 40px rgba(255,122,61,.35))"><svg width="104" height="104" style="display:block;width:104px;height:104px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#lg2)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg></div></div>
+<style>@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}</style>
 <div class="app">
-  <aside>
-    <div class="brand"><i>♪</i>Sauti</div>
-    <button class="nav on" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Discover</button>
-    <button class="nav" data-view="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search</button>
-    <button class="nav" data-view="downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>Downloads<span class="count" id="dlCount">0</span></button>
-    <button class="nav" data-view="liked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>Liked<span class="count" id="likeCount">0</span></button>
-    <button class="nav" data-view="following"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>Following<span class="count" id="followCount">0</span></button>
-    <button class="nav" data-view="playlists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h12M3 12h12M3 18h7"/><circle cx="17" cy="17" r="3"/><path d="M20 17V5h2"/></svg>Playlists<span class="count" id="plCount">0</span></button>
-    <button class="btn primary" id="installBtn">⤓ Install app</button>
-    <div class="side-sec">Playlists <button id="newPlSide" title="New playlist">+</button></div>
-    <div class="side-pls" id="sidePls"></div>
-    <div class="side-foot"><button class="btn" id="ytSetupBtn" style="width:100%;justify-content:center;margin-bottom:10px;font-size:13px">▶ YouTube setup</button>Music from <a href="https://audius.co" target="_blank" rel="noopener">Audius</a> (stream + download) and YouTube (stream only).</div>
+  <header class="topbar">
+    <div class="logo"><svg width="32" height="32" style="display:block;width:32px;height:32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#lg1)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg><span>Sauti</span></div>
+    <button class="navbtn" id="backNav" title="Go back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="center">
+      <button class="homebtn nav" data-view="home" title="Home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7.5V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.5z"/></svg></button>
+      <label class="search" id="searchBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="What do you want to play?" autocomplete="off" spellcheck="false"><button class="clear" id="qClear" title="Clear">✕</button></label>
+    </div>
+    <div class="tright">
+      <button class="pill ghost" id="ytSetupBtn" title="Connect YouTube">▶ YouTube</button>
+      <button class="pill white" id="installBtn">Install app</button>
+    </div>
+  </header>
+
+  <aside class="lib panel">
+    <div class="lib-head"><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3v18M9 3v18M14 4l6 16"/></svg><span>Your Library</span></h2><button class="roundic" id="newPlSide" title="Create playlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    <div class="lib-chips" id="libChips"></div>
+    <div class="lib-list" id="sidePls"></div>
+    <div class="lib-foot">Music from <a href="https://audius.co" target="_blank" rel="noopener">Audius</a> (stream + download) and YouTube (stream only). Your library is saved on this device.</div>
   </aside>
 
-  <main id="main"></main>
+  <main class="panel" id="main"></main>
+
+  <aside class="np panel" id="npPanel"></aside>
 
   <footer>
-    <div class="now" id="now"><div class="ph" style="width:56px;height:56px;border-radius:9px">♪</div><div><div class="t-title">Nothing playing</div><div class="t-artist">Pick a track to start</div></div></div>
+    <div class="now" id="now"><div class="art ph">♪</div><div><div class="t-title">Nothing playing</div><div class="t-artist">Pick a song to start</div></div></div>
     <div class="ctrl">
       <div class="btns">
         <button class="ic" id="shuffleBtn" title="Shuffle (S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
@@ -253,16 +440,23 @@
       <div class="bar"><span id="cur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="dur">0:00</span></div>
     </div>
     <div class="right">
+      <button class="ic" id="npBtn" title="Now playing view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M14 3v18"/></svg></button>
       <button class="ic" id="queueBtn" title="Queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h13M3 18h9M19 14v7m-3-3l3 3 3-3"/></svg></button>
       <button class="ic" id="muteBtn" title="Mute (M)"></button>
       <input type="range" id="vol" min="0" max="100" value="80">
     </div>
   </footer>
+
+  <nav class="tabbar">
+    <button class="nav" data-view="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7.5V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.5z"/></svg>Home</button>
+    <button class="nav" data-view="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search</button>
+    <button class="nav" data-view="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3v18M9 3v18M14 4l6 16"/></svg>Your Library</button>
+  </nav>
 </div>
 
-<div class="drawer" id="drawer"><h3>Up next <button class="ic" id="closeQ">✕</button></h3><div id="qList"></div></div>
+<div class="drawer" id="drawer"><div id="qList"></div><button id="closeQ"></button></div>
 <div class="toast" id="toast"></div>
-<div id="ytPanel"><div class="yt-bar"><span id="ytTitle">YouTube</span><a id="ytOpen" href="#" target="_blank" rel="noopener" title="Watch on YouTube" style="color:var(--muted);text-decoration:none;font-size:12px">YouTube ↗</a><button id="ytClose" title="Stop">✕</button></div><div id="ytBox"><div id="ytPlayer"></div></div></div>
+<div id="ytPanel"><div class="yt-bar"><span id="ytTitle">YouTube</span><a id="ytOpen" href="#" target="_blank" rel="noopener" title="Watch on YouTube">YouTube ↗</a><button id="ytClose" title="Stop">✕</button></div><div id="ytBox"><div id="ytPlayer"></div></div></div>
 <input type="file" id="fileIn" accept="audio/*" multiple hidden>
 <input type="file" id="dirIn" webkitdirectory directory multiple hidden>
 
@@ -445,7 +639,8 @@ function addToQueue(t){ S.queue.push(t); if (S.qi < 0) playIndex(S.queue.length-
 function tickUI(){
   const d = pDur(), c = pTime();
   $('#cur').textContent = fmt(c); $('#dur').textContent = fmt(d);
-  if (!seeking) { const p = d ? c / d * 1000 : 0; $('#seek').value = p; $('#seek').style.setProperty('--p', p/10 + '%'); }
+  if (!seeking) { const p = d ? c / d * 1000 : 0; $('#seek').value = p; $('#seek').style.setProperty('--p', p/10 + '%'); const ns = document.getElementById('npSeek'); if (ns) { ns.value = p; ns.style.setProperty('--p', p/10 + '%'); } }
+  const nc = document.getElementById('npCur'); if (nc) { nc.textContent = fmt(c); document.getElementById('npDur').textContent = fmt(d); }
 }
 audio.addEventListener('timeupdate', () => { if (mode === 'audio') tickUI(); });
 audio.addEventListener('ended', () => { if (mode === 'audio') next(true); });
@@ -462,11 +657,11 @@ vol.addEventListener('input', () => { audio.volume = vol.value/100; audio.muted 
 $('#muteBtn').onclick = () => { audio.muted = !audio.muted; syncVol(); };
 syncVol();
 
-function syncPlay(){ const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
+function syncPlay(){ const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; const np = document.getElementById('npPlay'); if (np) np.innerHTML = paused ? I.play : I.pause; try { highlight(); } catch {} document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
 syncPlay();
 $('#playBtn').onclick = toggle; $('#nextBtn').onclick = () => next(); $('#prevBtn').onclick = prev;
 const syncModes = () => { $('#shuffleBtn').classList.toggle('on', S.shuffle); const r=$('#repeatBtn'); r.classList.toggle('on', S.repeat!=='off'); r.title = `Repeat: ${S.repeat}`; r.style.position='relative'; r.dataset.one = S.repeat==='one'; r.querySelector('.one')?.remove(); if (S.repeat==='one') r.insertAdjacentHTML('beforeend','<b class="one" style="position:absolute;font-size:9px;top:4px;right:4px">1</b>'); };
-$('#shuffleBtn').onclick = () => { S.shuffle = !S.shuffle; store.set('shuffle', S.shuffle); syncModes(); toast(S.shuffle ? 'Shuffle on' : 'Shuffle off'); };
+$('#shuffleBtn').onclick = () => { S.shuffle = !S.shuffle; store.set('shuffle', S.shuffle); syncModes(); document.querySelectorAll('#shuffleAll').forEach(b => b.classList.toggle('on', S.shuffle)); toast(S.shuffle ? 'Shuffle on' : 'Shuffle off'); };
 $('#repeatBtn').onclick = () => { S.repeat = {off:'all', all:'one', one:'off'}[S.repeat]; store.set('repeat', S.repeat); syncModes(); toast(`Repeat ${S.repeat}`); };
 syncModes();
 
@@ -654,12 +849,7 @@ function mosaicHTML(pl, size){
   return `<div class="mosaic one" ${st}><div class="ph">♪</div></div>`;
 }
 const totalTime = list => { const m = Math.round(list.reduce((a,t) => a + (t.duration||0), 0) / 60); return m >= 60 ? `${Math.floor(m/60)} hr ${m%60} min` : `${m} min`; };
-function renderSidePls(){
-  const el = $('#sidePls'); if (!el) return;
-  el.innerHTML = S.playlists.map(p => `<button class="side-pl ${S.view==='playlist'&&S.plId===p.id?'on':''}" data-pl="${esc(p.id)}">${esc(p.name)}</button>`).join('') || '<div class="side-pl" style="cursor:default">No playlists yet</div>';
-  el.querySelectorAll('[data-pl]').forEach(b => b.onclick = () => openPlaylist(b.dataset.pl));
-}
-function openPlaylist(id){ S.plId = id; S.view = 'playlist'; $('#drawer').classList.remove('open'); render(); $('#main').scrollTop = 0; }
+function openPlaylist(id){ pushHist(); if (matchMedia('(max-width:760px)').matches) { document.body.classList.remove('np-open'); syncNPBtns(); } S.plId = id; S.view = 'playlist'; $('#drawer').classList.remove('open'); render(); $('#main').scrollTop = 0; }
 async function downloadAll(list){
   const todo = list.filter(t => t.source === 'audius' && !S.downloads.has(t.id));
   if (!todo.length) { toast('Everything here is already downloaded'); return; }
@@ -721,6 +911,27 @@ function toggleLike(t){
 }
 
 /* ---------- Rendering ---------- */
+const IC = {
+  shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16z"/></svg>',
+  folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>',
+  file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M12 11v6M9 14h6"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+};
+const hueOf = str => { let h = 7; for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const hc = (str, l = 32) => `hsl(${hueOf(str)} 45% ${l}%)`;
+const spinner = () => `<div class="loader"><span class="ring"></span></div>`;
+const playSVG = I.play;
+
+function playShuffled(list){
+  if (!list.length) return;
+  S.shuffle = true; store.set('shuffle', true); syncModes();
+  playList(list, Math.floor(Math.random() * list.length));
+}
+const shuffleBtnHTML = id => `<button class="ic ${S.shuffle ? 'on' : ''}" id="${id}" title="Shuffle play">${IC.shuffle}</button>`;
+
 function actsHTML(t){
   const liked = S.liked.has(t.id), dl = S.downloads.has(t.id), p = S.downloading.get(t.id);
   let dlBtn;
@@ -729,153 +940,226 @@ function actsHTML(t){
       ? `<button class="ic" data-a="save" title="Save file to device">${I.save}</button><button class="ic" data-a="rm" title="Remove download">${I.trash}</button>`
       : `<button class="ic done" title="Downloaded — plays offline">${I.check}</button>`;
   else dlBtn = t.source === 'audius' ? `<button class="ic" data-a="dl" title="Download for offline">${I.dl}</button>` : '';
-  return `<button class="ic" data-a="menu" title="Add to playlist / queue">${I.plus}</button>${S.view === 'playlist' ? `<button class="ic" data-a="plrm" title="Remove from this playlist">${I.trash}</button>` : ''}<button class="ic ${liked?'on':''}" data-a="like" title="${liked?'Unlike':'Like'}">${liked?I.heartF:I.heart}</button>${dlBtn}`;
+  return `<button class="ic ${liked?'on':''}" data-a="like" title="${liked?'Remove from Liked Songs':'Save to Liked Songs'}">${liked?I.heartF:I.heart}</button>${dlBtn}${S.view === 'playlist' ? `<button class="ic" data-a="plrm" title="Remove from this playlist">${I.trash}</button>` : ''}<button class="ic" data-a="menu" title="More options">${I.plus}</button>`;
+}
+function numHTML(t, i){
+  return current()?.id === t.id && !pPaused() ? '<span class="eq"><b></b><b></b><b></b></span>' : `<span class="n">${i+1}</span><span class="pi">${playSVG}</span>`;
 }
 function rowHTML(t, i){
   const cur = current()?.id === t.id;
   return `<div class="row ${cur?'playing':''}" data-i="${i}" data-id="${esc(t.id)}">
-    <div class="num">${cur ? '<span class="eq"><b></b><b></b><b></b></span>' : i+1}</div>
-    ${artHTML(t)}
-    <div style="min-width:0"><div class="t-title">${esc(t.title)}${S.downloads.has(t.id)&&S.view!=='downloads'?'<span class="offline-badge">OFFLINE</span>':''}${t.source==='youtube'?'<span class="yt-badge" title="Streams from YouTube — not downloadable">YT</span>':''}</div><div class="t-artist">${artistLink(t)}</div></div>
+    <div class="num">${numHTML(t, i)}</div>
+    <div class="tt">${artHTML(t)}<div class="tx"><div class="t-title">${esc(t.title)}</div><div class="t-artist">${S.downloads.has(t.id) && S.view !== 'downloads' ? '<span class="offline-badge" title="Downloaded">↓</span>' : ''}${t.source==='youtube'?'<span class="yt-badge" title="Streams from YouTube — not downloadable">YT</span>':''}${artistLink(t)}</div></div></div>
     <div class="genre">${esc(t.genre)}</div>
-    <div class="dur">${t.duration ? fmt(t.duration) : ''}</div>
-    <div class="acts">${actsHTML(t)}</div>
+    <div class="end"><div class="acts">${actsHTML(t)}</div><span class="dur">${t.duration ? fmt(t.duration) : ''}</span></div>
   </div>`;
 }
 let shown = [];
-function listHTML(list){ shown = list; return `<div class="list" id="list">${list.map(rowHTML).join('')}</div>`; }
+function listHTML(list, col3 = 'Genre'){
+  shown = list;
+  return `<div class="list" id="list"><div class="thead"><div style="text-align:center">#</div><div>Title</div><div>${col3}</div><div class="r">${IC.clock}</div></div>${list.map(rowHTML).join('')}</div>`;
+}
 function refreshActs(id){ document.querySelectorAll(`.row[data-id="${CSS.escape(id)}"] .acts`).forEach(el => { const t = shown.find(x => x.id === id); if (t) el.innerHTML = actsHTML(t); }); }
-function highlight(){ document.querySelectorAll('.row').forEach(r => { const on = r.dataset.id === current()?.id; r.classList.toggle('playing', on); r.querySelector('.num').innerHTML = on ? '<span class="eq"><b></b><b></b><b></b></span>' : (+r.dataset.i + 1); }); }
+function highlight(){
+  document.querySelectorAll('#list .row').forEach(r => { const t = shown[+r.dataset.i]; if (!t) return; const on = t.id === current()?.id; r.classList.toggle('playing', on); r.querySelector('.num').innerHTML = numHTML(t, +r.dataset.i); });
+}
+
+/* shared bits */
+const tileArt = (kind) => kind === 'liked' ? `<div class="tile-liked">${I.heartF}</div>` : kind === 'dl' ? `<div class="tile-dl">${I.dl}</div>` : `<div class="tile-follow">${IC.people}</div>`;
+function pageHead({ art, kind, title, meta, small }){
+  return `<div class="phead">${art}<div style="min-width:0"><div class="kind">${kind}</div><h1 class="ptitle ${small ? 'sm' : ''}">${esc(title)}</h1><div class="pmeta">${meta}</div></div></div>`;
+}
+function cardHTML({ art, name, sub, data, play }){
+  return `<div class="card" ${data}>${art}<div class="cname">${esc(name)}</div><div class="csub">${sub}</div>${play ? `<button class="cplay" data-play="${esc(play)}" title="Play">${playSVG}</button>` : ''}</div>`;
+}
+const imgOr = (url, cls, fallback) => url ? `<img class="${cls}" src="${esc(url)}" alt="" loading="lazy">` : `<div class="${cls} ph" style="font-size:40px">${fallback || '♪'}</div>`;
+const greeting = () => { const h = new Date().getHours(); return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; };
+const likedList = () => [...S.liked.values()].reverse();
+const dlList = () => [...S.downloads.values()].sort((a,b) => b.addedAt - a.addedAt);
+const n = (k, w) => `${k} ${w}${k === 1 ? '' : 's'}`;
+
+/* what each "data-play" target plays */
+function playTarget(key){
+  const [k, id] = key.split(':');
+  if (k === 'liked') playList(likedList(), 0);
+  else if (k === 'dl') playList(dlList(), 0);
+  else if (k === 'pl') { const pl = getPl(id); if (pl?.tracks.length) playList(pl.tracks, 0); else toast('This playlist is empty'); }
+  else if (k === 'chart') playList(S.ytChartList || [], +id);
+  else if (k === 'trend') playList(S.results, +id);
+  else if (k === 'artist') { api(`/users/${encodeURIComponent(id)}/tracks`, { sort: 'plays', limit: 50 }).then(d => { const l = (d||[]).filter(t => t.is_streamable !== false).map(normalize); l.length ? playList(l, 0) : toast('No songs to play'); }).catch(() => toast("Couldn't load songs")); }
+  else if (k === 'feed') { if (S.feed?.length) playList(S.feed, 0); else { go('following'); } }
+}
+function bindCards(m){
+  m.querySelectorAll('[data-play]').forEach(b => b.onclick = e => { e.stopPropagation(); playTarget(b.dataset.play); });
+  m.querySelectorAll('[data-open]').forEach(c => c.onclick = () => {
+    const [k, id] = c.dataset.open.split(':');
+    if (k === 'pl') openPlaylist(id); else if (k === 'artist') openArtist(id); else if (k === 'chart') playList(S.ytChartList || [], +id); else go(k);
+  });
+}
 
 function render(){
   const m = $('#main');
-  document.querySelectorAll('.nav').forEach(n => n.classList.toggle('on', n.dataset.view === S.view));
+  document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.view === S.view || (b.dataset.view === 'library' && ['liked','downloads','playlist','playlists','following'].includes(S.view))));
+  $('#backNav').disabled = !hist.length;
+  const sb = $('#searchBox'); sb.classList.toggle('has', !!$('#q').value);
+
   if (S.view === 'home') {
-    const top = S.results[0];
-    m.innerHTML = `
-      <div class="top"><label class="search" onclick="go('search')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input placeholder="Search songs, artists…" readonly></label>${installEvt ? '<button class="btn primary" onclick="install()">⤓ Install</button>' : ''}</div>
-      ${top && !S.loading ? `<div class="hero">${artHTML(top,'')}<div><div class="tag">#1 trending this week</div><h2>${esc(top.title)}</h2><p>${esc(top.artist)}</p><button class="btn primary" id="heroPlay">${I.play} Play top 50</button></div></div>` : ''}
-      ${S.following.size ? `<h2 class="sec">Your artists</h2><div class="artists">${[...S.following.values()].reverse().map(u => `<div class="a-card" data-artist="${esc(u.id)}">${avatarHTML(u)}<div class="t-title">${esc(u.name)}</div></div>`).join('')}<div class="a-card" onclick="go('following')"><div class="avatar" style="font-size:24px">→</div><div class="t-title">New releases</div></div></div>` : ''}
-      <h1>Trending</h1><div class="sub">What's hot on Audius this week</div>
-      <div class="chips">${GENRES.map(g => `<button class="chip ${g===S.genre?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
-      ${body()}`;
-    m.querySelectorAll('.a-card[data-artist]').forEach(c => c.onclick = () => openArtist(c.dataset.artist));
-    m.querySelectorAll('.chip').forEach(c => c.onclick = () => { S.genre = c.dataset.g; store.set('genre', S.genre); loadTrending(); });
-    $('#heroPlay')?.addEventListener('click', () => playList(S.results, 0));
+    const pls = [...S.playlists].reverse(), arts = [...S.following.values()].reverse();
+    const tiles = [
+      { open: 'liked', play: 'liked', art: `<div class="tart tile-liked">${I.heartF}</div>`, name: 'Liked Songs' },
+      { open: 'downloads', play: 'dl', art: `<div class="tart tile-dl">${I.dl}</div>`, name: 'Downloads' },
+      ...pls.slice(0, 4).map(p => ({ open: 'pl:' + p.id, play: 'pl:' + p.id, art: mosaicHTML(p).replace('class="mosaic', 'class="tart mosaic'), name: p.name })),
+      ...arts.slice(0, 2).map(u => ({ open: 'artist:' + u.id, play: 'artist:' + u.id, art: imgOr(u.avatar, 'tart', esc((u.name||'?')[0])), name: u.name })),
+    ].slice(0, 8);
+    const chart = ytKey() ? S.ytChartList : null;
+    if (ytKey() && !S.ytChartList) ytChart().then(l => { S.ytChartList = l; if (S.view === 'home') render(); }).catch(() => { S.ytChartList = []; });
+    m.innerHTML = `<div class="grad" style="--hc:${hc(greeting(), 26)}"><div class="pad">
+      <h1 class="greet">${greeting()}</h1>
+      <div class="tiles">${tiles.map(t => `<div class="tile" data-open="${esc(t.open)}">${t.art}<div class="tname">${esc(t.name)}</div><button class="cplay" data-play="${esc(t.play)}" title="Play">${playSVG}</button></div>`).join('')}</div>
+      ${chart?.length ? `<h2 class="sec">Top music in Kenya <small>YouTube</small></h2><div class="shelf">${chart.slice(0, 12).map((t, i) => cardHTML({ art: imgOr(t.artUrl, 'cart'), name: t.title, sub: esc(t.artist), data: `data-open="chart:${i}"`, play: 'chart:' + i })).join('')}</div>` : ''}
+      ${arts.length ? `<h2 class="sec">Your artists</h2><div class="shelf">${arts.map(u => cardHTML({ art: imgOr(u.avatar, 'cart round', esc((u.name||'?')[0])), name: u.name, sub: 'Artist', data: `data-open="artist:${esc(u.id)}"`, play: 'artist:' + u.id })).join('')}</div>` : ''}
+      ${pls.length ? `<h2 class="sec">Your playlists</h2><div class="shelf">${pls.map(p => cardHTML({ art: mosaicHTML(p).replace('class="mosaic', 'class="cart mosaic'), name: p.name, sub: `Playlist • ${n(p.tracks.length, 'song')}`, data: `data-open="pl:${esc(p.id)}"`, play: 'pl:' + p.id })).join('')}</div>` : ''}
+      ${!S.loading && S.results.length ? `<h2 class="sec">Trending this week <small>Audius</small></h2><div class="shelf">${S.results.slice(0, 10).map((t, i) => cardHTML({ art: imgOr(t.artUrl, 'cart'), name: t.title, sub: esc(t.artist), data: `data-play="trend:${i}"`, play: 'trend:' + i })).join('')}</div>` : ''}
+      <h2 class="sec">Top 50 on Audius</h2>
+      <div class="seg">${GENRES.map(g => `<button class="chip ${g===S.genre?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
+      ${S.results.length && !S.loading ? `<div class="abar" style="padding:8px 0 16px;background:none"><button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}</div>` : ''}
+      ${body()}
+    </div></div>`;
+    bindCards(m);
+    m.querySelectorAll('[data-g]').forEach(c => c.onclick = () => { S.genre = c.dataset.g; store.set('genre', S.genre); loadTrending(); });
+    $('#playAll')?.addEventListener('click', () => playList(S.results, 0));
+    $('#shuffleAll')?.addEventListener('click', () => playShuffled(S.results));
+
   } else if (S.view === 'search') {
     const src = S.src, Y = S.yt;
     let content = '';
     if (src === 'youtube') {
-      if (!ytKey()) content = `<div class="setup"><h3>Search YouTube for any song</h3><p>Drake, Burna Boy, Sauti Sol, SZA — stream almost any song for free. Connect a free YouTube API key once to turn it on.</p><p style="margin-top:8px">YouTube songs play in a small video window and stream only (no downloads). Audius songs can still be downloaded.</p><br><button class="btn primary" id="ytConnect">Connect YouTube</button></div>`;
+      if (!ytKey()) content = `<div class="setup" style="margin-top:8px"><h3>Search YouTube for any song</h3><p>Drake, Burna Boy, Sauti Sol, SZA — stream almost any song for free. Connect a free YouTube API key once to turn it on.</p><p style="margin-top:8px">YouTube songs play in a small video window and stream only (no downloads). Audius songs can still be downloaded.</p><br><button class="btn primary" id="ytConnect">Connect YouTube</button></div>`;
       else if (!S.query) {
-        if (!S.ytChartList) { ytChart().then(l => { S.ytChartList = l; if (S.view === 'search' && !S.query) render(); }).catch(e => { S.ytChartList = []; toast(e.message); }); content = `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>`; }
-        else content = S.ytChartList.length ? `<h2 class="sec">Top music videos in Kenya right now</h2>${listHTML(S.ytChartList)}` : '';
+        if (!S.ytChartList) { ytChart().then(l => { S.ytChartList = l; if (S.view === 'search' && !S.query) render(); }).catch(e => { S.ytChartList = []; toast(e.message); }); content = spinner(); }
+        else content = S.ytChartList.length ? `<h2 class="sec" style="margin-top:8px">Top music videos in Kenya</h2><div class="abar" style="padding:0 0 16px;background:none"><button class="bigplay" id="playAll">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}</div>${listHTML(S.ytChartList, 'Source')}` : '';
       }
-      else if (Y.loading) content = `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>`;
-      else if (Y.error) content = `<div class="empty"><h3>YouTube search failed</h3>${esc(Y.error)}<br><br><button class="btn" onclick="runYT(S.query,true)">Try again</button> <button class="btn" onclick="ytSetup().then(ok=>ok&&runYT(S.query,true))">Check API key</button></div>`;
-      else content = Y.list.length ? listHTML(Y.list) : `<div class="empty"><h3>No songs found on YouTube</h3>Try a different spelling.</div>`;
+      else if (Y.loading) content = spinner();
+      else if (Y.error) content = `<div class="empty"><h3>YouTube search failed</h3>${esc(Y.error)}<br><button class="pill white" onclick="runYT(S.query,true)">Try again</button> <button class="pill ghost" onclick="ytSetup().then(ok=>ok&&runYT(S.query,true))">Check API key</button></div>`;
+      else content = Y.list.length ? `<div class="abar" style="padding:0 0 16px;background:none"><button class="bigplay" id="playAll">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}</div>${listHTML(Y.list, 'Source')}` : `<div class="empty"><h3>No results found for “${esc(S.query)}”</h3>Check the spelling, or try fewer words.</div>`;
+    } else if (!S.query) {
+      const cols = ['#e13300','#1e3264','#8400e7','#27856a','#e8115b','#148a08','#bc5900','#509bf5','#af2896','#477d95','#ba5d07','#0d73ec'];
+      content = `<h2 class="sec" style="margin-top:8px">Browse all</h2><div class="browse">${GENRES.filter(g => g !== 'All').map((g, i) => `<button class="gcard" data-genre="${esc(g)}" style="background:${cols[i % cols.length]}">${esc(g)}</button>`).join('')}</div>`;
     } else {
-      content = `${S.query && !S.loading && !S.error && S.artists.length ? `<h2 class="sec">Artists</h2><div class="artists">${S.artists.map(u => `<div class="a-card" data-artist="${esc(u.id)}">${avatarHTML(u)}<div class="t-title">${esc(u.name)}${u.verified?' ✓':''}</div><div class="t-artist">${compact(u.followers)} followers</div>${followBtn(u, true)}</div>`).join('')}</div><h2 class="sec">Songs</h2>` : ''}${S.query ? body() : ''}`;
+      content = `${!S.loading && !S.error && S.artists.length ? `<h2 class="sec" style="margin-top:8px">Artists</h2><div class="shelf">${S.artists.map(u => `<div class="card" data-open="artist:${esc(u.id)}">${imgOr(u.avatar, 'cart round', esc((u.name||'?')[0]))}<div class="cname">${esc(u.name)}${u.verified ? ' ✓' : ''}</div><div class="csub">${compact(u.followers)} followers</div>${followBtn(u, true)}</div>`).join('')}</div><h2 class="sec">Songs</h2>` : ''}
+        ${!S.loading && !S.error && S.results.length ? `<div class="abar" style="padding:0 0 16px;background:none"><button class="bigplay" id="playAll">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}</div>` : ''}${body()}`;
     }
-    m.innerHTML = `
-      <div class="top"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="${src==='youtube' ? 'Search any song or artist on YouTube…' : 'Search Audius songs, artists…'}" value="${esc(S.query)}" autocomplete="off"></label></div>
-      <h1>${S.query ? `Results for “${esc(S.query)}”` : 'Search'}</h1>
-      <div class="seg src-seg"><button data-src="youtube" class="${src==='youtube'?'on':''}">YouTube · stream</button><button data-src="audius" class="${src==='audius'?'on':''}">Audius · stream + download</button></div>
-      ${content}`;
-    m.querySelectorAll('[data-src]').forEach(b => b.onclick = () => { S.src = b.dataset.src; store.set('src', S.src); if (S.query) S.src === 'youtube' ? runYT(S.query) : search(S.query, true); else render(); });
+    const list = src === 'youtube' ? (S.query ? Y.list : S.ytChartList || []) : S.results;
+    m.innerHTML = `<div class="pad">
+      <div class="seg"><button class="chip ${src==='youtube'?'on':''}" data-src="youtube">YouTube · stream</button><button class="chip ${src==='audius'?'on':''}" data-src="audius">Audius · stream + download</button></div>
+      ${content}</div>`;
+    m.querySelectorAll('[data-src]').forEach(b => b.onclick = () => { S.query = $('#q').value.trim(); S.src = b.dataset.src; store.set('src', S.src); $('#q').placeholder = S.src === 'youtube' ? 'What do you want to play?' : 'Search Audius songs and artists'; if (S.query) S.src === 'youtube' ? runYT(S.query) : search(S.query, true); else render(); });
+    m.querySelectorAll('[data-genre]').forEach(b => b.onclick = () => { S.genre = b.dataset.genre; store.set('genre', S.genre); go('home'); });
     $('#ytConnect')?.addEventListener('click', () => ytSetup().then(ok => ok && (S.query ? runYT(S.query, true) : render())));
-    m.querySelectorAll('.a-card').forEach(c => c.onclick = () => openArtist(c.dataset.artist));
+    bindCards(m);
     bindFollow(id => S.artists.find(a => a.id === id));
-    const q = $('#q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length);
-    let t; q.oninput = () => { clearTimeout(t); t = setTimeout(() => { const v = q.value.trim(); if (S.src === 'youtube') { S.query = v; if (v) runYT(v); else render(); } else search(v); }, S.src === 'youtube' ? 700 : 400); };
-    q.onkeydown = e => { if (e.key === 'Enter') { clearTimeout(t); const v = q.value.trim(); S.query = v; S.src === 'youtube' ? (v ? runYT(v, true) : render()) : search(v, true); } };
-  } else if (S.view === 'downloads') {
-    const list = [...S.downloads.values()].sort((a,b) => b.addedAt - a.addedAt);
-    const bytes = list.reduce((s,x) => s + (x.size||0), 0);
-    m.innerHTML = `
-      <div class="top" style="justify-content:space-between"><div><h1>Downloads</h1></div>
-        <div style="display:flex;gap:8px">${list.length?`<button class="btn primary" id="playAll">${I.play} Play all</button>`:''}<button class="btn" onclick="$('#fileIn').click()">${I.plus} Import files</button><button class="btn" onclick="$('#dirIn').click()">📁 Import folder</button></div></div>
-      <div class="storage">${list.length} track${list.length===1?'':'s'} · ${(bytes/1048576).toFixed(1)} MB saved in this browser · plays without internet</div>
-      <div class="drop" id="drop">Drop audio files here to add them to your library</div>
-      ${list.length ? listHTML(list) : `<div class="empty"><h3>No downloads yet</h3>Tap ${'<span style="display:inline-block;vertical-align:middle">'+I.dl+'</span>'} on any track to save it for offline listening.</div>`}`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
+    $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
+
+  } else if (S.view === 'library') {
+    m.innerHTML = `<div class="pad"><h1 class="greet" style="display:flex;justify-content:space-between;align-items:center">Your Library<button class="roundic" id="newPlLib" title="Create playlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button></h1><div class="lib-chips" style="padding:0 0 12px" id="libChipsM"></div><div id="libListM"></div></div>`;
+    $('#newPlLib').onclick = () => newPlaylistFlow();
+    renderLibraryInto($('#libChipsM'), $('#libListM'));
+
+  } else if (S.view === 'downloads') {
+    const list = dlList(), bytes = list.reduce((s,x) => s + (x.size||0), 0);
+    m.innerHTML = `<div class="grad" style="--hc:#0d5c3e">
+      ${pageHead({ art: `<div class="part tile-dl">${I.dl}</div>`, kind: 'Playlist', title: 'Downloads', meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}</span><span class="dot">${(bytes/1048576).toFixed(1)} MB</span><span class="dot">plays offline</span>` })}
+      <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}
+        <button class="outline" onclick="$('#fileIn').click()">Import files</button><button class="outline" onclick="$('#dirIn').click()">Import folder</button></div>
+      <div class="content"><div class="drop" id="drop">Drop audio files here to add them to your library</div>
+      ${list.length ? listHTML(list) : `<div class="empty"><h3>Songs you download will appear here</h3>Tap ${I.dl.replace('<svg','<svg style="vertical-align:middle;width:18px;height:18px"')} on any Audius song, or import your own music files.</div>`}</div></div>`;
+    $('#playAll')?.addEventListener('click', () => playList(list, 0));
+    $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
     const d = $('#drop');
     d.ondragover = e => { e.preventDefault(); d.classList.add('over'); }; d.ondragleave = () => d.classList.remove('over');
     d.ondrop = e => { e.preventDefault(); d.classList.remove('over'); importFiles([...e.dataTransfer.files]); };
+
   } else if (S.view === 'artist') {
     const A = S.artist, u = A?.user;
-    const back = `<button class="back" id="backBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</button>`;
-    if (!u) { m.innerHTML = back + (A?.error ? `<div class="empty"><h3>Couldn't load this artist</h3>${esc(A.error)}<br><br><button class="btn" onclick="openArtist('${esc(A.id)}')">Try again</button></div>` : `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>`); }
+    if (!u) { m.innerHTML = A?.error ? `<div class="empty"><h3>Couldn't load this artist</h3>${esc(A.error)}<br><button class="pill white" onclick="openArtist('${esc(A.id)}', true)">Try again</button></div>` : spinner(); }
     else {
       const tracks = A.tracks || [];
-      m.innerHTML = `${back}
-      <div class="artist-head">
-        <div class="artist-cover" style="${u.cover ? `background-image:url('${esc(u.cover)}')` : ''}"></div>
-        <div class="artist-info">${avatarHTML(u)}
-          <div style="min-width:0"><div class="tag" style="font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2)">Artist</div>
-            <h1>${esc(u.name)}${u.verified ? '<svg class="verified" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.2 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 22l-2.4-2.2-3.2.4-.9-3.1-2.9-1.5 1-3.1-1-3.1 2.9-1.5.9-3.1 3.2.4z"/><path d="M8 12l3 3 5-6" stroke="#0d0b10" stroke-width="2" fill="none"/></svg>' : ''}</h1>
-            <div class="stats">${u.handle ? `<span>@${esc(u.handle)}</span>` : ''}<span><b>${compact(u.followers)}</b> followers</span><span><b>${u.trackCount}</b> tracks</span>${u.location ? `<span>📍 ${esc(u.location)}</span>` : ''}</div>
-            <div class="artist-btns">${tracks.length ? `<button class="btn primary" id="playAll">${I.play} Play</button>` : ''}${followBtn(u)}${tracks.length ? `<button class="btn" id="shuffleAll">Shuffle</button>` : ''}${u.handle ? `<a class="btn" href="https://audius.co/${encodeURIComponent(u.handle)}" target="_blank" rel="noopener">Open on Audius ↗</a>` : ''}</div>
-          </div>
-        </div>
-        ${u.bio ? `<div class="bio">${esc(u.bio)}</div>` : ''}
-      </div>
-      <div class="seg"><button data-sort="plays" class="${A.sort==='plays'?'on':''}">Popular</button><button data-sort="date" class="${A.sort==='date'?'on':''}">Latest</button></div>
-      ${A.loading ? `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>` : tracks.length ? listHTML(tracks) : `<div class="empty"><h3>No tracks yet</h3>This artist hasn't uploaded any streamable tracks.</div>`}`;
+      m.innerHTML = `<div style="--hc:${hc(u.name, 30)}">
+        <div class="artist-banner" style="${u.cover ? `background-image:url('${esc(u.cover)}')` : ''}"><div style="min-width:0">
+          ${u.verified ? `<div class="kind"><svg class="verified" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.2 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 22l-2.4-2.2-3.2.4-.9-3.1-2.9-1.5 1-3.1-1-3.1 2.9-1.5.9-3.1 3.2.4z"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg>Verified Artist</div>` : '<div class="kind">Artist</div>'}
+          <h1 class="ptitle">${esc(u.name)}</h1><div class="pmeta">${compact(u.followers)} followers<span class="dot">${n(u.trackCount, 'track')}</span>${u.location ? `<span class="dot">${esc(u.location)}</span>` : ''}</div></div></div>
+        <div class="grad" style="--hc:${hc(u.name, 18)}">
+        <div class="abar">${tracks.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}${followBtn(u)}${u.handle ? `<a class="ic" href="https://audius.co/${encodeURIComponent(u.handle)}" target="_blank" rel="noopener" title="Open on Audius">${IC.ext}</a>` : ''}</div>
+        <div class="content">
+          <h2 class="sec" style="margin-top:0">${A.sort === 'plays' ? 'Popular' : 'Latest releases'}</h2>
+          <div class="seg"><button class="chip ${A.sort==='plays'?'on':''}" data-sort="plays">Popular</button><button class="chip ${A.sort==='date'?'on':''}" data-sort="date">Latest</button></div>
+          ${A.loading ? spinner() : tracks.length ? listHTML(tracks) : `<div class="empty"><h3>No songs yet</h3>This artist hasn't uploaded any streamable songs.</div>`}
+          ${u.bio ? `<h2 class="sec">About</h2><div class="about"><div class="acover" style="${u.cover ? `background-image:url('${esc(u.cover)}')` : ''}"></div><div class="abody"><b>${compact(u.followers)} followers</b>${esc(u.bio)}</div></div>` : ''}
+        </div></div></div>`;
       $('#playAll')?.addEventListener('click', () => playList(tracks, 0));
-      $('#shuffleAll')?.addEventListener('click', () => { const was = S.shuffle; S.shuffle = true; playList(tracks, Math.floor(Math.random()*tracks.length)); S.shuffle = was; });
-      m.querySelectorAll('.seg button').forEach(b => b.onclick = () => loadArtistTracks(b.dataset.sort));
+      $('#shuffleAll')?.addEventListener('click', () => playShuffled(tracks));
+      m.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => loadArtistTracks(b.dataset.sort));
       bindFollow(() => u);
     }
-    $('#backBtn').onclick = () => go(S.prevView === 'artist' ? 'home' : S.prevView, true);
+
   } else if (S.view === 'following') {
     const arts = [...S.following.values()].reverse();
-    if (!arts.length) m.innerHTML = `<h1>Following</h1><div class="empty"><h3>You're not following anyone yet</h3>Open an artist's profile and tap <b>+ Follow</b> to get their new releases here.<br><br><button class="btn primary" onclick="go('search')">Find artists</button></div>`;
-    else {
-      if (!S.feed && !S.feedLoading) loadFeed();
-      const feed = S.feed || [];
-      m.innerHTML = `<div class="top" style="justify-content:space-between"><h1>Following</h1>${feed.length ? `<button class="btn primary" id="playAll">${I.play} Play new releases</button>` : ''}</div>
-        <div class="artists">${arts.map(u => `<div class="a-card" data-artist="${esc(u.id)}">${avatarHTML(u)}<div class="t-title">${esc(u.name)}${u.verified ? ' ✓' : ''}</div>${followBtn(u, true)}</div>`).join('')}</div>
-        <h2 class="sec">New releases</h2><div class="sub" style="margin-top:-6px">Latest uploads from the ${arts.length} artist${arts.length === 1 ? '' : 's'} you follow</div>
-        ${S.feedLoading && !feed.length ? `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>` : feed.length ? listHTML(feed) : `<div class="empty"><h3>No releases found</h3>Check back later or <button class="btn" onclick="S.feed=null;render()">Refresh</button></div>`}`;
-      m.querySelectorAll('.a-card').forEach(c => c.onclick = () => openArtist(c.dataset.artist));
-      bindFollow(id => S.following.get(id));
-      $('#playAll')?.addEventListener('click', () => playList(feed, 0));
-      if (feed.length) document.querySelectorAll('#list .row').forEach((r, i) => { const d = relDate(feed[i]?.released); if (d) r.querySelector('.genre').innerHTML = `<span class="feed-date">${d}</span>`; });
-    }
+    if (arts.length && !S.feed && !S.feedLoading) loadFeed();
+    const feed = S.feed || [];
+    m.innerHTML = `<div class="grad" style="--hc:#7a3510">
+      ${pageHead({ art: `<div class="part tile-follow">${IC.people}</div>`, kind: 'Collection', title: 'New releases', meta: `<b>Sauti</b><span class="dot">from ${n(arts.length, 'artist')} you follow</span>` })}
+      <div class="abar">${feed.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}</div>
+      <div class="content">
+      ${!arts.length ? `<div class="empty"><h3>Follow artists to see their new releases</h3>Open an artist's profile and tap <b>Follow</b>.<br><button class="pill white" onclick="go('search')">Find artists</button></div>` : `
+        <h2 class="sec" style="margin-top:0">Artists you follow</h2><div class="shelf">${arts.map(u => `<div class="card" data-open="artist:${esc(u.id)}">${imgOr(u.avatar, 'cart round', esc((u.name||'?')[0]))}<div class="cname">${esc(u.name)}</div><div class="csub">Artist</div>${followBtn(u, true)}</div>`).join('')}</div>
+        <h2 class="sec">Latest uploads</h2>
+        ${S.feedLoading && !feed.length ? spinner() : feed.length ? listHTML(feed, 'Released') : `<div class="empty"><h3>No releases found</h3><button class="pill white" onclick="S.feed=null;render()">Refresh</button></div>`}`}
+      </div></div>`;
+    bindCards(m); bindFollow(id => S.following.get(id));
+    $('#playAll')?.addEventListener('click', () => playList(feed, 0));
+    $('#shuffleAll')?.addEventListener('click', () => playShuffled(feed));
+    if (feed.length) document.querySelectorAll('#list .row').forEach(r => { const d = relDate(feed[+r.dataset.i]?.released); if (d) r.querySelector('.genre').innerHTML = `<span class="feed-date">${d}</span>`; });
+
   } else if (S.view === 'playlists') {
-    m.innerHTML = `<h1>Your playlists</h1><div class="sub">${S.playlists.length} playlist${S.playlists.length===1?'':'s'} · saved on this device</div>
-      <div class="pl-grid"><button class="pl-card pl-new" id="newPl">＋ New playlist</button>
-      ${S.playlists.map(p => `<div class="pl-card" data-pl="${esc(p.id)}">${mosaicHTML(p)}<div class="t-title">${esc(p.name)}</div><div class="t-artist">${p.tracks.length} song${p.tracks.length===1?'':'s'}</div></div>`).join('')}</div>`;
+    m.innerHTML = `<div class="pad"><h1 class="greet">Your playlists</h1><div class="shelf" style="grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));overflow:visible">
+      <div class="card" id="newPl"><div class="cart ph" style="font-size:48px">＋</div><div class="cname">Create playlist</div><div class="csub">It's easy, we'll help you</div></div>
+      ${S.playlists.map(p => cardHTML({ art: mosaicHTML(p).replace('class="mosaic', 'class="cart mosaic'), name: p.name, sub: `Playlist • ${n(p.tracks.length, 'song')}`, data: `data-open="pl:${esc(p.id)}"`, play: 'pl:' + p.id })).join('')}</div></div>`;
     $('#newPl').onclick = () => newPlaylistFlow();
-    m.querySelectorAll('.pl-card[data-pl]').forEach(c => c.onclick = () => openPlaylist(c.dataset.pl));
+    bindCards(m);
+
   } else if (S.view === 'playlist') {
     const pl = getPl(S.plId);
-    if (!pl) { go('playlists'); return; }
-    const list = pl.tracks, dlCount = list.filter(t => S.downloads.has(t.id)).length;
-    m.innerHTML = `<div class="hero" style="align-items:flex-end">${mosaicHTML(pl, 170)}
-        <div style="min-width:0"><div class="tag">Playlist</div><h2 style="font-size:38px;word-break:break-word">${esc(pl.name)}</h2>
-        <p>${list.length} song${list.length===1?'':'s'}${list.length ? ` · ${totalTime(list)}` : ''}${dlCount ? ` · ${dlCount} downloaded` : ''}</p>
-        <div class="artist-btns">${list.length ? `<button class="btn primary" id="playAll">${I.play} Play</button><button class="btn" id="shuffleAll">Shuffle</button>${list.some(t => t.source === 'audius') ? `<button class="btn" id="dlAll">${I.dl} ${list.filter(t => t.source === 'audius').every(t => S.downloads.has(t.id)) ? 'Downloaded' : 'Download all'}</button>` : ''}` : ''}
-        <button class="btn" id="renPl">Rename</button><button class="btn" id="delPl">${I.trash} Delete</button></div></div></div>
-      ${list.length ? listHTML(list) : `<div class="empty"><h3>This playlist is empty</h3>Tap ＋ on any song and choose <b>${esc(pl.name)}</b> to add it here.<br><br><button class="btn primary" onclick="go('search')">Find songs</button></div>`}`;
+    if (!pl) { go('library'); return; }
+    const list = pl.tracks, dlCount = list.filter(t => S.downloads.has(t.id)).length, canDl = list.some(t => t.source === 'audius');
+    const allDl = canDl && list.filter(t => t.source === 'audius').every(t => S.downloads.has(t.id));
+    m.innerHTML = `<div class="grad" style="--hc:${hc(pl.name)}">
+      ${pageHead({ art: mosaicHTML(pl).replace('class="mosaic', 'class="part mosaic'), kind: 'Playlist', title: pl.name, small: pl.name.length > 18, meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}${list.length ? `, ${totalTime(list)}` : ''}</span>${dlCount ? `<span class="dot">${dlCount} downloaded</span>` : ''}` })}
+      <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}
+        ${canDl ? `<button class="ic ${allDl ? 'on' : ''}" id="dlAll" title="${allDl ? 'Downloaded' : 'Download all'}">${allDl ? I.check : I.dl}</button>` : ''}
+        <button class="ic" id="renPl" title="Rename">${IC.edit}</button><button class="ic" id="delPl" title="Delete playlist">${I.trash}</button></div>
+      <div class="content">${list.length ? listHTML(list) : `<div class="empty"><h3>Let's find something for your playlist</h3>Tap ＋ on any song and choose <b>${esc(pl.name)}</b>.<br><button class="pill white" onclick="go('search')">Find songs</button></div>`}</div></div>`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
-    $('#shuffleAll')?.addEventListener('click', () => { const was = S.shuffle; S.shuffle = true; playList(list, Math.floor(Math.random()*list.length)); S.shuffle = was; });
+    $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
     $('#dlAll')?.addEventListener('click', () => downloadAll(list));
-    $('#renPl').onclick = async () => { const n = await ask({ title: 'Rename playlist', value: pl.name, ok: 'Save' }); if (n) { pl.name = n; savePls(); render(); } };
-    $('#delPl').onclick = async () => { if (await ask({ title: `Delete “${pl.name}”?`, text: 'The playlist will be removed. Downloaded songs stay in your Downloads.', ok: 'Delete', danger: true })) { S.playlists = S.playlists.filter(p => p.id !== pl.id); savePls(); toast('Playlist deleted'); go('playlists'); } };
+    $('#renPl').onclick = async () => { const nn = await ask({ title: 'Edit details', value: pl.name, ok: 'Save' }); if (nn) { pl.name = nn; savePls(); render(); } };
+    $('#delPl').onclick = async () => { if (await ask({ title: `Delete “${pl.name}”?`, text: 'This will delete the playlist from Your Library. Downloaded songs stay in Downloads.', ok: 'Delete', danger: true })) { S.playlists = S.playlists.filter(p => p.id !== pl.id); savePls(); toast('Removed from Your Library'); go('library'); } };
+
   } else if (S.view === 'liked') {
-    const list = [...S.liked.values()].reverse();
-    m.innerHTML = `<div class="top" style="justify-content:space-between"><h1>Liked songs</h1>${list.length?`<button class="btn primary" id="playAll">${I.play} Play all</button>`:''}</div>
-      ${list.length ? listHTML(list) : `<div class="empty"><h3>Nothing liked yet</h3>Tap the heart on tracks you love.</div>`}`;
+    const list = likedList();
+    m.innerHTML = `<div class="grad" style="--hc:#3b1f8e">
+      ${pageHead({ art: `<div class="part tile-liked">${I.heartF}</div>`, kind: 'Playlist', title: 'Liked Songs', meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}</span>` })}
+      <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}</div>
+      <div class="content">${list.length ? listHTML(list) : `<div class="empty"><h3>Songs you like will appear here</h3>Save songs by tapping the heart icon.<br><button class="pill white" onclick="go('search')">Find songs</button></div>`}</div></div>`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
+    $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
   }
   bindList(); renderSidePls();
 }
 function body(){
-  if (S.loading) return `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>`;
-  if (S.error) return `<div class="empty"><h3>Couldn't reach the music server</h3>${esc(S.error)}<br><br><button class="btn" onclick="${S.view==='home'?'loadTrending()':'search(S.query,true)'}">Try again</button>${S.downloads.size?` <button class="btn" onclick="go('downloads')">Play downloads</button>`:''}</div>`;
-  if (!S.results.length) return `<div class="empty"><h3>No tracks found</h3>Try another search or genre.</div>`;
+  if (S.loading) return spinner();
+  if (S.error) return `<div class="empty"><h3>Couldn't reach the music server</h3>${esc(S.error)}<br><button class="pill white" onclick="${S.view==='home'?'loadTrending()':'search(S.query,true)'}">Try again</button>${S.downloads.size?` <button class="pill ghost" onclick="go('downloads')">Play downloads</button>`:''}</div>`;
+  if (!S.results.length) return `<div class="empty"><h3>No results found${S.query ? ` for “${esc(S.query)}”` : ''}</h3>Try another search or genre.</div>`;
   return listHTML(S.results);
 }
 function bindList(){
@@ -888,23 +1172,137 @@ function bindList(){
     else if (a === 'plrm') { const pl = getPl(S.plId); if (pl) { removeFromPlaylist(pl, t.id); toast(`Removed from ${pl.name}`); } }
     else if (a === 'rm') removeDownload(t.id); else if (a === 'save') saveToDevice(t.id);
     else if (e.target.closest('[data-artist]')) openArtist(e.target.closest('[data-artist]').dataset.artist);
-    else if (!e.target.closest('button')) { if (current()?.id === t.id) toggle(); else playList(shown, +row.dataset.i); }
+    else if (!e.target.closest('button')) {
+      const mobile = matchMedia('(max-width:760px)').matches;
+      if (e.target.closest('.num') || e.detail >= 2 || mobile || matchMedia('(hover:none)').matches) { if (current()?.id === t.id) toggle(); else playList(shown, +row.dataset.i); }
+      else { document.querySelectorAll('#list .row.sel').forEach(r => r.classList.remove('sel')); row.classList.add('sel'); }
+    }
   };
+  l.ondblclick = null;
 }
 function updateNow(){
   const t = current(); if (!t) return;
-  $('#now').innerHTML = `${artHTML(t,'')}<div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${artistLink(t)}</div></div><button class="ic ${S.liked.has(t.id)?'on':''}" id="nowLike">${S.liked.has(t.id)?I.heartF:I.heart}</button>`;
+  $('#now').innerHTML = `${artHTML(t)}<div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${artistLink(t)}</div></div><button class="ic ${S.liked.has(t.id)?'on':''}" id="nowLike" title="Save to Liked Songs">${S.liked.has(t.id)?I.heartF:I.heart}</button>`;
   $('#nowLike').onclick = () => { toggleLike(t); updateNow(); };
-  $('#now .a-link')?.addEventListener('click', e => openArtist(e.currentTarget.dataset.artist));
-  document.title = `${t.title} · ${t.artist} — Sauti`;
+  $('#now .a-link')?.addEventListener('click', e => { e.stopPropagation(); openArtist(e.currentTarget.dataset.artist); });
+  $('#now .art').onclick = () => openNP('np');
+  $('#now').onclick = e => { if (matchMedia('(max-width:760px)').matches && !e.target.closest('button,.a-link')) openNP('np'); };
+  document.title = `${t.title} • ${t.artist}`;
+  renderNP();
 }
-function renderQueue(){
-  $('#qList').innerHTML = S.queue.length ? S.queue.map((t,i) => `<div class="q-item ${i===S.qi?'cur':''}" data-i="${i}">${artHTML(t,'')}<div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${esc(t.artist)}</div></div></div>`).join('') : '<div class="empty" style="padding:30px 0">Queue is empty</div>';
-  $('#qList').querySelectorAll('.q-item').forEach(el => el.onclick = () => playIndex(+el.dataset.i));
+
+/* ---------- Now playing / queue side panel ---------- */
+S.npMode = 'np';
+const artistCache = new Map();
+function openNP(mode){
+  const open = document.body.classList.contains('np-open');
+  if (open && S.npMode === mode) { document.body.classList.remove('np-open'); syncNPBtns(); return; }
+  S.npMode = mode; document.body.classList.add('np-open'); renderNP(); syncNPBtns();
 }
-function updateCounts(){ $('#dlCount').textContent = S.downloads.size; $('#likeCount').textContent = S.liked.size; $('#followCount').textContent = S.following.size; $('#plCount').textContent = S.playlists.length; }
-$('#queueBtn').onclick = () => { $('#drawer').classList.toggle('open'); renderQueue(); };
-$('#closeQ').onclick = () => $('#drawer').classList.remove('open');
+function syncNPBtns(){ const open = document.body.classList.contains('np-open'); $('#npBtn').classList.toggle('on', open && S.npMode === 'np'); $('#queueBtn').classList.toggle('on', open && S.npMode === 'queue'); }
+function renderNP(){
+  const p = $('#npPanel'); if (!document.body.classList.contains('np-open')) return;
+  const t = current();
+  const close = `<button class="roundic" id="npClose" title="Close">${matchMedia('(max-width:760px)').matches ? '⌄' : '✕'}</button>`;
+  if (S.npMode === 'queue') {
+    const nextUp = S.queue.slice(S.qi + 1);
+    p.innerHTML = `<div class="np-head"><span>Queue</span>${close}</div><div class="np-body">
+      ${t ? `<div class="q-label">Now playing</div><div class="q-item cur" data-qi="${S.qi}">${artHTML(t)}<div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${esc(t.artist)}</div></div></div>` : ''}
+      <div class="q-label">Next up</div>${nextUp.length ? nextUp.map((x, j) => `<div class="q-item" data-qi="${S.qi + 1 + j}">${artHTML(x)}<div><div class="t-title">${esc(x.title)}</div><div class="t-artist">${esc(x.artist)}</div></div></div>`).join('') : '<div class="t-artist" style="padding:8px">Nothing queued. Use ＋ → Add to queue on any song.</div>'}
+    </div>`;
+    p.querySelectorAll('[data-qi]').forEach(el => el.onclick = () => playIndex(+el.dataset.qi));
+  } else if (!t) {
+    p.innerHTML = `<div class="np-head"><span>Now playing</span>${close}</div><div class="np-body"><div class="empty">Play something to see it here.</div></div>`;
+  } else {
+    const nx = S.queue[S.qi + 1];
+    document.body.style.setProperty('--npc', hc(t.title + t.artist, 26));
+    p.innerHTML = `<div class="np-head"><span>${esc(S.view === 'playlist' ? getPl(S.plId)?.name || 'Now playing' : 'Now playing')}</span>${close}</div><div class="np-body">
+      ${t.artUrl ? `<img class="np-art" src="${esc(t.artUrl)}" alt="">` : `<div class="np-art ph">♪</div>`}
+      <div class="np-title"><div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${artistLink(t)}</div></div><button class="ic ${S.liked.has(t.id)?'on':''}" id="npLike">${S.liked.has(t.id)?I.heartF:I.heart}</button></div>
+      <div class="np-ctrl"><div class="bar"><span id="npCur">0:00</span><input type="range" id="npSeek" min="0" max="1000" value="0"><span id="npDur">0:00</span></div>
+        <div class="btns"><button class="ic ${S.shuffle?'on':''}" id="npShuf">${IC.shuffle}</button><button class="ic" id="npPrev"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button><button class="play" id="npPlay">${pPaused() ? I.play : I.pause}</button><button class="ic" id="npNext"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button><button class="ic" id="npQueue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h13M3 18h9M19 14v7m-3-3l3 3 3-3"/></svg></button></div></div>
+      <div id="npAbout"></div>
+      ${t.source === 'youtube' ? `<div class="np-card"><div class="nc-body"><div class="nc-row"><b>Streaming from YouTube</b><a class="outline" style="display:inline-flex;align-items:center;text-decoration:none" href="https://www.youtube.com/watch?v=${esc(t.ytId)}" target="_blank" rel="noopener">Open ↗</a></div><p>YouTube songs stream only. Download Audius songs or import your own files to listen offline.</p></div></div>` : ''}
+      ${nx ? `<div class="np-card"><h4>Next in queue <button id="npOpenQ">Open queue</button></h4><div style="padding:0 8px 8px"><div class="q-item" data-qi="${S.qi + 1}">${artHTML(nx)}<div><div class="t-title">${esc(nx.title)}</div><div class="t-artist">${esc(nx.artist)}</div></div></div></div></div>` : ''}
+    </div>`;
+    $('#npLike').onclick = () => { toggleLike(t); updateNow(); };
+    p.querySelector('.a-link')?.addEventListener('click', e => { if (matchMedia('(max-width:760px)').matches) document.body.classList.remove('np-open'); openArtist(e.currentTarget.dataset.artist); });
+    $('#npOpenQ')?.addEventListener('click', () => openNP('queue'));
+    p.querySelectorAll('[data-qi]').forEach(el => el.onclick = () => playIndex(+el.dataset.qi));
+    $('#npShuf').onclick = () => { $('#shuffleBtn').click(); $('#npShuf').classList.toggle('on', S.shuffle); };
+    $('#npPrev').onclick = prev; $('#npNext').onclick = () => next(); $('#npPlay').onclick = toggle; $('#npQueue').onclick = () => openNP('queue');
+    const ns = $('#npSeek');
+    ns.oninput = () => { seeking = true; ns.style.setProperty('--p', ns.value/10 + '%'); };
+    ns.onchange = () => { seeking = false; if (pDur()) pSeek(ns.value/1000 * pDur()); };
+    tickUI();
+    if (t.artistId) {
+      const show = u => { const el = $('#npAbout'); if (!el || current() !== t) return; el.innerHTML = `<div class="np-card" style="--hc:${hc(u.name)}"><div class="nc-cover" style="${u.cover || u.avatar ? `background-image:url('${esc(u.cover || u.avatar)}')` : ''}"><span>About the artist</span></div><div class="nc-body"><div class="nc-row"><div><b class="a-link" data-artist="${esc(u.id)}">${esc(u.name)}</b><div class="t-artist">${compact(u.followers)} followers</div></div>${followBtn(u, true).replace('follow-mini', 'outline')}</div>${u.bio ? `<p>${esc(u.bio)}</p>` : ''}</div></div>`;
+        el.querySelector('.a-link').onclick = () => { if (matchMedia('(max-width:760px)').matches) document.body.classList.remove('np-open'); openArtist(u.id); };
+        bindFollow(() => u); };
+      if (artistCache.has(t.artistId)) show(artistCache.get(t.artistId));
+      else api(`/users/${encodeURIComponent(t.artistId)}`).then(d => { const u = normUser(d); artistCache.set(t.artistId, u); show(u); }).catch(() => {});
+    }
+  }
+  $('#npClose').onclick = () => { document.body.classList.remove('np-open'); syncNPBtns(); };
+}
+function renderQueue(){ if (document.body.classList.contains('np-open') && S.npMode === 'queue') renderNP(); }
+function updateCounts(){ renderSidePls(); }
+$('#queueBtn').onclick = () => openNP('queue');
+$('#npBtn').onclick = () => openNP('np');
+$('#closeQ').onclick = () => {};
+
+/* ---------- Library list (sidebar + mobile Library tab) ---------- */
+S.libFilter = store.get('libFilter', 'all');
+function renderLibraryInto(chipsEl, listEl){
+  const f = S.libFilter;
+  chipsEl.innerHTML = [['all','All'],['playlists','Playlists'],['artists','Artists'],['downloaded','Downloaded']].map(([k, l]) => `<button class="chip ${f===k?'on':''}" data-lf="${k}">${l}</button>`).join('');
+  chipsEl.querySelectorAll('[data-lf]').forEach(b => b.onclick = () => { S.libFilter = S.libFilter === b.dataset.lf ? 'all' : b.dataset.lf; store.set('libFilter', S.libFilter); renderSidePls(); if (S.view === 'library') render(); });
+  const items = [];
+  const on = (v, id) => S.view === v && (id === undefined || (v === 'playlist' ? S.plId === id : S.artist?.id === id));
+  if (f === 'all' || f === 'playlists') items.push(`<button class="li ${on('liked')?'on':''}" data-go="liked"><div class="lart tile-liked">${I.heartF}</div><div class="ltxt"><div class="lname">Liked Songs</div><div class="lsub">Playlist • ${n(S.liked.size, 'song')}</div></div></button>`);
+  if (f === 'all' || f === 'downloaded') items.push(`<button class="li ${on('downloads')?'on':''}" data-go="downloads"><div class="lart tile-dl">${I.dl}</div><div class="ltxt"><div class="lname">Downloads</div><div class="lsub">Playlist • ${n(S.downloads.size, 'song')}</div></div></button>`);
+  if ((f === 'all' || f === 'artists') && S.following.size) items.push(`<button class="li ${on('following')?'on':''}" data-go="following"><div class="lart tile-follow">${IC.people}</div><div class="ltxt"><div class="lname">New releases</div><div class="lsub">From ${n(S.following.size, 'artist')} you follow</div></div></button>`);
+  if (f === 'all' || f === 'playlists') [...S.playlists].reverse().forEach(p => items.push(`<button class="li ${on('playlist', p.id)?'on':''}" data-pl="${esc(p.id)}">${mosaicHTML(p).replace('class="mosaic', 'class="lart mosaic')}<div class="ltxt"><div class="lname">${esc(p.name)}</div><div class="lsub">Playlist • ${n(p.tracks.length, 'song')}</div></div></button>`));
+  if (f === 'downloaded') [...S.playlists].reverse().filter(p => p.tracks.length && p.tracks.every(t => S.downloads.has(t.id))).forEach(p => items.push(`<button class="li" data-pl="${esc(p.id)}">${mosaicHTML(p).replace('class="mosaic', 'class="lart mosaic')}<div class="ltxt"><div class="lname">${esc(p.name)}</div><div class="lsub">Playlist • downloaded</div></div></button>`));
+  if (f === 'all' || f === 'artists') [...S.following.values()].reverse().forEach(u => items.push(`<button class="li ${on('artist', u.id)?'on':''}" data-artist="${esc(u.id)}">${imgOr(u.avatar, 'lart round', esc((u.name||'?')[0])).replace('font-size:40px', 'font-size:18px')}<div class="ltxt"><div class="lname">${esc(u.name)}</div><div class="lsub">Artist</div></div></button>`));
+  listEl.innerHTML = items.join('') || `<div class="t-artist" style="padding:16px">Nothing here yet.</div>`;
+  listEl.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  listEl.querySelectorAll('[data-pl]').forEach(b => b.onclick = () => openPlaylist(b.dataset.pl));
+  listEl.querySelectorAll('[data-artist]').forEach(b => b.onclick = () => openArtist(b.dataset.artist));
+}
+function renderSidePls(){ const c = $('#libChips'), l = $('#sidePls'); if (c && l) renderLibraryInto(c, l); }
+
+/* ---------- Top search box + history ---------- */
+const hist = [];
+let restoring = false;
+function pushHist(){
+  if (restoring) return;
+  const e = { v: S.view, id: S.view === 'artist' ? S.artist?.id : S.view === 'playlist' ? S.plId : null };
+  const last = hist[hist.length - 1];
+  if (!last || last.v !== e.v || last.id !== e.id) hist.push(e);
+  if (hist.length > 60) hist.shift();
+}
+function goBack(){
+  const e = hist.pop(); if (!e) return;
+  restoring = true;
+  try { if (e.v === 'artist' && e.id) openArtist(e.id); else if (e.v === 'playlist' && e.id) openPlaylist(e.id); else go(e.v, true); }
+  finally { restoring = false; }
+  $('#backNav').disabled = !hist.length;
+}
+$('#backNav').onclick = goBack;
+(() => {
+  const q = $('#q'); let t;
+  const run = (v, now) => {
+    S.query = v; $('#searchBox').classList.toggle('has', !!v);
+    if (S.view !== 'search') go('search');
+    if (S.src === 'youtube') { if (v) runYT(v, now); else render(); } else search(v, now);
+  };
+  q.placeholder = S.src === 'youtube' ? 'What do you want to play?' : 'Search Audius songs and artists';
+  q.onfocus = () => { if (S.view !== 'search') go('search'); };
+  q.oninput = () => { clearTimeout(t); $('#searchBox').classList.toggle('has', !!q.value); t = setTimeout(() => run(q.value.trim()), S.src === 'youtube' ? 700 : 400); };
+  q.onkeydown = e => { if (e.key === 'Enter') { clearTimeout(t); run(q.value.trim(), true); q.blur(); } if (e.key === 'Escape') q.blur(); };
+  $('#qClear').onclick = e => { e.preventDefault(); q.value = ''; run(''); q.focus(); };
+})();
 
 /* ---------- Data loading ---------- */
 let reqId = 0;
@@ -941,6 +1339,8 @@ async function search(q, force){
 }
 async function openArtist(id){
   if (!id) return;
+  if (!(S.view === 'artist' && S.artist?.id === id)) pushHist();
+  if (matchMedia('(max-width:760px)').matches) { document.body.classList.remove('np-open'); syncNPBtns(); }
   if (S.view !== 'artist') S.prevView = S.view;
   S.view = 'artist'; S.artist = { id, user: null, tracks: [], sort: 'plays', loading: true };
   $('#drawer').classList.remove('open'); render(); $('#main').scrollTop = 0;
@@ -962,9 +1362,11 @@ async function loadArtistTracks(sort){
   if (S.artist === A && A.sort === sort) { A.loading = false; if (S.view === 'artist') render(); }
 }
 function go(v, keep){
-  S.view = v; $('#drawer').classList.remove('open');
+  if (S.view !== v) pushHist();
+  if (matchMedia('(max-width:760px)').matches) { document.body.classList.remove('np-open'); syncNPBtns(); }
+  S.view = v; $('#main').scrollTop = 0; $('#drawer').classList.remove('open');
   if (v === 'home') { if (keep && S.results.length && !S.query) { render(); return; } S.query = ''; loadTrending(); }
-  else if (v === 'search') { S.results = S.query ? S.results : []; render(); }
+  else if (v === 'search') { S.results = S.query ? S.results : []; render(); if (!matchMedia('(hover:none)').matches && document.activeElement !== $('#q')) $('#q').focus({ preventScroll: true }); }
   else render();
 }
 document.querySelectorAll('.nav').forEach(n => n.onclick = () => go(n.dataset.view));
@@ -986,7 +1388,9 @@ window.addEventListener('offline', () => toast("You're offline — downloads sti
   try {
     for (const r of await dbAll()) { const { audio: _a, art, ...meta } = r; if (art) meta.artUrl = URL.createObjectURL(art); S.downloads.set(meta.id, meta); }
   } catch (e) { console.warn('IndexedDB unavailable', e); }
-  updateCounts(); go('home');
+  updateCounts(); restoring = true; go('home'); restoring = false;
+  const sp = $('#splash'); const hide = () => { sp.style.opacity = '0'; setTimeout(() => sp.remove(), 420); };
+  const started = performance.now(); const wait = () => (!S.loading || performance.now() - started > 4000) ? setTimeout(hide, Math.max(0, 700 - (performance.now() - started))) : setTimeout(wait, 100); wait();
 })();
 </script>
 </body>
