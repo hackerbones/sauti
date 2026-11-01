@@ -62,7 +62,7 @@
   .hero p{color:var(--muted);margin-bottom:14px}
   /* track list */
   .list{display:flex;flex-direction:column}
-  .row{display:grid;grid-template-columns:34px 48px 1fr 120px 60px 116px;gap:14px;align-items:center;padding:8px 12px;border-radius:10px}
+  .row{display:grid;grid-template-columns:34px 48px 1fr 120px 60px 150px;gap:14px;align-items:center;padding:8px 12px;border-radius:10px}
   .row:hover{background:var(--panel)}
   .row.playing .t-title{color:var(--accent)}
   .row .num{color:var(--muted);text-align:center;font-size:13px}
@@ -135,6 +135,35 @@
   .follow-mini:hover{border-color:var(--muted);color:var(--text)}
   .follow-mini.following{border-color:var(--accent);color:var(--accent)}
   .feed-date{color:var(--muted);font-size:12px}
+  .side-sec{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.5px;padding:18px 12px 6px}
+  .side-sec button{font-size:18px;line-height:1;color:var(--muted);padding:0 4px}
+  .side-sec button:hover{color:var(--text)}
+  .side-pls{display:flex;flex-direction:column;gap:2px;overflow-y:auto;min-height:0;flex:1}
+  .side-pl{text-align:left;padding:7px 12px;border-radius:8px;color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .side-pl:hover,.side-pl.on{color:var(--text);background:var(--panel2)}
+  .mosaic{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;background:linear-gradient(135deg,#ff7a3d,#7a3dff);flex:none}
+  .mosaic img{width:100%;height:100%;object-fit:cover;display:block}
+  .mosaic.one{grid-template-columns:1fr}
+  .mosaic .ph{width:100%;height:100%;font-size:40px;background:none;color:rgba(255,255,255,.85)}
+  .pl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px}
+  .pl-card{padding:12px;border-radius:14px;background:var(--panel);cursor:pointer;text-align:left}
+  .pl-card:hover{background:var(--panel2)}
+  .pl-card .mosaic{width:100%;aspect-ratio:1;border-radius:10px;margin-bottom:10px}
+  .pl-new{display:grid;place-items:center;border:2px dashed var(--line);background:none;color:var(--muted);min-height:220px;font-weight:600}
+  .pl-new:hover{border-color:var(--accent);color:var(--text);background:none}
+  .menu{position:fixed;z-index:20;min-width:220px;max-height:340px;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:14px}
+  .menu button:hover{background:var(--line)}
+  .menu hr{border:0;border-top:1px solid var(--line);margin:5px 0}
+  .menu .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:6px 12px 2px}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:grid;place-items:center;padding:20px}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;width:100%;max-width:380px}
+  .modal h3{font-family:'Space Grotesk';font-size:20px;margin-bottom:6px}
+  .modal p{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .modal input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;margin-bottom:16px}
+  .modal input:focus{border-color:var(--accent)}
+  .modal .row-btns{display:flex;justify-content:flex-end;gap:8px}
+  .btn.danger{background:#e5484d;border-color:#e5484d;color:#fff}
   .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:3px;margin-bottom:16px}
   .seg button{padding:7px 16px;border-radius:30px;font-size:13px;color:var(--muted)}
   .seg button.on{background:var(--text);color:var(--bg)}
@@ -160,7 +189,8 @@
     .brand,.side-foot{display:none}
     .nav{width:auto;white-space:nowrap}
     main{grid-row:2;padding:18px}
-    .row{grid-template-columns:48px 1fr 116px}
+    .row{grid-template-columns:48px 1fr 150px}
+    .side-sec,.side-pls{display:none}
     .row .num,.row .genre,.row .dur{display:none}
     .hero img,.hero .ph{width:100px;height:100px}
     footer{grid-template-columns:1fr auto;grid-template-rows:auto auto;padding:10px 14px;gap:8px}
@@ -179,7 +209,10 @@
     <button class="nav" data-view="downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>Downloads<span class="count" id="dlCount">0</span></button>
     <button class="nav" data-view="liked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>Liked<span class="count" id="likeCount">0</span></button>
     <button class="nav" data-view="following"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>Following<span class="count" id="followCount">0</span></button>
+    <button class="nav" data-view="playlists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h12M3 12h12M3 18h7"/><circle cx="17" cy="17" r="3"/><path d="M20 17V5h2"/></svg>Playlists<span class="count" id="plCount">0</span></button>
     <button class="btn primary" id="installBtn">⤓ Install app</button>
+    <div class="side-sec">Playlists <button id="newPlSide" title="New playlist">+</button></div>
+    <div class="side-pls" id="sidePls"></div>
     <div class="side-foot">Streaming free, artist-uploaded music from <a href="https://audius.co" target="_blank" rel="noopener">Audius</a>. Downloads are saved inside this app for offline play.</div>
   </aside>
 
@@ -297,6 +330,7 @@ const S = {
   downloading: new Map(),         // id -> progress 0..1
   liked: new Map(store.get('liked', [])),
   following: new Map(store.get('following', [])), feed: null, feedLoading: false,
+  playlists: store.get('playlists', []), plId: null,
   artists: [], artist: null, prevView: 'home',
   queue: [], qi: -1, shuffle: store.get('shuffle', false), repeat: store.get('repeat', 'off'),
 };
@@ -448,6 +482,89 @@ async function loadFeed(){
     .sort((a,b) => (Date.parse(b.released)||0) - (Date.parse(a.released)||0)).slice(0, 60);
   S.feedLoading = false; if (S.view === 'following') render();
 }
+/* ---------- Playlists ---------- */
+const savePls = () => { store.set('playlists', S.playlists); updateCounts(); renderSidePls(); };
+const getPl = id => S.playlists.find(p => p.id === id);
+const plMeta = t => ({ id: t.id, title: t.title, artist: t.artist, artistId: t.artistId || '', genre: t.genre || '', duration: t.duration || 0,
+  artUrl: String(t.artUrl || '').startsWith('blob:') ? '' : (t.artUrl || ''), source: t.source, released: t.released || '' });
+function createPlaylist(name, firstTrack){
+  const pl = { id: 'pl' + Date.now().toString(36) + Math.random().toString(36).slice(2,5), name: name.trim() || 'My playlist', tracks: firstTrack ? [plMeta(firstTrack)] : [], createdAt: Date.now() };
+  S.playlists.push(pl); savePls(); toast(firstTrack ? `Added to ${pl.name}` : `Created ${pl.name}`); return pl;
+}
+function addToPlaylist(pl, t){
+  if (pl.tracks.some(x => x.id === t.id)) { toast(`Already in ${pl.name}`); return; }
+  pl.tracks.push(plMeta(t)); savePls(); toast(`Added to ${pl.name}`);
+}
+function removeFromPlaylist(pl, id){ pl.tracks = pl.tracks.filter(x => x.id !== id); savePls(); render(); }
+function mosaicHTML(pl, size){
+  const arts = [...new Set(pl.tracks.map(t => S.downloads.get(t.id)?.artUrl || t.artUrl).filter(Boolean))];
+  const st = size ? `style="width:${size}px;height:${size}px;border-radius:14px"` : '';
+  if (arts.length >= 4) return `<div class="mosaic" ${st}>${arts.slice(0,4).map(a => `<img src="${esc(a)}" alt="" loading="lazy">`).join('')}</div>`;
+  if (arts.length) return `<div class="mosaic one" ${st}><img src="${esc(arts[0])}" alt="" loading="lazy"></div>`;
+  return `<div class="mosaic one" ${st}><div class="ph">♪</div></div>`;
+}
+const totalTime = list => { const m = Math.round(list.reduce((a,t) => a + (t.duration||0), 0) / 60); return m >= 60 ? `${Math.floor(m/60)} hr ${m%60} min` : `${m} min`; };
+function renderSidePls(){
+  const el = $('#sidePls'); if (!el) return;
+  el.innerHTML = S.playlists.map(p => `<button class="side-pl ${S.view==='playlist'&&S.plId===p.id?'on':''}" data-pl="${esc(p.id)}">${esc(p.name)}</button>`).join('') || '<div class="side-pl" style="cursor:default">No playlists yet</div>';
+  el.querySelectorAll('[data-pl]').forEach(b => b.onclick = () => openPlaylist(b.dataset.pl));
+}
+function openPlaylist(id){ S.plId = id; S.view = 'playlist'; $('#drawer').classList.remove('open'); render(); $('#main').scrollTop = 0; }
+async function downloadAll(list){
+  const todo = list.filter(t => t.source === 'audius' && !S.downloads.has(t.id));
+  if (!todo.length) { toast('Everything here is already downloaded'); return; }
+  toast(`Downloading ${todo.length} track${todo.length>1?'s':''}…`);
+  for (const t of todo) await download(t);
+  if (S.view === 'playlist') render();
+}
+
+/* small in-app dialog (prompt/confirm replacement) */
+function ask({ title, text = '', value, ok = 'OK', danger = false }){
+  return new Promise(res => {
+    const bg = document.createElement('div'); bg.className = 'modal-bg';
+    bg.innerHTML = `<form class="modal"><h3>${esc(title)}</h3>${text ? `<p>${esc(text)}</p>` : ''}${value !== undefined ? `<input maxlength="80" value="${esc(value)}" placeholder="Playlist name">` : ''}<div class="row-btns"><button type="button" class="btn" data-x>Cancel</button><button class="btn ${danger?'danger':'primary'}">${esc(ok)}</button></div></form>`;
+    const done = v => { bg.remove(); document.removeEventListener('keydown', esc_); res(v); };
+    const esc_ = e => { if (e.key === 'Escape') done(null); };
+    document.addEventListener('keydown', esc_);
+    bg.onclick = e => { if (e.target === bg || e.target.closest('[data-x]')) done(null); };
+    bg.querySelector('form').onsubmit = e => { e.preventDefault(); const inp = bg.querySelector('input'); done(inp ? inp.value.trim() || null : true); };
+    document.body.appendChild(bg); const inp = bg.querySelector('input'); if (inp) { inp.focus(); inp.select(); }
+  });
+}
+async function newPlaylistFlow(track){
+  const name = await ask({ title: 'New playlist', value: `My playlist #${S.playlists.length + 1}`, ok: 'Create' });
+  if (!name) return null; const pl = createPlaylist(name, track);
+  if (!track) openPlaylist(pl.id); else if (S.view === 'playlists') render();
+  return pl;
+}
+
+/* "add to" menu on each song */
+function closeMenu(){ document.querySelector('.menu')?.remove(); }
+function openMenu(t, anchor){
+  closeMenu();
+  const m = document.createElement('div'); m.className = 'menu';
+  m.innerHTML = `<button data-m="queue">${I.plus} Add to queue</button><button data-m="next">⏭&nbsp; Play next</button>
+    ${t.artistId ? `<button data-m="artist">👤&nbsp; Go to artist</button>` : ''}<hr><div class="lbl">Add to playlist</div>
+    <button data-m="new">＋&nbsp; New playlist</button>
+    ${S.playlists.map(p => `<button data-m="pl" data-id="${esc(p.id)}">${p.tracks.some(x => x.id === t.id) ? '✓' : '♪'}&nbsp; ${esc(p.name)}</button>`).join('')}`;
+  document.body.appendChild(m);
+  const r = anchor.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
+  m.style.top = (r.bottom + h + 8 > innerHeight ? Math.max(8, r.top - h - 4) : r.bottom + 4) + 'px';
+  m.onclick = e => {
+    const b = e.target.closest('[data-m]'); if (!b) return; closeMenu();
+    const k = b.dataset.m;
+    if (k === 'queue') addToQueue(t);
+    else if (k === 'next') { if (S.qi < 0) addToQueue(t); else { S.queue.splice(S.qi + 1, 0, t); renderQueue(); toast('Playing next'); } }
+    else if (k === 'artist') openArtist(t.artistId);
+    else if (k === 'new') newPlaylistFlow(t);
+    else if (k === 'pl') { const pl = getPl(b.dataset.id); if (pl) addToPlaylist(pl, t); }
+  };
+  setTimeout(() => document.addEventListener('click', function off(e){ if (!e.target.closest('.menu')) { closeMenu(); document.removeEventListener('click', off); } }), 0);
+}
+addEventListener('resize', closeMenu); $('#main').addEventListener('scroll', closeMenu);
+$('#newPlSide').onclick = () => newPlaylistFlow();
+
 function toggleLike(t){
   if (S.liked.has(t.id)) S.liked.delete(t.id); else S.liked.set(t.id, { ...t, artUrl: t.source === 'audius' && !String(t.artUrl).startsWith('blob:') ? t.artUrl : '' });
   store.set('liked', [...S.liked]); updateCounts(); refreshActs(t.id); if (S.view === 'liked') render();
@@ -462,7 +579,7 @@ function actsHTML(t){
       ? `<button class="ic" data-a="save" title="Save file to device">${I.save}</button><button class="ic" data-a="rm" title="Remove download">${I.trash}</button>`
       : `<button class="ic done" title="Downloaded — plays offline">${I.check}</button>`;
   else dlBtn = t.source === 'audius' ? `<button class="ic" data-a="dl" title="Download for offline">${I.dl}</button>` : '';
-  return `${S.view !== 'downloads' ? `<button class="ic" data-a="q" title="Add to queue">${I.plus}</button>` : ''}<button class="ic ${liked?'on':''}" data-a="like" title="${liked?'Unlike':'Like'}">${liked?I.heartF:I.heart}</button>${dlBtn}`;
+  return `<button class="ic" data-a="menu" title="Add to playlist / queue">${I.plus}</button>${S.view === 'playlist' ? `<button class="ic" data-a="plrm" title="Remove from this playlist">${I.trash}</button>` : ''}<button class="ic ${liked?'on':''}" data-a="like" title="${liked?'Unlike':'Like'}">${liked?I.heartF:I.heart}</button>${dlBtn}`;
 }
 function rowHTML(t, i){
   const cur = current()?.id === t.id;
@@ -559,13 +676,34 @@ function render(){
       $('#playAll')?.addEventListener('click', () => playList(feed, 0));
       if (feed.length) document.querySelectorAll('#list .row').forEach((r, i) => { const d = relDate(feed[i]?.released); if (d) r.querySelector('.genre').innerHTML = `<span class="feed-date">${d}</span>`; });
     }
+  } else if (S.view === 'playlists') {
+    m.innerHTML = `<h1>Your playlists</h1><div class="sub">${S.playlists.length} playlist${S.playlists.length===1?'':'s'} · saved on this device</div>
+      <div class="pl-grid"><button class="pl-card pl-new" id="newPl">＋ New playlist</button>
+      ${S.playlists.map(p => `<div class="pl-card" data-pl="${esc(p.id)}">${mosaicHTML(p)}<div class="t-title">${esc(p.name)}</div><div class="t-artist">${p.tracks.length} song${p.tracks.length===1?'':'s'}</div></div>`).join('')}</div>`;
+    $('#newPl').onclick = () => newPlaylistFlow();
+    m.querySelectorAll('.pl-card[data-pl]').forEach(c => c.onclick = () => openPlaylist(c.dataset.pl));
+  } else if (S.view === 'playlist') {
+    const pl = getPl(S.plId);
+    if (!pl) { go('playlists'); return; }
+    const list = pl.tracks, dlCount = list.filter(t => S.downloads.has(t.id)).length;
+    m.innerHTML = `<div class="hero" style="align-items:flex-end">${mosaicHTML(pl, 170)}
+        <div style="min-width:0"><div class="tag">Playlist</div><h2 style="font-size:38px;word-break:break-word">${esc(pl.name)}</h2>
+        <p>${list.length} song${list.length===1?'':'s'}${list.length ? ` · ${totalTime(list)}` : ''}${dlCount ? ` · ${dlCount} downloaded` : ''}</p>
+        <div class="artist-btns">${list.length ? `<button class="btn primary" id="playAll">${I.play} Play</button><button class="btn" id="shuffleAll">Shuffle</button><button class="btn" id="dlAll">${I.dl} ${dlCount === list.length ? 'Downloaded' : 'Download all'}</button>` : ''}
+        <button class="btn" id="renPl">Rename</button><button class="btn" id="delPl">${I.trash} Delete</button></div></div></div>
+      ${list.length ? listHTML(list) : `<div class="empty"><h3>This playlist is empty</h3>Tap ＋ on any song and choose <b>${esc(pl.name)}</b> to add it here.<br><br><button class="btn primary" onclick="go('search')">Find songs</button></div>`}`;
+    $('#playAll')?.addEventListener('click', () => playList(list, 0));
+    $('#shuffleAll')?.addEventListener('click', () => { const was = S.shuffle; S.shuffle = true; playList(list, Math.floor(Math.random()*list.length)); S.shuffle = was; });
+    $('#dlAll')?.addEventListener('click', () => downloadAll(list));
+    $('#renPl').onclick = async () => { const n = await ask({ title: 'Rename playlist', value: pl.name, ok: 'Save' }); if (n) { pl.name = n; savePls(); render(); } };
+    $('#delPl').onclick = async () => { if (await ask({ title: `Delete “${pl.name}”?`, text: 'The playlist will be removed. Downloaded songs stay in your Downloads.', ok: 'Delete', danger: true })) { S.playlists = S.playlists.filter(p => p.id !== pl.id); savePls(); toast('Playlist deleted'); go('playlists'); } };
   } else if (S.view === 'liked') {
     const list = [...S.liked.values()].reverse();
     m.innerHTML = `<div class="top" style="justify-content:space-between"><h1>Liked songs</h1>${list.length?`<button class="btn primary" id="playAll">${I.play} Play all</button>`:''}</div>
       ${list.length ? listHTML(list) : `<div class="empty"><h3>Nothing liked yet</h3>Tap the heart on tracks you love.</div>`}`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
   }
-  bindList();
+  bindList(); renderSidePls();
 }
 function body(){
   if (S.loading) return `<div class="empty"><span class="ring" style="display:inline-block;width:28px;height:28px"></span></div>`;
@@ -579,6 +717,8 @@ function bindList(){
     const row = e.target.closest('.row'); if (!row) return;
     const t = shown[+row.dataset.i]; const a = e.target.closest('[data-a]')?.dataset.a;
     if (a === 'dl') download(t); else if (a === 'like') toggleLike(t); else if (a === 'q') addToQueue(t);
+    else if (a === 'menu') { e.stopPropagation(); openMenu(t, e.target.closest('[data-a]')); }
+    else if (a === 'plrm') { const pl = getPl(S.plId); if (pl) { removeFromPlaylist(pl, t.id); toast(`Removed from ${pl.name}`); } }
     else if (a === 'rm') removeDownload(t.id); else if (a === 'save') saveToDevice(t.id);
     else if (e.target.closest('[data-artist]')) openArtist(e.target.closest('[data-artist]').dataset.artist);
     else if (!e.target.closest('button')) { if (current()?.id === t.id) toggle(); else playList(shown, +row.dataset.i); }
@@ -595,7 +735,7 @@ function renderQueue(){
   $('#qList').innerHTML = S.queue.length ? S.queue.map((t,i) => `<div class="q-item ${i===S.qi?'cur':''}" data-i="${i}">${artHTML(t,'')}<div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${esc(t.artist)}</div></div></div>`).join('') : '<div class="empty" style="padding:30px 0">Queue is empty</div>';
   $('#qList').querySelectorAll('.q-item').forEach(el => el.onclick = () => playIndex(+el.dataset.i));
 }
-function updateCounts(){ $('#dlCount').textContent = S.downloads.size; $('#likeCount').textContent = S.liked.size; $('#followCount').textContent = S.following.size; }
+function updateCounts(){ $('#dlCount').textContent = S.downloads.size; $('#likeCount').textContent = S.liked.size; $('#followCount').textContent = S.following.size; $('#plCount').textContent = S.playlists.length; }
 $('#queueBtn').onclick = () => { $('#drawer').classList.toggle('open'); renderQueue(); };
 $('#closeQ').onclick = () => $('#drawer').classList.remove('open');
 
