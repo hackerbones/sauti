@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Get Sauti — free music app</title>
+<meta name="description" content="Install Sauti: stream and download music for free. Works on Android, iPhone, Windows and Mac." />
+<meta name="theme-color" content="#000000" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/svg+xml" href="icons/logo.svg" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta property="og:title" content="Sauti — free music app" />
+<meta property="og:description" content="Stream and download music for free. Tap to install." />
+<meta property="og:image" content="icons/icon-512.png" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:#000;color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased;
+    background:radial-gradient(circle at 50% -10%,rgba(255,122,61,.35),transparent 55%),radial-gradient(circle at 100% 100%,rgba(255,61,127,.18),transparent 45%),#000}
+  .wrap{max-width:560px;margin:0 auto;padding:max(48px,env(safe-area-inset-top)) 22px 48px;text-align:center}
+  .logo{width:112px;height:112px;margin:0 auto 22px;filter:drop-shadow(0 16px 40px rgba(255,122,61,.45))}
+  h1{font-size:44px;font-weight:900;letter-spacing:-1.5px}
+  .tag{color:#b3b3b3;font-size:17px;margin:8px 0 28px;line-height:1.5}
+  .feats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:30px}
+  .feats span{background:#1f1f1f;border-radius:500px;padding:7px 13px;font-size:13px;color:#ddd}
+  .install{display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 34px;border-radius:500px;border:0;cursor:pointer;
+    background:linear-gradient(135deg,#ffb347,#ff7a3d 55%,#ff3d7f);color:#14080a;font:800 18px Inter,sans-serif;box-shadow:0 12px 30px rgba(255,122,61,.35);text-decoration:none}
+  .install:hover{transform:scale(1.03)}
+  .install svg{width:22px;height:22px}
+  .open{display:block;margin-top:16px;color:#b3b3b3;font-size:14px}
+  .open a{color:#fff;font-weight:700}
+  .card{background:#121212;border-radius:12px;padding:20px 22px;margin-top:30px;text-align:left}
+  .card h2{font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card ol{padding-left:20px;color:#cfcfcf;font-size:15px;line-height:1.75}
+  .card b{color:#fff}
+  .hint{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:5px;background:#2a2a2a;vertical-align:-5px;margin:0 2px}
+  .hint svg{width:14px;height:14px}
+  .tabs{display:flex;gap:8px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+  .tabs button{height:34px;padding:0 14px;border-radius:500px;border:0;background:#1f1f1f;color:#fff;font:600 14px Inter,sans-serif;cursor:pointer}
+  .tabs button.on{background:#fff;color:#000}
+  .done{color:#3ddc97;font-weight:700;margin-top:14px;display:none}
+  footer{color:#6a6a6a;font-size:12px;margin-top:36px;line-height:1.6}
+  footer a{color:#9a9a9a}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#g)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg>
+  <h1>Sauti</h1>
+  <p class="tag">Free music, your way. Stream millions of songs, follow artists, build playlists and listen offline.</p>
+  <div class="feats"><span>🎧 Free streaming</span><span>⬇️ Offline downloads</span><span>📃 Playlists</span><span>🔀 Shuffle &amp; crossfade</span><span>📱 Works on any phone</span></div>
+
+  <button class="install" id="installBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>Install Sauti</button>
+  <div class="done" id="done">✓ Installed — find Sauti on your home screen</div>
+  <p class="open">or <a href="./">open Sauti in your browser</a></p>
+
+  <div class="tabs" id="tabs">
+    <button data-os="android">Android</button><button data-os="iphone">iPhone / iPad</button><button data-os="windows">Windows / Mac</button>
+  </div>
+
+  <div class="card" data-show="android">
+    <h2>📱 Install on Android</h2>
+    <ol>
+      <li>Open this page in <b>Chrome</b>.</li>
+      <li>Tap <b>Install Sauti</b> above, then <b>Install</b>.</li>
+      <li>No button? Tap Chrome's <b>⋮ menu</b> → <b>Add to Home screen</b> → <b>Install</b>.</li>
+    </ol>
+  </div>
+  <div class="card" data-show="iphone">
+    <h2>🍎 Install on iPhone or iPad</h2>
+    <ol>
+      <li>Open this page in <b>Safari</b>.</li>
+      <li>Tap the <b>Share</b> button <span class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v13M7 8l5-5 5 5M5 12v8h14v-8"/></svg></span> at the bottom.</li>
+      <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+    </ol>
+  </div>
+  <div class="card" data-show="windows">
+    <h2>💻 Install on Windows or Mac</h2>
+    <ol>
+      <li>Open this page in <b>Chrome</b> or <b>Edge</b>.</li>
+      <li>Click <b>Install Sauti</b> above — or the install icon <span class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 8v6m0 0l-3-3m3 3l3-3M8 21h8"/></svg></span> at the right end of the address bar.</li>
+      <li>Sauti opens in its own window and appears in your Start menu / Applications.</li>
+    </ol>
+  </div>
+
+  <footer>Sauti is a free web app — installing takes a few seconds and almost no storage.<br>Music from <a href="https://audius.co" target="_blank" rel="noopener">Audius</a> and YouTube.</footer>
+</div>
+<script>
+  const ua = navigator.userAgent;
+  const os = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'iphone' : /Android/.test(ua) ? 'android' : 'windows';
+  const show = o => { document.querySelectorAll('[data-show]').forEach(c => c.style.display = c.dataset.show === o ? '' : 'none'); document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.os === o)); };
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.os));
+  show(os);
+
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (standalone) location.replace('./');
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  let evt = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); evt = e; });
+  addEventListener('appinstalled', () => { document.getElementById('done').style.display = 'block'; document.getElementById('installBtn').style.display = 'none'; });
+  document.getElementById('installBtn').onclick = async () => {
+    if (evt) { evt.prompt(); const r = await evt.userChoice; evt = null; if (r.outcome === 'accepted') { document.getElementById('done').style.display = 'block'; document.getElementById('installBtn').style.display = 'none'; } return; }
+    // No install prompt available (iPhone, Firefox, or already installed): point to the steps
+    show(os);
+    const card = document.querySelector(`[data-show="${os}"]`);
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.animate([{ boxShadow: '0 0 0 0 rgba(255,122,61,.9)' }, { boxShadow: '0 0 0 14px rgba(255,122,61,0)' }], { duration: 900, iterations: 2 });
+  };
+</script>
+</body>
+</html>
