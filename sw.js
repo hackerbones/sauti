@@ -1,6 +1,6 @@
 // Sauti service worker: keeps the app itself available offline.
 // Music downloads are stored separately in IndexedDB by the app.
-const VERSION = 'sauti-v8';
+const VERSION = 'sauti-v9';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/logo.svg'];
 
 self.addEventListener('install', e => {
