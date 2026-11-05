@@ -286,6 +286,88 @@
   .tile .mosaic .ph{font-size:24px}
   .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover}
 
+  /* polish */
+  .fade{opacity:0;transition:opacity .35s ease}
+  .fade.in{opacity:1}
+  .enter{animation:enter .28s ease both}
+  @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .skel{padding:8px 0}
+  .sk-row{display:flex;align-items:center;gap:12px;height:56px;padding:0 16px;animation:enter .3s ease both}
+  .sk{display:block;height:12px;border-radius:6px;margin:5px 0;background:linear-gradient(90deg,#222 0,#2e2e2e 40%,#222 80%);background-size:300% 100%;animation:shimmer 1.3s linear infinite}
+  .sk-sm{height:10px}
+  .sk-art{width:40px;height:40px;border-radius:4px;flex:none;margin:0}
+  @keyframes shimmer{from{background-position:100% 0}to{background-position:-200% 0}}
+  .sticky{position:sticky;top:0;z-index:5;height:64px;margin-bottom:-64px;display:flex;align-items:center;gap:14px;padding:0 24px;
+    background:color-mix(in srgb,var(--sc,#333) 70%,#000);opacity:0;pointer-events:none;transition:opacity .2s}
+  .sticky.show{opacity:1;pointer-events:auto}
+  .sticky span{font-size:22px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bigplay.sm{width:44px;height:44px}.bigplay.sm svg{width:20px;height:20px}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .search input:focus-visible{outline:0}
+  button:active{transform:scale(.97)}
+  .bigplay:active,.play:active{transform:scale(.94)}
+  .row,.li,.card,.tile,.chip{transition:background-color .15s}
+  .num .eq{margin-top:2px}
+
+  /* settings page */
+  .settings{max-width:860px}
+  .shead{font-size:20px;font-weight:700;margin:34px 0 6px}
+  .srow{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 0}
+  .stxt{min-width:0}
+  .slabel{font-size:15px;color:var(--text)}
+  .sdesc{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .sdesc b{color:var(--text);font-weight:600}
+  .sctl{flex:none;display:flex;align-items:center;gap:10px}
+  .inline{display:flex;align-items:center;gap:12px;width:220px}
+  .inline .val{font-size:13px;color:var(--muted);width:36px;text-align:right}
+  .switch{width:42px;height:24px;border-radius:500px;background:#727272;position:relative;transition:background .2s;flex:none}
+  .switch i{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#000;transition:left .2s}
+  .switch.on{background:var(--accent)}
+  .switch.on i{left:21px}
+  .switch:hover{filter:brightness(1.1)}
+  .sel{background:#2a2a2a;color:var(--text);border:1px solid #3e3e3e;border-radius:4px;padding:8px 32px 8px 12px;font:inherit;font-size:14px;cursor:pointer;
+    -webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b3b3b3' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+  .sel:hover{border-color:#7c7c7c}
+  .outline.danger{border-color:#e5484d;color:#ff8a8d}
+  .outline:disabled{opacity:.4;cursor:default;transform:none}
+  .eqbox{background:var(--panel2);border-radius:8px;padding:16px;margin:4px 0 8px;transition:opacity .2s}
+  .eqbox.off{opacity:.45}
+  .eqpresets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .eqbands{display:flex;justify-content:space-around;gap:8px;height:190px}
+  .band{display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:56px}
+  .band .db{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .band .hz{font-size:12px;color:var(--muted)}
+  input.vert{writing-mode:vertical-lr;direction:rtl;width:4px;height:130px;flex:none;
+    background:linear-gradient(to top,var(--accent) var(--p,50%),#4d4d4d var(--p,50%))}
+  input.vert::-webkit-slider-thumb{opacity:1}
+  input.vert:disabled{cursor:default}
+  .keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px 24px;margin-top:8px}
+  .keys div{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--muted)}
+  kbd{background:#2a2a2a;border:1px solid #3e3e3e;border-bottom-width:2px;border-radius:4px;padding:3px 8px;font:600 12px Inter,sans-serif;color:var(--text);min-width:28px;text-align:center}
+  /* effects catalogue */
+  .fxcat{background:#121212;border-radius:12px;width:min(980px,100%);max-height:88vh;overflow-y:auto;padding:24px;box-shadow:0 24px 80px rgba(0,0,0,.7);border:1px solid #232323}
+  .fx-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .fx-head h3{font-size:28px;font-weight:800;letter-spacing:-.5px}
+  .fx-head p{color:var(--muted);font-size:14px;margin-top:6px;max-width:560px}
+  .fx-len{display:flex;align-items:center;gap:14px;margin:20px 0;background:#1a1a1a;border-radius:8px;padding:12px 16px;font-size:14px}
+  .fx-len input{max-width:320px}
+  .fx-len b{color:var(--accent);min-width:40px}
+  .fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .fx-card{position:relative;border-radius:10px;padding:16px;cursor:pointer;min-height:176px;display:flex;flex-direction:column;
+    background:linear-gradient(160deg,color-mix(in srgb,var(--t) 55%,#000) 0,#141414 75%);border:1px solid #262626;transition:transform .15s,border-color .15s}
+  .fx-card:hover{transform:translateY(-2px);border-color:#3a3a3a}
+  .fx-card.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .fx-ic{font-size:30px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+  .fx-name{font-weight:700;font-size:16px}
+  .fx-name small{color:var(--muted);font-weight:500}
+  .fx-desc{color:#a7a7a7;font-size:13px;line-height:1.45;margin-top:6px;flex:1}
+  .fx-btns{display:flex;gap:8px;margin-top:12px;align-items:center}
+  .fx-btns button{height:28px;padding:0 12px;border-radius:500px;font-size:12px;font-weight:700}
+  .fx-use{background:#fff;color:#000}
+  .fx-try{border:1px solid #6a6a6a}
+  .fx-try:hover{border-color:#fff}
+  .fx-sel{font-size:12px;font-weight:700;color:var(--accent)}
+
   /* tab bar (mobile) */
   .tabbar{display:none}
   .drawer{display:none}
@@ -369,7 +451,7 @@
     .greet{font-size:24px}
     .shelf{grid-auto-columns:140px}
     /* mini player */
-    footer{min-width:0;grid-template-columns:minmax(0,1fr) auto;margin:0 8px;border-radius:6px;background:#3a2a20;padding:6px 8px;position:relative;height:56px}
+    footer{min-width:0;grid-template-columns:minmax(0,1fr) auto;margin:0 8px;border-radius:6px;background:var(--mini,#3a2a20);transition:background-color .4s;padding:6px 8px;position:relative;height:56px}
     .now .art{width:42px;height:42px}
     .ctrl{position:static}
     .ctrl .btns #shuffleBtn,.ctrl .btns #prevBtn,.ctrl .btns #repeatBtn{display:none}
@@ -380,6 +462,10 @@
     .play{background:none;color:#fff;width:40px;height:40px}.play svg{width:24px;height:24px}
     .right #queueBtn,.right #muteBtn,.right #vol{display:none}
     .right{display:none}
+    .srow{flex-direction:column;align-items:flex-start;gap:10px}
+    .inline{width:100%}
+    .fxcat{padding:18px;max-height:92vh}
+    .eqbands{height:170px}
     .tabbar{grid-area:tabs;display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(0,0,0,.6),#000)}
     .tabbar button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted);padding:4px 16px}
     .tabbar button svg{width:24px;height:24px}
@@ -443,6 +529,7 @@
       <div class="bar"><span id="cur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="dur">0:00</span></div>
     </div>
     <div class="right">
+      <button class="ic" id="fxBtn" title="Transition effects" style="font-weight:800;font-size:11px;letter-spacing:.5px">FX</button>
       <button class="ic" id="npBtn" title="Now playing view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M14 3v18"/></svg></button>
       <button class="ic" id="queueBtn" title="Queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h13M3 18h9M19 14v7m-3-3l3 3 3-3"/></svg></button>
       <button class="ic" id="muteBtn" title="Mute (M)"></button>
@@ -560,18 +647,130 @@ const objectUrls = new Map();     // id -> blob url for offline audio/art
 
 /* ---------- Playback engine: <audio> for Audius/local, YouTube IFrame player for YouTube ---------- */
 const players = [new Audio(), new Audio()];
-players.forEach(a => { a.preload = 'auto'; });
+// crossOrigin lets the effects engine process Audius streams; if a server refuses it we fall back (see 'error' handler)
+let corsOK = store.get('corsOK', true);
+players.forEach(a => { a.preload = 'auto'; if (corsOK) a.crossOrigin = 'anonymous'; });
 let audio = players[0];                         // the element that is "the current song"
 let userVol = store.get('vol', 80) / 100, isMuted = false;
 S.xfade = store.get('xfade', 0);                // crossfade seconds (0 = off)
-let fade = null;                                // { from, timer } while a crossfade is running
+S.fx = store.get('fx', 'blend');                // transition effect id
+let fade = null;                                // { from, to, timer, fx } while a crossfade is running
 const otherPlayer = () => players[0] === audio ? players[1] : players[0];
-function setVols(){ players.forEach(a => { a.muted = isMuted; }); if (!fade) audio.volume = userVol; }
+
+/* ---------- Effects engine (Web Audio) ----------
+   each player → highpass → lowpass → level ─┬─→ master → speakers
+                                            ├─→ echo send → delay ⟲ feedback → master
+                                            └─→ reverb send → convolver → master          */
+let actx = null, master = null; const chains = new Map();
+function ensureGraph(){
+  if (actx) { if (actx.state === 'suspended') actx.resume().catch(() => {}); return true; }
+  if (!corsOK) return false;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    actx = new AC(); master = actx.createGain(); master.connect(actx.destination);
+    // generated reverb impulse: 2.8s of decaying stereo noise
+    const len = Math.floor(actx.sampleRate * 2.8), imp = actx.createBuffer(2, len, actx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = imp.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    players.forEach(el => {
+      const src = actx.createMediaElementSource(el);
+      const hp = actx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 10; hp.Q.value = 0.7;
+      const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 22000; lp.Q.value = 0.7;
+      const level = actx.createGain();
+      const echoSend = actx.createGain(); echoSend.gain.value = 0;
+      const delay = actx.createDelay(2); delay.delayTime.value = 0.36;
+      const fb = actx.createGain(); fb.gain.value = 0.5;
+      const revSend = actx.createGain(); revSend.gain.value = 0;
+      const conv = actx.createConvolver(); conv.buffer = imp;
+      src.connect(hp); hp.connect(lp); lp.connect(level); level.connect(master);
+      lp.connect(echoSend); echoSend.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(master);
+      lp.connect(revSend); revSend.connect(conv); conv.connect(master);
+      chains.set(el, { hp, lp, level, echoSend, delay, fb, revSend });
+    });
+    applyMaster();
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
+    return true;
+  } catch (e) { console.warn('effects unavailable', e); actx = null; return false; }
+}
+function applyMaster(){ if (master) master.gain.value = isMuted ? 0 : userVol; }
+function setLevel(el, v){
+  v = Math.max(0, Math.min(1, v));
+  const c = chains.get(el);
+  if (c) { el.volume = 1; c.level.gain.value = v; } else el.volume = userVol * v;
+}
+function resetChain(el){
+  el.playbackRate = 1; el.preservesPitch = true; el.mozPreservesPitch = true; el.webkitPreservesPitch = true;
+  const c = chains.get(el); if (!c) return;
+  c.hp.frequency.value = 10; c.lp.frequency.value = 22000; c.lp.Q.value = 0.7; c.echoSend.gain.value = 0; c.revSend.gain.value = 0;
+}
+function setVols(){ players.forEach(a => { a.muted = isMuted; }); applyMaster(); if (!fade) setLevel(audio, 1); }
 function cancelFade(){
   if (!fade) return;
-  clearInterval(fade.timer); fade.from.pause(); fade.from.removeAttribute('src'); fade.from.load();
-  fade = null; audio.volume = userVol;
+  clearInterval(fade.timer); const f = fade; fade = null;
+  f.from.pause(); f.from.removeAttribute('src'); f.from.load(); resetChain(f.from);
+  resetChain(audio); setLevel(audio, 1);
 }
+
+/* helpers for effect curves (k = progress 0..1) */
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const seg = (k, a, b) => clamp01((k - a) / (b - a));                // 0→1 between a and b
+const smooth = x => x * x * (3 - 2 * x);
+const expf = (a, b, x) => a * Math.pow(b / a, clamp01(x));          // exponential sweep (for frequencies)
+const pitch = (el, on) => { el.preservesPitch = !on; el.mozPreservesPitch = !on; el.webkitPreservesPitch = !on; };
+
+/* The catalogue. `web: true` needs the effects engine; without it the effect falls back to a smooth blend. */
+const FX = [
+  { id: 'blend', name: 'Smooth blend', icon: '〰️', tint: '#3b3b55', desc: 'Classic equal-power crossfade.',
+    frame(k, f, t){ setLevel(f, Math.cos(k * Math.PI / 2)); setLevel(t, Math.sin(k * Math.PI / 2)); } },
+  { id: 'sweep', name: 'Filter sweep', icon: '🌊', tint: '#0f4c75', web: true, desc: 'Outgoing song melts into a low-pass, the next one rises from a high-pass.',
+    frame(k, f, t, cf, ct){ cf.lp.frequency.value = expf(20000, 220, smooth(seg(k, 0, .85))); cf.lp.Q.value = 4; ct.hp.frequency.value = expf(2500, 10, smooth(seg(k, .2, 1)));
+      setLevel(f, 1 - smooth(seg(k, .5, 1))); setLevel(t, smooth(seg(k, 0, .6))); } },
+  { id: 'bass', name: 'Bass swap', icon: '🎛️', tint: '#5b2a86', web: true, desc: 'DJ move — the bass of the new track takes over in one beat-like swap.',
+    frame(k, f, t, cf, ct){ const sw = smooth(seg(k, .45, .6)); cf.hp.frequency.value = expf(10, 450, sw); ct.hp.frequency.value = expf(450, 10, sw);
+      setLevel(f, 1 - smooth(seg(k, .65, 1))); setLevel(t, smooth(seg(k, 0, .35))); } },
+  { id: 'echo', name: 'Echo out', icon: '📣', tint: '#7a2e2e', web: true, desc: 'The last bar repeats and trails away while the next song comes in.',
+    frame(k, f, t, cf){ cf.echoSend.gain.value = .9 * smooth(seg(k, 0, .2)); cf.fb.gain.value = .55; setLevel(f, 1 - smooth(seg(k, .15, .55)));
+      setLevel(t, smooth(seg(k, .35, 1))); } },
+  { id: 'dub', name: 'Dub siren', icon: '🌀', tint: '#1d5e4a', web: true, desc: 'Echo plus a closing filter — classic dub/reggae exit.',
+    frame(k, f, t, cf){ cf.echoSend.gain.value = .85 * smooth(seg(k, 0, .25)); cf.fb.gain.value = .62; cf.delay.delayTime.value = .27;
+      cf.lp.frequency.value = expf(20000, 500, smooth(seg(k, 0, .8))); cf.lp.Q.value = 6; setLevel(f, 1 - smooth(seg(k, .2, .6))); setLevel(t, smooth(seg(k, .4, 1))); } },
+  { id: 'reverb', name: 'Reverb wash', icon: '☁️', tint: '#41506b', web: true, desc: 'The song dissolves into a huge hall of reverb.',
+    frame(k, f, t, cf){ cf.revSend.gain.value = 1.4 * smooth(seg(k, 0, .4)); cf.lp.frequency.value = expf(20000, 3000, seg(k, 0, 1));
+      setLevel(f, 1 - smooth(seg(k, .1, .6))); setLevel(t, smooth(seg(k, .35, 1))); } },
+  { id: 'tape', name: 'Tape stop', icon: '📼', tint: '#6b4e16', desc: 'The track slows down and pitches into the floor like a stopped deck.',
+    frame(k, f, t){ pitch(f, true); f.playbackRate = Math.max(.12, 1 - .88 * Math.pow(seg(k, 0, .55), 1.6));
+      setLevel(f, 1 - smooth(seg(k, .4, .6))); setLevel(t, smooth(seg(k, .5, .75))); } },
+  { id: 'spin', name: 'Spin up', icon: '💿', tint: '#7a3d00', desc: 'The next record spins up from slow to full speed.',
+    frame(k, f, t){ pitch(t, true); t.playbackRate = .45 + .55 * smooth(seg(k, .25, .8)); if (k >= .8) { t.playbackRate = 1; pitch(t, false); }
+      setLevel(f, 1 - smooth(seg(k, 0, .5))); setLevel(t, smooth(seg(k, .2, .5))); } },
+  { id: 'under', name: 'Underwater', icon: '🫧', tint: '#0b3d5c', web: true, desc: 'Both songs sink below the surface and the new one comes back up.',
+    frame(k, f, t, cf, ct){ cf.lp.frequency.value = expf(20000, 380, smooth(seg(k, 0, .5))); ct.lp.frequency.value = expf(380, 20000, smooth(seg(k, .5, 1)));
+      setLevel(f, 1 - smooth(seg(k, .35, .7))); setLevel(t, smooth(seg(k, .3, .65))); } },
+  { id: 'radio', name: 'Old radio', icon: '📻', tint: '#5c4a2e', web: true, desc: 'The song shrinks into a tinny AM radio before the next one fills the room.',
+    frame(k, f, t, cf){ const r = smooth(seg(k, 0, .3)); cf.hp.frequency.value = expf(10, 900, r); cf.lp.frequency.value = expf(20000, 2600, r); cf.lp.Q.value = 2;
+      setLevel(f, 1 - smooth(seg(k, .45, .85))); setLevel(t, smooth(seg(k, .5, 1))); } },
+  { id: 'gate', name: 'Stutter gate', icon: '⚡', tint: '#5a1f4e', desc: 'Rhythmic chops that speed up as the track hands over.',
+    frame(k, f, t, cf, ct, ms){ const rate = 4 + 12 * k, on = Math.sin((performance.now() / 1000) * Math.PI * 2 * rate) > 0;
+      setLevel(f, (on ? 1 : .05) * (1 - smooth(seg(k, .4, .9)))); setLevel(t, smooth(seg(k, .55, 1))); } },
+  { id: 'wobble', name: 'Wobble', icon: '🔊', tint: '#2e5a1c', web: true, desc: 'A pulsing wobble filter takes the old song out.',
+    frame(k, f, t, cf){ const lfo = .5 + .5 * Math.sin((performance.now() / 1000) * Math.PI * 2 * (3 + 3 * k)); cf.lp.Q.value = 9;
+      cf.lp.frequency.value = Math.max(120, expf(6000, 300, k) * (.25 + .75 * lfo)); setLevel(f, 1 - smooth(seg(k, .45, .9))); setLevel(t, smooth(seg(k, .4, 1))); } },
+  { id: 'dark', name: 'Dark descent', icon: '🌑', tint: '#1a1a2e', web: true, desc: 'Slows, darkens and sinks into reverb — moody and cinematic.',
+    frame(k, f, t, cf, ct){ pitch(f, true); f.playbackRate = 1 - .4 * smooth(seg(k, 0, .7)); cf.lp.frequency.value = expf(20000, 180, smooth(seg(k, 0, .75)));
+      cf.revSend.gain.value = 1.2 * smooth(seg(k, .1, .5)); ct.lp.frequency.value = expf(250, 20000, smooth(seg(k, .55, 1)));
+      setLevel(f, 1 - smooth(seg(k, .35, .8))); setLevel(t, smooth(seg(k, .5, .9))); } },
+  { id: 'cut', name: 'Quick cut', icon: '✂️', tint: '#4a4a4a', desc: 'No blend — a clean hard cut at the end of the fade.',
+    frame(k, f, t){ setLevel(f, k < .5 ? 1 : 0); setLevel(t, k < .5 ? 0 : 1); } },
+  { id: 'random', name: 'Surprise me', icon: '🎲', tint: '#6b1d3a', desc: 'A different effect every time.' },
+];
+const fxById = id => FX.find(x => x.id === id) || FX[0];
+function pickFx(id){
+  let fx = fxById(id);
+  if (fx.id === 'random') { const pool = FX.filter(x => x.id !== 'random' && x.id !== 'cut' && (!x.web || corsOK)); fx = pool[Math.floor(Math.random() * pool.length)]; }
+  if (fx.web && !ensureGraph()) fx = FX[0];
+  if (actx?.state === 'suspended') actx.resume().catch(() => {});
+  return fx;
+}
+
 async function srcFor(t){
   if (S.downloads.has(t.id)) {
     if (!objectUrls.has(t.id)) { const rec = await dbGet(t.id); if (rec?.audio) objectUrls.set(t.id, URL.createObjectURL(rec.audio)); }
@@ -586,27 +785,32 @@ function nextIndexAuto(){
   return S.repeat === 'all' && S.queue.length > 1 ? 0 : -1;
 }
 let xfadeStarting = false;
-async function maybeCrossfade(){
-  if (!S.xfade || fade || xfadeStarting || mode !== 'audio' || audio.paused) return;
+async function maybeCrossfade(force, fxOverride){
+  if (fade || xfadeStarting || mode !== 'audio' || audio.paused) return false;
   const d = audio.duration, left = d - audio.currentTime;
-  if (!isFinite(d) || d < S.xfade * 2 + 5 || left > S.xfade) return;
-  const ni = nextIndexAuto(); if (ni < 0) return;
-  const nt = S.queue[ni]; if (!nt || nt.source === 'youtube') return;
+  const len = force ? Math.max(S.xfade || 0, 6) : S.xfade;
+  if (!force && (!S.xfade || !isFinite(d) || d < S.xfade * 2 + 5 || left > S.xfade)) return false;
+  const ni = force ? (S.qi + 1 < S.queue.length ? S.qi + 1 : (S.queue.length > 1 ? 0 : -1)) : nextIndexAuto();
+  if (ni < 0) { if (force) toast('Queue another song to hear the transition'); return false; }
+  const nt = S.queue[ni]; if (!nt || nt.source === 'youtube') { if (force) toast('Effects work between Audius songs and your own files — not YouTube'); return false; }
   xfadeStarting = true;
   try {
-    const src = await srcFor(nt); if (!src || mode !== 'audio') return;
+    const fx = pickFx(fxOverride || S.fx);
+    const src = await srcFor(nt); if (!src || mode !== 'audio') return false;
     const from = audio, to = otherPlayer();
-    to.src = src; to.volume = 0; to.muted = isMuted;
-    try { await to.play(); } catch { return; }
-    const ms = Math.max(1000, Math.min(left, S.xfade) * 1000), start = performance.now();
-    audio = to; S.qi = ni;
-    fade = { from, timer: setInterval(() => {
+    resetChain(to); to.muted = isMuted; setLevel(to, 0); to.src = src;
+    try { await to.play(); } catch { return false; }
+    const ms = Math.max(1000, (force ? len : Math.min(left, len)) * 1000), start = performance.now();
+    audio = to; S.qi = ni; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
+    const cf = chains.get(from), ct = chains.get(to);
+    fade = { from, to, fx, timer: setInterval(() => {
       const k = Math.min(1, (performance.now() - start) / ms);
-      const ease = k * k * (3 - 2 * k);
-      from.volume = Math.max(0, userVol * (1 - ease)); to.volume = userVol * ease;
+      try { fx.frame(k, from, to, cf, ct, ms); } catch { setLevel(from, 1 - k); setLevel(to, k); }
       if (k >= 1) cancelFade();
-    }, 40) };
+    }, 30) };
+    if (force || fx.id !== 'blend') toast(`${fx.icon} ${fx.name}`);
     updateNow(); renderQueue(); highlight(); mediaSession(nt); syncPlay(); tickUI();
+    return true;
   } finally { xfadeStarting = false; }
 }
 let mode = 'audio';                 // 'audio' | 'yt'
@@ -636,10 +840,10 @@ function ensureYT(){
 const pPaused = () => mode === 'yt' ? !(ytState === 1 || ytState === 3) : audio.paused;
 const pTime = () => mode === 'yt' ? (yt?.getCurrentTime?.() || 0) : audio.currentTime;
 const pDur = () => mode === 'yt' ? (yt?.getDuration?.() || current()?.duration || 0) : (audio.duration || current()?.duration || 0);
-function pPlay(){ if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
-function pPause(){ if (mode === 'yt') yt?.pauseVideo(); else { cancelFade(); audio.pause(); } }
+function pPlay(){ if (needsGraph() && !actx) wantOutput(); if (actx?.state === 'suspended') actx.resume().catch(() => {}); userPaused = false; ytWanted = true; if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
+function pPause(){ userPaused = true; ytWanted = false; if (mode === 'yt') yt?.pauseVideo(); else { cancelFade(); audio.pause(); } }
 function pSeek(sec){ sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
-function applyVolume(){ const v = Math.round(userVol * 100); if (yt?.setVolume) { yt.setVolume(v); isMuted ? yt.mute() : yt.unMute(); } }
+function applyVolume(){ applyMaster(); const v = Math.round(userVol * 100); if (yt?.setVolume) { yt.setVolume(v); isMuted ? yt.mute() : yt.unMute(); } }
 function showYT(on, t){
   $('#ytPanel').classList.toggle('show', on); document.body.classList.toggle('yt-on', on);
   if (on && t) { $('#ytTitle').textContent = `${t.title} · ${t.artist}`; $('#ytOpen').href = `https://www.youtube.com/watch?v=${t.ytId}`; }
@@ -650,7 +854,8 @@ $('#ytClose').onclick = () => { yt?.stopVideo(); ytState = -1; showYT(false); sy
 const current = () => S.queue[S.qi];
 async function playIndex(i){
   if (i < 0 || i >= S.queue.length) return;
-  cancelFade(); otherPlayer().pause();
+  if (needsGraph() && !actx) wantOutput();
+  cancelFade(); otherPlayer().pause(); userPaused = false; ytWanted = true; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
   S.qi = i; const t = current();
   if (t.source === 'youtube') {
     audio.pause(); audio.removeAttribute('src'); mode = 'yt'; showYT(true, t);
@@ -663,10 +868,11 @@ async function playIndex(i){
     const src = await srcFor(t);
     if (!src) { toast('File missing'); return; }
     if (current() !== t) return;
-    audio.volume = userVol; audio.src = src;
+    resetChain(audio); setLevel(audio, 1); audio.src = src;
     try { await audio.play(); } catch (e) { if (e.name !== 'AbortError') toast('Playback blocked — press play'); }
   }
   updateNow(); renderQueue(); highlight(); mediaSession(t); syncPlay();
+  if (S.autoNP && !document.body.classList.contains('np-open') && !matchMedia('(max-width:1100px)').matches) openNP('np');
 }
 function playList(list, i){ S.queue = list.slice(); if (S.shuffle) { const first = S.queue.splice(i,1)[0]; shuffleArr(S.queue); S.queue.unshift(first); i = 0; } playIndex(i); }
 function shuffleArr(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -675,7 +881,21 @@ function next(auto=false){
   if (auto && S.repeat === 'one') { pSeek(0); pPlay(); return; }
   if (S.qi + 1 < S.queue.length) playIndex(S.qi + 1);
   else if (S.repeat === 'all' || !auto) playIndex(0);
+  else if (S.autoplay) autoplayMore();
   else { pPause(); pSeek(0); }
+}
+async function autoplayMore(){
+  const last = current(), inQ = new Set(S.queue.map(t => t.id));
+  let more = [];
+  try {
+    if (last?.source === 'youtube' && ytKey()) more = await ytSearch(last.artist);
+    else if (last?.artistId) more = (await api(`/users/${encodeURIComponent(last.artistId)}/tracks`, { sort: 'plays', limit: 20 }) || []).filter(t => t.is_streamable !== false).map(normalize);
+    const trend = (await api('/tracks/trending', { time: 'week', limit: 50, ...(last?.genre && last.source === 'audius' ? { genre: last.genre } : {}) }) || []).filter(t => t.is_streamable !== false).map(normalize);
+    more = shuffleArr([...more.slice(0, 8), ...trend.slice(0, 20)]);
+  } catch {}
+  more = more.filter(t => !inQ.has(t.id) && (inQ.add(t.id), true)).slice(0, 15);
+  if (!more.length) { pPause(); pSeek(0); return; }
+  S.queue.push(...more); toast('Autoplay: more songs like this'); playIndex(S.qi + 1);
 }
 function prev(){ if (pTime() > 3 || S.qi <= 0) { pSeek(0); return; } playIndex(S.qi - 1); }
 function toggle(){
@@ -696,8 +916,67 @@ players.forEach(el => {
   el.addEventListener('ended', () => { if (el === audio && mode === 'audio') next(true); });
   el.addEventListener('play', () => { if (el === audio) syncPlay(); });
   el.addEventListener('pause', () => { if (el === audio) syncPlay(); });
-  el.addEventListener('error', () => { if (el === audio && mode === 'audio' && el.getAttribute('src')) { toast("Couldn't load this track — skipping"); setTimeout(() => next(true), 800); } });
+  el.addEventListener('error', () => {
+    if (el !== audio || mode !== 'audio' || !el.getAttribute('src')) return;
+    const remote = !el.src.startsWith('blob:');
+    if (remote && el.crossOrigin && !actx && !lastGood.t && !corsRetry.has(current()?.id)) {
+      // the server may not allow effects processing: retry this song without it
+      corsRetry.add(current()?.id); el.removeAttribute('crossorigin'); otherPlayer().removeAttribute('crossorigin');
+      corsOK = false; recoverAudio('cors'); return;
+    }
+    recoverAudio('error');
+  });
+  el.addEventListener('playing', () => { if (el === audio && el.crossOrigin && !corsOK && lastGood.t > 3) { corsOK = true; } });
+  el.addEventListener('timeupdate', () => { if (el === audio && el.currentTime > 0) { lastGood.t = el.currentTime; lastGood.at = performance.now(); if (rec.id === current()?.id && el.currentTime > rec.pos + 8) rec.n = 0; } });
 });
+
+/* ---------- Keep playing through network drops ----------
+   If the stream errors or stalls mid-song, reload the same song and continue
+   from where it stopped (waiting for the connection to come back if needed),
+   instead of skipping or going silent. */
+const lastGood = { t: 0, at: 0 };
+const corsRetry = new Set();
+const rec = { id: null, n: 0, pos: 0, busy: false };
+let userPaused = false;
+async function recoverAudio(why){
+  const t = current(); if (!t || mode !== 'audio' || rec.busy) return;
+  if (rec.id !== t.id) { rec.id = t.id; rec.n = 0; }
+  const pos = Math.max(rec.pos && rec.id === t.id ? rec.pos : 0, lastGood.t || 0, audio.currentTime || 0);
+  rec.pos = pos;
+  if (rec.n >= 5) { rec.n = 0; toast("This song keeps failing to load — skipping"); setTimeout(() => next(true), 600); return; }
+  rec.n++; rec.busy = true;
+  const attempt = async () => {
+    rec.busy = false;
+    if (current() !== t || mode !== 'audio') return;
+    let src = await srcFor(t); if (!src) { next(true); return; }
+    if (!src.startsWith('blob:')) src += (src.includes('?') ? '&' : '?') + 'r=' + Date.now();
+    const el = audio;
+    el.addEventListener('loadedmetadata', () => { if (pos > 1 && isFinite(el.duration) && pos < el.duration - 1) el.currentTime = pos; }, { once: true });
+    resetChain(el); setLevel(el, 1); el.src = src;
+    try { await el.play(); } catch {}
+  };
+  if (!navigator.onLine) {
+    toast("Connection lost — will keep playing when you're back online");
+    addEventListener('online', () => setTimeout(attempt, 600), { once: true });
+  } else {
+    if (rec.n > 1) toast('Reconnecting…');
+    setTimeout(attempt, Math.min(4000, 700 * rec.n));
+  }
+}
+// Watchdog: a stream that silently stops delivering data (no error event) is reloaded.
+setInterval(() => {
+  if (mode !== 'audio' || fade || userPaused || !audio.getAttribute('src') || audio.ended) return;
+  const stuck = performance.now() - lastGood.at > 12000;
+  if (!audio.paused && audio.readyState < 3 && stuck && lastGood.at) { lastGood.at = performance.now(); recoverAudio('stall'); }
+}, 3000);
+// Resume after the browser froze the page in the background (e.g. phone battery saver).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || userPaused || !current()) return;
+  if (mode === 'yt' && yt && (ytState === 2 || ytState === -1 || ytState === 5) && ytWanted) setTimeout(() => yt.playVideo(), 300);
+  if (mode === 'audio' && audio.paused && audio.getAttribute('src') && !audio.ended && wasPlaying) audio.play().catch(() => {});
+});
+let wasPlaying = false, ytWanted = false;
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') wasPlaying = !pPaused(); });
 
 let seeking = false;
 const seek = $('#seek');
@@ -974,7 +1253,7 @@ const IC = {
 };
 const hueOf = str => { let h = 7; for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 const hc = (str, l = 32) => `hsl(${hueOf(str)} 45% ${l}%)`;
-const spinner = () => `<div class="loader"><span class="ring"></span></div>`;
+const spinner = () => `<div class="skel">${Array.from({ length: 7 }, (_, i) => `<div class="sk-row" style="animation-delay:${i * 60}ms"><i class="sk sk-art"></i><div style="flex:1"><i class="sk" style="width:${42 + (i * 17) % 35}%"></i><i class="sk sk-sm" style="width:${20 + (i * 11) % 20}%"></i></div><i class="sk sk-sm" style="width:36px"></i></div>`).join('')}</div>`;
 const playSVG = I.play;
 
 function playShuffled(list){
@@ -1024,7 +1303,7 @@ function pageHead({ art, kind, title, meta, small }){
 function cardHTML({ art, name, sub, data, play }){
   return `<div class="card" ${data}>${art}<div class="cname">${esc(name)}</div><div class="csub">${sub}</div>${play ? `<button class="cplay" data-play="${esc(play)}" title="Play">${playSVG}</button>` : ''}</div>`;
 }
-const imgOr = (url, cls, fallback) => url ? `<img class="${cls}" src="${esc(url)}" alt="" loading="lazy">` : `<div class="${cls} ph" style="font-size:40px">${fallback || '♪'}</div>`;
+const imgOr = (url, cls, fallback) => url ? `<img class="${cls} fade" src="${esc(url)}" alt="" loading="lazy" onload="this.classList.add('in')" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'${cls} ph',textContent:'♪'}))">` : `<div class="${cls} ph" style="font-size:40px">${fallback || '♪'}</div>`;
 const greeting = () => { const h = new Date().getHours(); return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; };
 const likedList = () => [...S.liked.values()].reverse();
 const dlList = () => [...S.downloads.values()].sort((a,b) => b.addedAt - a.addedAt);
@@ -1113,6 +1392,9 @@ function render(){
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
 
+  } else if (S.view === 'settings') {
+    renderSettings(m);
+
   } else if (S.view === 'library') {
     m.innerHTML = `<div class="pad"><h1 class="greet" style="display:flex;justify-content:space-between;align-items:center">Your Library<button class="roundic" id="newPlLib" title="Create playlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button></h1><div class="lib-chips" style="padding:0 0 12px" id="libChipsM"></div><div id="libListM"></div></div>`;
     $('#newPlLib').onclick = () => newPlaylistFlow();
@@ -1123,14 +1405,12 @@ function render(){
     m.innerHTML = `<div class="grad" style="--hc:#0d5c3e">
       ${pageHead({ art: `<div class="part tile-dl">${I.dl}</div>`, kind: 'Playlist', title: 'Downloads', meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}</span><span class="dot">${(bytes/1048576).toFixed(1)} MB</span><span class="dot">plays offline</span>` })}
       <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}
-        <button class="outline" onclick="$('#fileIn').click()">Import files</button><button class="outline" onclick="$('#dirIn').click()">Import folder</button></div>
-      <div class="content"><div class="drop" id="drop">Drop audio files here to add them to your library</div>
-      ${list.length ? listHTML(list) : `<div class="empty"><h3>Songs you download will appear here</h3>Tap ${I.dl.replace('<svg','<svg style="vertical-align:middle;width:18px;height:18px"')} on any Audius song, or import your own music files.</div>`}</div></div>`;
+        <button class="outline" id="importBtn">Import</button></div>
+      <div class="content">
+      ${list.length ? listHTML(list) : `<div class="empty"><h3>Songs you download will appear here</h3>Tap ${I.dl.replace('<svg','<svg style="vertical-align:middle;width:18px;height:18px"')} on any Audius song, or tap <b>Import</b> to add music from your device.</div>`}</div></div>`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
-    const d = $('#drop');
-    d.ondragover = e => { e.preventDefault(); d.classList.add('over'); }; d.ondragleave = () => d.classList.remove('over');
-    d.ondrop = e => { e.preventDefault(); d.classList.remove('over'); importFiles([...e.dataTransfer.files]); };
+    $('#importBtn').onclick = e => { e.stopPropagation(); openImportMenu(e.currentTarget); };
 
   } else if (S.view === 'artist') {
     const A = S.artist, u = A?.user;
@@ -1206,7 +1486,24 @@ function render(){
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
   }
-  bindList(); renderSidePls();
+  bindList(); renderSidePls(); afterRender(m);
+}
+let lastPageKey = '';
+function afterRender(m){
+  const key = S.view + ':' + (S.view === 'playlist' ? S.plId : S.view === 'artist' ? S.artist?.id : '');
+  if (key !== lastPageKey) { lastPageKey = key; m.firstElementChild?.classList.add('enter'); }
+  // Spotify-style sticky header: page title + play button appear once the big header scrolls away
+  const title = m.querySelector('.ptitle'), play = m.querySelector('#playAll');
+  if (title && m.querySelector('.phead,.artist-banner')) {
+    const bar = document.createElement('div'); bar.className = 'sticky';
+    bar.style.setProperty('--sc', getComputedStyle(m.querySelector('[style*="--hc"]') || m).getPropertyValue('--hc') || '#333');
+    bar.innerHTML = `${play ? `<button class="bigplay sm" title="Play">${playSVG}</button>` : ''}<span>${esc(title.textContent)}</span>`;
+    m.prepend(bar);
+    bar.querySelector('.bigplay')?.addEventListener('click', () => play.click());
+    const limit = (m.querySelector('.phead,.artist-banner').offsetHeight || 300) - 64;
+    const onScroll = () => bar.classList.toggle('show', m.scrollTop > limit);
+    m.onscroll = onScroll; onScroll();
+  } else m.onscroll = null;
 }
 function body(){
   if (S.loading) return spinner();
@@ -1240,6 +1537,7 @@ function updateNow(){
   $('#now .art').onclick = () => openNP('np');
   $('#now').onclick = e => { if (matchMedia('(max-width:760px)').matches && !e.target.closest('button,.a-link')) openNP('np'); };
   document.title = `${t.title} • ${t.artist}`;
+  document.body.style.setProperty('--npc', hc(t.title + t.artist, 26)); document.body.style.setProperty('--mini', hc(t.title + t.artist, 18));
   renderNP();
 }
 
@@ -1301,6 +1599,7 @@ function renderQueue(){ if (document.body.classList.contains('np-open') && S.npM
 function updateCounts(){ renderSidePls(); }
 $('#queueBtn').onclick = () => openNP('queue');
 $('#npBtn').onclick = () => openNP('np');
+$('#fxBtn').onclick = () => openFxCatalogue();
 $('#closeQ').onclick = () => {};
 
 /* ---------- Library list (sidebar + mobile Library tab) ---------- */
@@ -1324,27 +1623,178 @@ function renderLibraryInto(chipsEl, listEl){
 }
 function renderSidePls(){ const c = $('#libChips'), l = $('#sidePls'); if (c && l) renderLibraryInto(c, l); }
 
-/* ---------- Settings ---------- */
-function openSettings(){
-  const bg = document.createElement('div'); bg.className = 'modal-bg';
-  const label = v => +v ? `${v} sec` : 'Off';
-  bg.innerHTML = `<div class="modal" style="max-width:460px"><h3>Settings</h3>
-    <div style="margin:18px 0 6px;display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px">Crossfade songs</b><span id="xfVal" style="color:var(--accent);font-weight:700">${label(S.xfade)}</span></div>
-    <p style="margin-bottom:12px">Blend the end of one song into the start of the next. Works between Audius songs and your downloaded or imported files.</p>
-    <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)">Off<input type="range" id="xfIn" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%">12s</div>
-    <div style="margin:26px 0 6px"><b style="font-size:15px">YouTube</b></div>
-    <p style="margin-bottom:12px">${ytKey() ? 'Connected — search any song.' : 'Not connected. Add a free API key to search and stream almost any song.'}</p>
-    <button class="btn" id="setYT" style="border:1px solid #7c7c7c">${ytKey() ? 'Manage YouTube key' : 'Connect YouTube'}</button>
-    <div class="row-btns" style="margin-top:24px"><button class="btn primary" id="setDone">Done</button></div></div>`;
-  document.body.appendChild(bg);
-  const done = () => bg.remove();
-  bg.onclick = e => { if (e.target === bg) done(); };
-  $('#setDone').onclick = done;
-  $('#setYT').onclick = () => { done(); $('#ytSetupBtn').click(); };
-  const xf = $('#xfIn');
-  xf.oninput = () => { S.xfade = +xf.value; store.set('xfade', S.xfade); xf.style.setProperty('--p', S.xfade/12*100 + '%'); $('#xfVal').textContent = label(S.xfade); };
+function openImportMenu(anchor){
+  closeMenu();
+  const m = document.createElement('div'); m.className = 'menu';
+  m.innerHTML = `<button data-k="files">${IC.file} Choose songs</button><button data-k="folder">${IC.folder} Choose a whole folder</button>`;
+  document.body.appendChild(m);
+  const r = anchor.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + 'px';
+  m.style.top = (r.bottom + m.offsetHeight + 8 > innerHeight ? r.top - m.offsetHeight - 4 : r.bottom + 4) + 'px';
+  m.onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; closeMenu(); (b.dataset.k === 'files' ? $('#fileIn') : $('#dirIn')).click(); };
+  setTimeout(() => document.addEventListener('click', function off(e){ if (!e.target.closest('.menu')) { closeMenu(); document.removeEventListener('click', off); } }), 0);
 }
-$('#settingsBtn').onclick = openSettings;
+
+/* ---------- Settings ---------- */
+/* ---------- Audio output chain: master → 5-band EQ → (normalizer) → speakers ---------- */
+const EQ_FREQS = [60, 230, 910, 3600, 14000];
+const EQ_PRESETS = {
+  flat: ['Flat', [0, 0, 0, 0, 0]], bass: ['Bass booster', [6, 4, 0, 0, 0]], treble: ['Treble booster', [0, 0, 0, 3, 6]],
+  vocal: ['Vocal booster', [-2, 0, 4, 3, 0]], hiphop: ['Hip-hop', [5, 3, 0, 1, 2]], afro: ['Afrobeats', [4, 2, -1, 2, 3]],
+  electronic: ['Electronic', [5, 2, -2, 2, 5]], acoustic: ['Acoustic', [2, 1, 2, 3, 2]], night: ['Late night', [-1, 1, 2, 1, -3]], loud: ['Loudness', [5, 1, -1, 1, 4]],
+};
+S.eq = store.get('eq', { on: false, preset: 'flat', gains: [0, 0, 0, 0, 0] });
+S.normalize = store.get('normalize', false);
+S.mono = store.get('mono', false);
+S.autoplay = store.get('autoplay', true);
+S.autoNP = store.get('autoNP', false);
+let eqNodes = null, comp = null;
+const needsGraph = () => S.eq.on || S.normalize || S.mono;
+function buildOutput(){
+  if (!actx || eqNodes) return;
+  master.disconnect();
+  eqNodes = EQ_FREQS.map((f, i) => { const b = actx.createBiquadFilter(); b.type = i === 0 ? 'lowshelf' : i === EQ_FREQS.length - 1 ? 'highshelf' : 'peaking'; b.frequency.value = f; b.Q.value = 1; return b; });
+  comp = actx.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 24; comp.ratio.value = 4; comp.attack.value = .005; comp.release.value = .25;
+  master.connect(eqNodes[0]); for (let i = 0; i < eqNodes.length - 1; i++) eqNodes[i].connect(eqNodes[i + 1]);
+  applyOutput();
+}
+function applyOutput(){
+  if (!actx) return;
+  if (!eqNodes) buildOutput();
+  const last = eqNodes[eqNodes.length - 1];
+  eqNodes.forEach((b, i) => b.gain.value = S.eq.on ? S.eq.gains[i] : 0);
+  try { last.disconnect(); } catch {} try { comp.disconnect(); } catch {}
+  if (S.normalize) { last.connect(comp); comp.connect(actx.destination); } else last.connect(actx.destination);
+  master.channelCount = S.mono ? 1 : 2; master.channelCountMode = S.mono ? 'explicit' : 'max'; master.channelInterpretation = 'speakers';
+}
+function wantOutput(){
+  if (!needsGraph()) { applyOutput(); return true; }
+  if (!ensureGraph()) { toast("This audio setting isn't available for these songs"); return false; }
+  buildOutput(); applyOutput(); return true;
+}
+
+/* ---------- Transition effects catalogue ---------- */
+function openFxCatalogue(){
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  const draw = () => {
+    bg.innerHTML = `<div class="fxcat">
+      <div class="fx-head"><div><h3>Transition effects</h3><p>How one song hands over to the next when crossfade is on. Works between Audius songs and your own files.</p></div><button class="roundic" data-x title="Close">✕</button></div>
+      <div class="fx-len"><span>Crossfade length</span><input type="range" id="fxLen" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><b id="fxLenV">${S.xfade ? S.xfade + ' s' : 'Off'}</b></div>
+      <div class="fx-grid">${FX.map(f => `<div class="fx-card ${S.fx === f.id ? 'on' : ''}" data-fx="${f.id}" style="--t:${f.tint}">
+        <div class="fx-ic">${f.icon}</div><div class="fx-name">${esc(f.name)}${f.web && !corsOK ? ' <small>(n/a)</small>' : ''}</div><div class="fx-desc">${esc(f.desc)}</div>
+        <div class="fx-btns">${S.fx === f.id ? '<span class="fx-sel">✓ Selected</span>' : '<button class="fx-use">Use</button>'}${f.id !== 'random' ? `<button class="fx-try" title="Hear it now on the song that's playing">▶ Try it</button>` : ''}</div></div>`).join('')}</div>
+    </div>`;
+    const len = bg.querySelector('#fxLen');
+    len.oninput = () => { S.xfade = +len.value; store.set('xfade', S.xfade); len.style.setProperty('--p', S.xfade/12*100 + '%'); bg.querySelector('#fxLenV').textContent = S.xfade ? S.xfade + ' s' : 'Off'; if (S.view === 'settings') render(); };
+    bg.querySelectorAll('[data-fx]').forEach(c => {
+      c.querySelector('.fx-use')?.addEventListener('click', e => { e.stopPropagation(); choose(c.dataset.fx); });
+      c.querySelector('.fx-try')?.addEventListener('click', async e => { e.stopPropagation();
+        if (mode !== 'audio' || !current() || audio.paused) { toast('Play an Audius song or one of your files first, then tap Try it'); return; }
+        choose(c.dataset.fx, true); await maybeCrossfade(true, c.dataset.fx); });
+      c.addEventListener('click', () => choose(c.dataset.fx));
+    });
+    bg.querySelector('[data-x]').onclick = () => bg.remove();
+  };
+  const choose = (id, quiet) => { S.fx = id; store.set('fx', id); if (!S.xfade) { S.xfade = 6; store.set('xfade', 6); } if (!quiet) toast(`${fxById(id).icon} ${fxById(id).name} selected`); draw(); if (S.view === 'settings') render(); };
+  bg.onclick = e => { if (e.target === bg) bg.remove(); };
+  document.body.appendChild(bg); draw();
+}
+
+/* ---------- Settings page ---------- */
+const toggleHTML = (id, on) => `<button class="switch ${on ? 'on' : ''}" id="${id}" role="switch" aria-checked="${on}"><i></i></button>`;
+const srow = (label, desc, control, extra = '') => `<div class="srow ${extra}"><div class="stxt"><div class="slabel">${label}</div>${desc ? `<div class="sdesc">${desc}</div>` : ''}</div><div class="sctl">${control}</div></div>`;
+const selectHTML = (id, opts, val) => `<select class="sel" id="${id}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+function renderSettings(m){
+  const bytes = [...S.downloads.values()].reduce((a, x) => a + (x.size || 0), 0);
+  const eqOn = S.eq.on;
+  m.innerHTML = `<div class="pad settings">
+    <h1 class="greet" style="font-size:32px">Settings</h1>
+
+    <h2 class="shead">Playback</h2>
+    ${srow('Crossfade songs', 'Blend the end of one song into the start of the next.', `<div class="inline"><input type="range" id="sXf" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><span class="val">${S.xfade ? S.xfade + ' s' : 'Off'}</span></div>`)}
+    ${srow('Transition effect', `Currently: <b>${fxById(S.fx).icon} ${esc(fxById(S.fx).name)}</b>${S.xfade ? '' : ' — turn on crossfade to hear it'}`, `<button class="outline" id="sFx">Browse effects</button>`)}
+    ${srow('Autoplay', 'When your music runs out, keep playing similar songs.', toggleHTML('sAuto', S.autoplay))}
+    ${srow('Shuffle', 'Play songs in random order.', toggleHTML('sShuf', S.shuffle))}
+    ${srow('Repeat', 'What happens at the end of the queue.', selectHTML('sRep', [['off', 'Off'], ['all', 'Repeat all'], ['one', 'Repeat one song']], S.repeat))}
+
+    <h2 class="shead">Audio quality &amp; sound</h2>
+    ${srow('Normalize volume', 'Even out loud and quiet songs so you don\'t have to keep changing the volume.', toggleHTML('sNorm', S.normalize))}
+    ${srow('Mono audio', 'Play the left and right speakers the same — handy with one earbud.', toggleHTML('sMono', S.mono))}
+    ${srow('Equalizer', 'Shape the sound with presets or your own settings.', toggleHTML('sEq', eqOn))}
+    <div class="eqbox ${eqOn ? '' : 'off'}">
+      <div class="eqpresets">${Object.entries(EQ_PRESETS).map(([k, [n]]) => `<button class="chip ${S.eq.preset === k ? 'on' : ''}" data-preset="${k}">${n}</button>`).join('')}${S.eq.preset === 'custom' ? '<button class="chip on">Custom</button>' : ''}</div>
+      <div class="eqbands">${EQ_FREQS.map((f, i) => `<div class="band"><span class="db">${S.eq.gains[i] > 0 ? '+' : ''}${S.eq.gains[i]} dB</span><input type="range" class="vert" data-band="${i}" min="-12" max="12" step="1" value="${S.eq.gains[i]}" style="--p:${(S.eq.gains[i]+12)/24*100}%" ${eqOn ? '' : 'disabled'}><span class="hz">${f >= 1000 ? f/1000 + 'k' : f}</span></div>`).join('')}</div>
+    </div>
+
+    <h2 class="shead">Search &amp; YouTube</h2>
+    ${srow('Default search', 'Where Search looks first.', selectHTML('sSrc', [['youtube', 'YouTube (stream only)'], ['audius', 'Audius (stream + download)']], S.src))}
+    ${srow('YouTube', ytKey() ? 'Connected — you can search almost any song.' : 'Not connected. Add a free API key to search and stream almost any song.', `<button class="outline" id="sYt">${ytKey() ? 'Manage key' : 'Connect'}</button>`)}
+    ${srow('Charts region', 'Which country\'s top music videos show on Home.', selectHTML('sReg', [['KE', 'Kenya'], ['TZ', 'Tanzania'], ['UG', 'Uganda'], ['NG', 'Nigeria'], ['ZA', 'South Africa'], ['GH', 'Ghana'], ['US', 'United States'], ['GB', 'United Kingdom']], store.get('ytRegion', 'KE')))}
+
+    <h2 class="shead">Display</h2>
+    ${srow('Show Now Playing view on play', 'Open the side panel automatically when a song starts.', toggleHTML('sNP', S.autoNP))}
+    ${srow('Library filter', 'What Your Library shows by default.', selectHTML('sLib', [['all', 'Everything'], ['playlists', 'Playlists'], ['artists', 'Artists'], ['downloaded', 'Downloaded']], S.libFilter))}
+
+    <h2 class="shead">Storage</h2>
+    ${srow('Downloads', `${n(S.downloads.size, 'song')} · ${(bytes/1048576).toFixed(1)} MB saved on this device`, `<button class="outline danger" id="sClearDl" ${S.downloads.size ? '' : 'disabled'}>Remove all downloads</button>`)}
+    ${srow('Cache', 'Clear the saved copy of the app. It reloads fresh next time.', `<button class="outline" id="sCache">Clear cache</button>`)}
+    ${srow('Back up your library', 'Save your liked songs, playlists and followed artists to a file.', `<button class="outline" id="sExport">Export</button>`)}
+    ${srow('Restore a backup', 'Load a library backup file.', `<button class="outline" id="sImport">Import</button>`)}
+
+    <h2 class="shead">Keyboard shortcuts</h2>
+    <div class="keys">${[['Space', 'Play / pause'], ['Shift + →', 'Next song'], ['Shift + ←', 'Previous song'], ['→ / ←', 'Skip forward / back 10 s'], ['S', 'Shuffle'], ['R', 'Repeat'], ['M', 'Mute'], ['/', 'Search']].map(([k, d]) => `<div><kbd>${k}</kbd><span>${d}</span></div>`).join('')}</div>
+
+    <h2 class="shead">About</h2>
+    ${srow('Sauti', 'Free music player · music from Audius and YouTube · your library stays on this device.', `<a class="outline" href="install.html" style="text-decoration:none;display:inline-flex;align-items:center">Install app</a>`)}
+    <input type="file" id="restoreIn" accept="application/json,.json" hidden>
+  </div>`;
+  const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };
+  const flip = (id, key, after) => on(id, () => { S[key] = !S[key]; store.set(key, S[key]); after?.(); render(); });
+  const xf = $('#sXf'); xf.oninput = () => { S.xfade = +xf.value; store.set('xfade', S.xfade); xf.style.setProperty('--p', S.xfade/12*100 + '%'); xf.nextElementSibling.textContent = S.xfade ? S.xfade + ' s' : 'Off'; };
+  xf.onchange = () => render();
+  on('sFx', openFxCatalogue);
+  flip('sAuto', 'autoplay');
+  on('sShuf', () => { $('#shuffleBtn').click(); render(); });
+  $('#sRep').onchange = e => { S.repeat = e.target.value; store.set('repeat', S.repeat); syncModes(); };
+  flip('sNorm', 'normalize', () => { if (!wantOutput()) { S.normalize = false; store.set('normalize', false); } });
+  flip('sMono', 'mono', () => { if (!wantOutput()) { S.mono = false; store.set('mono', false); } });
+  on('sEq', () => { S.eq.on = !S.eq.on; if (S.eq.on && !wantOutput()) S.eq.on = false; else applyOutput(); store.set('eq', S.eq); render(); });
+  m.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => { if (!S.eq.on) { S.eq.on = true; if (!wantOutput()) { S.eq.on = false; return; } } S.eq.preset = b.dataset.preset; S.eq.gains = EQ_PRESETS[b.dataset.preset][1].slice(); store.set('eq', S.eq); applyOutput(); render(); });
+  m.querySelectorAll('[data-band]').forEach(r => { r.oninput = () => { S.eq.gains[+r.dataset.band] = +r.value; S.eq.preset = 'custom'; store.set('eq', S.eq); applyOutput(); r.previousElementSibling.textContent = `${+r.value > 0 ? '+' : ''}${r.value} dB`; r.style.setProperty('--p', (+r.value + 12) / 24 * 100 + '%'); }; r.onchange = () => render(); });
+  $('#sSrc').onchange = e => { S.src = e.target.value; store.set('src', S.src); $('#q').placeholder = S.src === 'youtube' ? 'What do you want to play?' : 'Search Audius songs and artists'; };
+  on('sYt', () => ytSetup().then(() => render()));
+  $('#sReg').onchange = e => { store.set('ytRegion', e.target.value); ytCache.delete('chart'); S.ytChartList = null; toast('Charts region updated'); };
+  flip('sNP', 'autoNP');
+  $('#sLib').onchange = e => { S.libFilter = e.target.value; store.set('libFilter', S.libFilter); renderSidePls(); };
+  on('sClearDl', async () => {
+    if (!await ask({ title: 'Remove all downloads?', text: `${n(S.downloads.size, 'song')} will be deleted from this device. Your playlists and liked songs stay.`, ok: 'Remove all', danger: true })) return;
+    for (const id of [...S.downloads.keys()]) { await dbDel(id); if (objectUrls.has(id)) { URL.revokeObjectURL(objectUrls.get(id)); objectUrls.delete(id); } }
+    S.downloads.clear(); toast('All downloads removed'); updateCounts(); render();
+  });
+  on('sCache', async () => { try { for (const k of await caches.keys()) await caches.delete(k); toast('Cache cleared'); } catch { toast("Couldn't clear the cache"); } });
+  on('sExport', () => {
+    const data = { app: 'sauti', version: 1, exportedAt: new Date().toISOString(), liked: [...S.liked], following: [...S.following], playlists: S.playlists,
+      settings: { xfade: S.xfade, fx: S.fx, eq: S.eq, normalize: S.normalize, mono: S.mono, autoplay: S.autoplay } };
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+    a.download = `sauti-library-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Library backup saved');
+  });
+  on('sImport', () => $('#restoreIn').click());
+  $('#restoreIn').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const d = JSON.parse(await f.text()); if (d.app !== 'sauti') throw 0;
+      let added = 0;
+      (d.liked || []).forEach(([id, t]) => { if (!S.liked.has(id)) { S.liked.set(id, t); added++; } });
+      (d.following || []).forEach(([id, u]) => { if (!S.following.has(id)) { S.following.set(id, u); added++; } });
+      (d.playlists || []).forEach(p => { if (!S.playlists.some(x => x.id === p.id)) { S.playlists.push(p); added++; } });
+      store.set('liked', [...S.liked]); store.set('following', [...S.following]); savePls(); S.feed = null;
+      toast(`Restored ${added} item${added === 1 ? '' : 's'}`); updateCounts(); render();
+    } catch { toast("That doesn't look like a Sauti backup file"); }
+  };
+}
+$('#settingsBtn').onclick = () => go('settings');
+
 
 /* ---------- Top search box + history ---------- */
 const hist = [];
