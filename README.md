@@ -13,3 +13,5 @@ Free music streaming web app with offline downloads, installable as a PWA.
 Live: https://hackerbones.github.io/sauti/
 
 **Install:** https://hackerbones.github.io/sauti/install.html
+
+**Android app (APK):** https://github.com/hackerbones/sauti/releases/download/latest-apk/Sauti.apk

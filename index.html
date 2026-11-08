@@ -2247,6 +2247,7 @@ function renderSettings(m){
 
     <h2 class="shead">About</h2>
     ${srow('Sauti', 'Free music player · music from Audius and YouTube · your library stays on this device.', `<a class="outline" href="install.html" style="text-decoration:none;display:inline-flex;align-items:center">Install app</a>`)}
+    ${NATIVE ? '' : srow('Android app', 'Keeps playing with the screen off, with music controls on the lock screen.', `<a class="outline" href="https://github.com/hackerbones/sauti/releases/download/latest-apk/Sauti.apk" style="text-decoration:none;display:inline-flex;align-items:center">Download APK</a>`)}
     <input type="file" id="restoreIn" accept="application/json,.json" hidden>
   </div>`;
   const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };

@@ -27,6 +27,10 @@
     background:linear-gradient(135deg,#ffb347,#ff7a3d 55%,#ff3d7f);color:#14080a;font:800 18px Inter,sans-serif;box-shadow:0 12px 30px rgba(255,122,61,.35);text-decoration:none}
   .install:hover{transform:scale(1.03)}
   .install svg{width:22px;height:22px}
+  .apk{display:inline-flex;align-items:center;gap:8px;margin-top:14px;height:48px;padding:0 24px;border-radius:500px;border:1px solid #6a6a6a;color:#fff;text-decoration:none;font-weight:700;font-size:15px}
+  .apk:hover{border-color:#fff}
+  .apk-note{color:#9a9a9a;font-size:13px;line-height:1.5;margin:10px auto 0;max-width:420px}
+  .apk-note b{color:#ddd}
   .open{display:block;margin-top:16px;color:#b3b3b3;font-size:14px}
   .open a{color:#fff;font-weight:700}
   .card{background:#121212;border-radius:12px;padding:20px 22px;margin-top:30px;text-align:left}
@@ -52,6 +56,8 @@
 
   <button class="install" id="installBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>Install Sauti</button>
   <div class="done" id="done">✓ Installed — find Sauti on your home screen</div>
+  <a class="apk" id="apkBtn" href="https://github.com/hackerbones/sauti/releases/download/latest-apk/Sauti.apk">🤖 Download the Android app (APK)</a>
+  <p class="apk-note">Best on Android: keeps playing with the screen off and shows music controls on the lock screen. After downloading, open <b>Sauti.apk</b> and allow installing when Android asks.</p>
   <p class="open">or <a href="./">open Sauti in your browser</a></p>
 
   <div class="tabs" id="tabs">
@@ -61,8 +67,8 @@
   <div class="card" data-show="android">
     <h2>📱 Install on Android</h2>
     <ol>
-      <li>Open this page in <b>Chrome</b>.</li>
-      <li>Tap <b>Install Sauti</b> above, then <b>Install</b>.</li>
+      <li><b>Recommended:</b> tap <b>Download the Android app</b> above, open <b>Sauti.apk</b> and allow installing.</li>
+      <li>Or open this page in <b>Chrome</b>, tap <b>Install Sauti</b>, then <b>Install</b>.</li>
       <li>No button? Tap Chrome's <b>⋮ menu</b> → <b>Add to Home screen</b> → <b>Install</b>.</li>
     </ol>
   </div>
@@ -91,6 +97,7 @@
   const show = o => { document.querySelectorAll('[data-show]').forEach(c => c.style.display = c.dataset.show === o ? '' : 'none'); document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.os === o)); };
   document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.os));
   show(os);
+  if (os !== 'android') { document.getElementById('apkBtn').style.display = 'none'; document.querySelector('.apk-note').style.display = 'none'; }
 
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (standalone) location.replace('./');
