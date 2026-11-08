@@ -1,0 +1,56 @@
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ['android-src/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Create the Android project
+        run: |
+          mkdir app && cd app
+          npm init -y > /dev/null
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          mkdir www && cp ../index.html www/index.html
+          cp ../android-src/capacitor.config.json .
+          npx cap add android
+          python3 ../android-src/patch.py "$PWD"
+          npx cap sync android
+
+      - name: Build the APK
+        working-directory: app/android
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Publish the download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/android/app/build/outputs/apk/release/app-release.apk Sauti.apk
+          gh release delete latest-apk -y --cleanup-tag || true
+          gh release create latest-apk Sauti.apk --title "Sauti for Android" --latest \
+            --notes "Install Sauti on Android: download Sauti.apk, open it and allow installing from your browser/files app. Music keeps playing with the screen off or after leaving the app. The app updates itself automatically from the website."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sauti-apk
+          path: Sauti.apk

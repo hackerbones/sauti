@@ -1,7 +1,7 @@
 // Sauti service worker.
 // Opens instantly from the saved copy, then checks for a newer version in the background
 // and tells the app when one is ready. Music downloads live in IndexedDB, not here.
-const VERSION = 'sauti-v13';
+const VERSION = 'sauti-v14';
 const SHELL = ['./', './index.html', './install.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/logo.svg'];
 
 self.addEventListener('install', e => {

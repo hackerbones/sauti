@@ -371,6 +371,7 @@
   .fx-try:hover{border-color:#fff}
   .fx-sel{font-size:12px;font-weight:700;color:var(--accent)}
 
+  .native #installBtn,.native #installBtn.show{display:none!important}
   .upd{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:60;background:var(--accent);color:#14080a;font-weight:700;font-size:13px;padding:10px 16px;border-radius:500px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 
   /* lyrics */
@@ -609,6 +610,42 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const fmt = s => { if(!isFinite(s)||s<0) s=0; s=Math.floor(s); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
 let toastT; const toast = m => { const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400); };
 const store = { get(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch{ return d } }, set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)) }catch{} } };
+/* ---------- Inside the Android app: Android's media service plays in the background ---------- */
+var NATIVE = !!(window.androidBridge || (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()));
+var nativeHidden = false, nativeLast = '';
+function nativeCall(m, o){ try { const C = window.Capacitor; if (C?.Plugins?.SautiBackground?.[m]) return Promise.resolve(C.Plugins.SautiBackground[m](o || {})); if (C?.nativePromise) return C.nativePromise('SautiBackground', m, o || {}); } catch (e) {} return Promise.resolve(); }
+function nativeListen(ev, cb){ try { const C = window.Capacitor; if (C?.Plugins?.SautiBackground?.addListener) return C.Plugins.SautiBackground.addListener(ev, cb); if (C?.nativeCallback) return C.nativeCallback('SautiBackground', 'addListener', { eventName: ev }, cb); } catch (e) {} }
+function nativeUpdate(force){
+  if (!NATIVE) return;
+  try {
+    const t = current(); if (!t) return;
+    const info = { title: t.title || 'Sauti', artist: t.artist || '', artwork: /^https?:/.test(t.artUrl || '') ? t.artUrl : '',
+      playing: !pPaused(), duration: Math.round(pDur() || t.duration || 0), position: Math.round(pTime() || 0) };
+    const key = JSON.stringify([info.title, info.artist, info.artwork, info.playing, info.duration]);
+    if (key === nativeLast && !force) return; nativeLast = key;
+    nativeCall('update', info);
+  } catch (e) {}
+}
+if (NATIVE) {
+  document.documentElement.classList.add('native');
+  try {
+    Object.defineProperty(Document.prototype, 'hidden', { configurable: true, get(){ return nativeHidden; } });
+    Object.defineProperty(Document.prototype, 'visibilityState', { configurable: true, get(){ return nativeHidden ? 'hidden' : 'visible'; } });
+  } catch (e) {}
+  nativeListen('lifecycle', e => { const h = !!(e && e.hidden); if (h === nativeHidden) return; nativeHidden = h; document.dispatchEvent(new Event('visibilitychange')); });
+  nativeListen('action', e => {
+    const a = e && e.action;
+    if (a === 'play') pPlay(); else if (a === 'pause') pPause(); else if (a === 'next') next(); else if (a === 'prev') prev();
+    else if (a === 'seek') pSeek(e.position || 0);
+    else if (a === 'back') {
+      if (document.querySelector('.modal-bg')) document.querySelector('.modal-bg').remove();
+      else if (document.querySelector('.menu')) closeMenu();
+      else if (document.body.classList.contains('np-open')) { document.body.classList.remove('np-open'); syncNPBtns(); }
+      else if (hist.length) goBack();
+      else nativeCall('moveToBack');
+    }
+  });
+}
 const artHTML = (t, cls='art') => t.artUrl ? `<img class="${cls}" src="${esc(t.artUrl)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'${cls} ph',textContent:'♪'}))">` : `<div class="${cls} ph">♪</div>`;
 
 /* ---------- Audius API ---------- */
@@ -1020,7 +1057,7 @@ const pDur = () => mode === 'yt' ? (yt?.getDuration?.() || current()?.duration |
 function pPlay(){ if (mode === 'yt' && document.hidden && bgHandoff()) return; if (mode === 'yt') keepAlive.on();
   if (needsGraph() && !actx) wantOutput(); if (actx?.state === 'suspended') actx.resume().catch(() => {}); userPaused = false; ytWanted = true; if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
 function pPause(){ userPaused = true; ytWanted = false; if (mode === 'yt') { yt?.pauseVideo(); audio.pause(); } else { cancelFade(); audio.pause(); } }
-function pSeek(sec){ sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
+function pSeek(sec){ setTimeout(() => nativeUpdate(true), 300); sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
 function applyVolume(){ applyMaster(); const v = Math.round(userVol * 100); if (yt?.setVolume) { yt.setVolume(v); isMuted ? yt.mute() : yt.unMute(); } }
 function showYT(on, t){
   $('#ytPanel').classList.toggle('show', on); document.body.classList.toggle('yt-on', on);
@@ -1257,7 +1294,7 @@ vol.addEventListener('input', () => { userVol = vol.value/100; isMuted = false; 
 $('#muteBtn').onclick = () => { isMuted = !isMuted; syncVol(); };
 syncVol();
 
-function syncPlay(){ const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; const np = document.getElementById('npPlay'); if (np) np.innerHTML = paused ? I.play : I.pause; try { highlight(); } catch {} document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
+function syncPlay(){ nativeUpdate(); const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; const np = document.getElementById('npPlay'); if (np) np.innerHTML = paused ? I.play : I.pause; try { highlight(); } catch {} document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
 syncPlay();
 $('#playBtn').onclick = toggle; $('#nextBtn').onclick = () => next(); $('#prevBtn').onclick = prev;
 const syncModes = () => { $('#shuffleBtn').classList.toggle('on', S.shuffle); const r=$('#repeatBtn'); r.classList.toggle('on', S.repeat!=='off'); r.title = `Repeat: ${S.repeat}`; r.style.position='relative'; r.dataset.one = S.repeat==='one'; r.querySelector('.one')?.remove(); if (S.repeat==='one') r.insertAdjacentHTML('beforeend','<b class="one" style="position:absolute;font-size:9px;top:4px;right:4px">1</b>'); };
@@ -1986,6 +2023,7 @@ function updateNow(){
   $('#now .art').onclick = () => openNP('np');
   $('#now').onclick = e => { if (matchMedia('(max-width:760px)').matches && !e.target.closest('button,.a-link')) openNP('np'); };
   document.title = `${t.title} • ${t.artist}`;
+  nativeUpdate(true);
   if (S.view === 'lyrics' && lyrFor !== t.id) render();
   $('#lyrBtn').classList.toggle('on', S.view === 'lyrics');
   document.body.style.setProperty('--npc', hc(t.title + t.artist, 26)); document.body.style.setProperty('--mini', hc(t.title + t.artist, 18));

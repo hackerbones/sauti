@@ -1,0 +1,13 @@
+{
+  "appId": "io.sauti.app",
+  "appName": "Sauti",
+  "webDir": "www",
+  "server": {
+    "url": "https://hackerbones.github.io/sauti/",
+    "allowNavigation": ["hackerbones.github.io"]
+  },
+  "android": {
+    "backgroundColor": "#000000",
+    "allowMixedContent": false
+  }
+}
