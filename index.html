@@ -373,6 +373,32 @@
 
   .upd{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:60;background:var(--accent);color:#14080a;font-weight:700;font-size:13px;padding:10px 16px;border-radius:500px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 
+  /* lyrics */
+  .lyr{min-height:100%;background:var(--lc);padding:28px 40px 120px;transition:background-color .5s}
+  .lyr-head{margin-bottom:22px}
+  .lyr-head .t-title{font-size:15px;font-weight:700;color:rgba(255,255,255,.9)}
+  .lyr-head .t-artist{color:rgba(255,255,255,.7)}
+  .lyr-lines p{font-size:clamp(24px,3.2vw,36px);font-weight:800;letter-spacing:-.4px;line-height:1.3;margin:0 0 14px;color:rgba(0,0,0,.55);cursor:pointer;transition:color .25s,transform .25s;max-width:900px}
+  .lyr-lines p:hover{color:rgba(255,255,255,.9)}
+  .lyr-lines p.past{color:rgba(255,255,255,.55)}
+  .lyr-lines p.on{color:#fff}
+  .lyr-plain{font-size:clamp(20px,2.4vw,28px);font-weight:700;line-height:1.5;white-space:pre-line;color:rgba(255,255,255,.92);max-width:900px}
+  .lyr-foot{margin-top:40px;font-size:13px;color:rgba(255,255,255,.75);display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  .lyr-foot a{color:#fff}
+  .lyr-off{display:inline-flex;align-items:center;gap:8px}
+  .lyr-off button{border:1px solid rgba(255,255,255,.5);border-radius:500px;padding:3px 10px;font-size:12px;font-weight:700}
+  .lyr-msg{color:rgba(255,255,255,.85);font-size:16px;padding:40px 0}
+  .lyr-msg h3{font-size:28px;font-weight:800;margin-bottom:10px;color:#fff}
+  .np-lyr{background:var(--lc)}
+  .np-lyr h4 button{color:rgba(255,255,255,.85)}
+  .np-lyr .nl{padding:4px 16px 16px;min-height:60px}
+  .np-lyr .nl p{font-size:17px;font-weight:700;line-height:1.35;margin:4px 0;color:rgba(0,0,0,.55)}
+  .np-lyr .nl p.on{color:#fff}
+  .np-lyr .nl p.dim{color:rgba(255,255,255,.8);font-weight:500;font-size:14px}
+  .djchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .djchips span{background:var(--panel2);border-radius:500px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--muted)}
+  .srow.dim{opacity:.5}
+
   /* tab bar (mobile) */
   .tabbar{display:none}
   .drawer{display:none}
@@ -468,6 +494,7 @@
     .right #queueBtn,.right #muteBtn,.right #vol{display:none}
     .right{display:none}
     .srow{flex-direction:column;align-items:flex-start;gap:10px}
+    .lyr{padding:20px 18px 120px}
     .inline{width:100%}
     .fxcat{padding:18px;max-height:92vh}
     .eqbands{height:170px}
@@ -534,6 +561,7 @@
       <div class="bar"><span id="cur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="dur">0:00</span></div>
     </div>
     <div class="right">
+      <button class="ic" id="lyrBtn" title="Lyrics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button>
       <button class="ic" id="fxBtn" title="Transition effects" style="font-weight:800;font-size:11px;letter-spacing:.5px">FX</button>
       <button class="ic" id="npBtn" title="Now playing view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M14 3v18"/></svg></button>
       <button class="ic" id="queueBtn" title="Queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h13M3 18h9M19 14v7m-3-3l3 3 3-3"/></svg></button>
@@ -609,6 +637,7 @@ const normalize = t => ({
   genre: t.genre || '', duration: t.duration || 0, released: t.release_date || t.created_at || '',
   artUrl: t.artwork?.['480x480'] || t.artwork?.['150x150'] || '',
   source: 'audius', permalink: t.permalink ? `https://audius.co${t.permalink}` : '',
+  bpm: t.bpm ? +t.bpm : null, key: t.musical_key || '',
 });
 const normUser = u => ({
   id: String(u.id), name: u.name || u.handle || 'Unknown artist', handle: u.handle || '',
@@ -626,12 +655,14 @@ const streamUrl = id => `${host || 'https://api.audius.co'}/v1/tracks/${id}/stre
 let dbP;
 function db(){
   return dbP ||= new Promise((res, rej) => {
-    const o = indexedDB.open('sauti', 1);
-    o.onupgradeneeded = () => o.result.createObjectStore('tracks', { keyPath: 'id' });
+    const o = indexedDB.open('sauti', 2);
+    o.onupgradeneeded = () => { const d = o.result;
+      if (!d.objectStoreNames.contains('tracks')) d.createObjectStore('tracks', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('lyrics')) d.createObjectStore('lyrics', { keyPath: 'id' }); };
     o.onsuccess = () => res(o.result); o.onerror = () => rej(o.error);
   });
 }
-async function idb(mode, fn){ const d = await db(); return new Promise((res, rej) => { const tx = d.transaction('tracks', mode); const s = tx.objectStore('tracks'); const r = fn(s); tx.oncomplete = () => res(r?.result); tx.onerror = () => rej(tx.error); }); }
+async function idb(mode, fn, store = 'tracks'){ const d = await db(); return new Promise((res, rej) => { const tx = d.transaction(store, mode); const s = tx.objectStore(store); const r = fn(s); tx.oncomplete = () => res(r?.result); tx.onerror = () => rej(tx.error); }); }
 const dbAll = () => idb('readonly', s => s.getAll());
 const dbPut = v => idb('readwrite', s => s.put(v));
 const dbDel = id => idb('readwrite', s => s.delete(id));
@@ -706,17 +737,26 @@ function setLevel(el, v){
   const c = chains.get(el);
   if (c) { el.volume = 1; c.level.gain.value = v; } else el.volume = userVol * v;
 }
-function resetChain(el){
-  el.playbackRate = 1; el.preservesPitch = true; el.mozPreservesPitch = true; el.webkitPreservesPitch = true;
+function resetChain(el, keepRate){
+  if (!keepRate) el.playbackRate = 1; el.preservesPitch = true; el.mozPreservesPitch = true; el.webkitPreservesPitch = true;
   const c = chains.get(el); if (!c) return;
   c.hp.frequency.value = 10; c.lp.frequency.value = 22000; c.lp.Q.value = 0.7; c.echoSend.gain.value = 0; c.revSend.gain.value = 0;
+}
+let glideTimer = null;
+function glideRate(el){
+  clearInterval(glideTimer); const r0 = el.playbackRate; if (Math.abs(r0 - 1) < .002) { el.playbackRate = 1; return; }
+  if (document.hidden) { el.playbackRate = 1; return; }
+  const t0 = performance.now(), ms = 12000;
+  glideTimer = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / ms); if (el !== audio || document.hidden) { el.playbackRate = 1; clearInterval(glideTimer); return; }
+    el.playbackRate = r0 + (1 - r0) * k; if (k >= 1) clearInterval(glideTimer); }, 100);
 }
 function setVols(){ players.forEach(a => { a.muted = isMuted; }); applyMaster(); if (!fade) setLevel(audio, 1); }
 function cancelFade(){
   if (!fade) return;
   clearInterval(fade.timer); const f = fade; fade = null;
   f.from.pause(); f.from.removeAttribute('src'); f.from.load(); resetChain(f.from);
-  resetChain(audio); setLevel(audio, 1);
+  resetChain(audio, !!f.beat); setLevel(audio, 1);
+  if (f.beat) glideRate(audio);
 }
 
 /* helpers for effect curves (k = progress 0..1) */
@@ -769,15 +809,115 @@ const FX = [
       setLevel(f, 1 - smooth(seg(k, .35, .8))); setLevel(t, smooth(seg(k, .5, .9))); } },
   { id: 'cut', name: 'Quick cut', icon: '✂️', tint: '#4a4a4a', desc: 'No blend — a clean hard cut at the end of the fade.',
     frame(k, f, t){ setLevel(f, k < .5 ? 1 : 0); setLevel(t, k < .5 ? 0 : 1); } },
+  { id: 'auto', name: 'DJ picks', icon: '🎧', tint: '#4b1fa8', desc: 'Chooses the best effect for each mix from the tempo and key of both songs.' },
   { id: 'random', name: 'Surprise me', icon: '🎲', tint: '#6b1d3a', desc: 'A different effect every time.' },
 ];
 const fxById = id => FX.find(x => x.id === id) || FX[0];
-function pickFx(id){
+function pickFx(id, fromT, toT){
   let fx = fxById(id);
-  if (fx.id === 'random') { const pool = FX.filter(x => x.id !== 'random' && x.id !== 'cut' && (!x.web || corsOK)); fx = pool[Math.floor(Math.random() * pool.length)]; }
+  if (fx.id === 'auto') fx = fxById(djPickFx(fromT, toT));
+  if (fx.id === 'random') { const pool = FX.filter(x => !['random', 'auto', 'cut'].includes(x.id) && (!x.web || corsOK)); fx = pool[Math.floor(Math.random() * pool.length)]; }
   if (fx.web && !ensureGraph()) fx = FX[0];
   if (actx?.state === 'suspended') actx.resume().catch(() => {});
   return fx;
+}
+
+/* ---------- DJ mode: tempo + key aware ordering, beatmatching, phrase-aligned mixes ---------- */
+S.dj = store.get('dj', false); S.beatmatch = store.get('beatmatch', true); S.harmonic = store.get('harmonic', true);
+const djInfo = new Map(Object.entries(store.get('djInfo', {})));       // id → { bpm, off } measured from audio files
+const saveDjInfo = () => { const o = {}; [...djInfo].slice(-600).forEach(([k, v]) => o[k] = v); store.set('djInfo', o); };
+const PC = { c: 0, 'c#': 1, db: 1, d: 2, 'd#': 3, eb: 3, e: 4, f: 5, 'f#': 6, gb: 6, g: 7, 'g#': 8, ab: 8, a: 9, 'a#': 10, bb: 10, b: 11 };
+function camelot(k){
+  if (!k) return null;
+  const s = String(k).toLowerCase().trim().replace(/\s+sharp/, '#').replace(/\s+flat/, 'b').replace('♯', '#').replace('♭', 'b');
+  const m = s.match(/^([a-g])([#b]?)\s*(major|minor|maj|min|m)?\b/); if (!m) return null;
+  const pc = PC[m[1] + m[2]]; if (pc === undefined) return null;
+  const minor = !!m[3] && m[3] !== 'major' && m[3] !== 'maj';
+  const n = ((((minor ? pc + 3 : pc) % 12) * 7) % 12 + 7) % 12 + 1;
+  return { n, l: minor ? 'A' : 'B', label: n + (minor ? 'A' : 'B') };
+}
+function keyDist(a, b){
+  if (!a || !b) return null;
+  const d = Math.min(Math.abs(a.n - b.n), 12 - Math.abs(a.n - b.n));
+  if (d === 0) return a.l === b.l ? 0 : .2;        // same key / relative major-minor
+  if (d === 1 && a.l === b.l) return .15;           // neighbours on the wheel
+  if (d === 2 && a.l === b.l) return .6;            // energy boost
+  return 1;
+}
+function tempoMatch(fromBpm, toBpm){
+  let best = null;
+  for (const mult of [.5, 1, 2]) { const x = toBpm * mult, diff = Math.abs(x - fromBpm) / fromBpm; if (!best || diff < best.diff) best = { diff, rate: fromBpm / x }; }
+  return best;
+}
+function trackDJ(t){
+  if (!t) return {};
+  const a = djInfo.get(t.id) || {}, d = S.downloads.get(t.id) || {};
+  return { bpm: t.bpm || d.bpm || a.bpm || null, off: a.off ?? null, key: camelot(t.key || d.key) };
+}
+const djLabel = t => { const i = trackDJ(t); return [i.bpm ? Math.round(i.bpm) + ' BPM' : '', i.key ? i.key.label : ''].filter(Boolean).join(' · '); };
+function mixScore(cur, cand){
+  if (cand.source === 'youtube' && cur.source !== 'youtube') return 3;     // can't be mixed into
+  const a = trackDJ(cur), b = trackDJ(cand); let s = 0;
+  if (a.bpm && b.bpm) s += Math.min(2, tempoMatch(a.bpm, b.bpm).diff * 6); else s += .6;
+  if (S.harmonic) { const kd = keyDist(a.key, b.key); s += kd == null ? .25 : kd * .6; }
+  return s;
+}
+let djArrangedFor = null;
+function djArrange(){
+  if (!S.dj || S.qi < 0 || S.repeat === 'one') return;
+  const cur = current(); if (!cur || djArrangedFor === cur.id + ':' + S.queue.length) return;
+  const from = S.qi + 1, end = Math.min(S.queue.length, from + 6); if (end - from < 2) return;
+  let best = from, bs = Infinity;
+  for (let j = from; j < end; j++) { const sc = mixScore(cur, S.queue[j]) + (j - from) * .05; if (sc < bs) { bs = sc; best = j; } }
+  djArrangedFor = cur.id + ':' + S.queue.length;
+  if (best !== from) { const [t] = S.queue.splice(best, 1); S.queue.splice(from, 0, t); renderQueue(); if (document.body.classList.contains('np-open')) renderNP(); }
+  const nx = S.queue[from], lbl = djLabel(nx);
+  if (best !== from && lbl) toast(`🎧 Up next: ${nx.title} · ${lbl}`);
+}
+/* Tempo + first-beat analysis of a song file (downloads and imported music; works offline) */
+async function analyzeBlob(blob){
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext; if (!OAC) return null;
+  const buf = await new OAC(1, 1, 44100).decodeAudioData(await blob.arrayBuffer());
+  const sr = buf.sampleRate, start = Math.max(0, buf.duration * .3), len = Math.min(40, buf.duration - start);
+  if (len < 8) return null;
+  const off = new OAC(1, Math.floor(len * sr), sr), src = off.createBufferSource(), lp = off.createBiquadFilter();
+  src.buffer = buf; lp.type = 'lowpass'; lp.frequency.value = 150; src.connect(lp); lp.connect(off.destination); src.start(0, start, len);
+  const x = (await off.startRendering()).getChannelData(0);
+  const hop = 512, fps = sr / hop, N = Math.floor(x.length / hop), env = new Float32Array(N), on = new Float32Array(N);
+  for (let i = 0; i < N; i++) { let e = 0; for (let j = i * hop, k = j + hop; j < k; j++) e += x[j] * x[j]; env[i] = Math.sqrt(e / hop); }
+  for (let i = 1; i < N; i++) on[i] = Math.max(0, env[i] - env[i - 1]);
+  const Lmin = Math.floor(fps * 60 / 200), Lmax = Math.ceil(fps * 60 / 60), ac = new Float32Array(Lmax + 2);
+  for (let L = Lmin; L <= Lmax + 1; L++) { let s = 0; for (let i = 0; i + L < N; i++) s += on[i] * on[i + L]; ac[L] = s; }
+  let bestL = Lmin, bv = -1;
+  for (let L = Lmin; L <= Lmax; L++) { const bpm = 60 * fps / L, w = Math.exp(-.5 * Math.pow(Math.log2(bpm / 120) / .7, 2)), v = ac[L] * w; if (v > bv) { bv = v; bestL = L; } }
+  const a = ac[bestL - 1] || 0, b = ac[bestL], c = ac[bestL + 1] || 0, den = a - 2 * b + c, shift = den ? .5 * (a - c) / den : 0;
+  let bpm = 60 * fps / (bestL + Math.max(-.5, Math.min(.5, shift)));
+  while (bpm < 78) bpm *= 2; while (bpm > 165) bpm /= 2;
+  const P = fps * 60 / bpm; let bo = 0, bsum = -1;
+  for (let o = 0; o < P; o++) { let s = 0; for (let k = o; k < N; k += P) s += on[Math.round(k)] || 0; if (s > bsum) { bsum = s; bo = o; } }
+  const beat = 60 / bpm, offSec = ((start + bo / fps) % beat + beat) % beat;
+  return { bpm: Math.round(bpm * 10) / 10, off: Math.round(offSec * 1000) / 1000 };
+}
+let djBusy = false;
+async function djPrepare(){
+  if (!S.dj || djBusy) return; djBusy = true;
+  try {
+    const list = [current(), ...S.queue.slice(S.qi + 1, S.qi + 7)].filter(Boolean);
+    for (const t of list) {
+      if (djInfo.has(t.id) || !S.downloads.has(t.id)) continue;
+      const rec = await dbGet(t.id); if (!rec?.audio) continue;
+      try { const r = await analyzeBlob(rec.audio); djInfo.set(t.id, r || {}); saveDjInfo(); } catch { djInfo.set(t.id, {}); }
+    }
+  } finally { djBusy = false; }
+  djArrange();
+}
+/* "DJ picks": choose the transition that suits the two songs */
+function djPickFx(from, to){
+  const a = trackDJ(from), b = trackDJ(to), tm = a.bpm && b.bpm ? tempoMatch(a.bpm, b.bpm) : null, kd = keyDist(a.key, b.key);
+  const pool = tm && tm.diff < .06 ? (kd != null && kd > .5 ? ['bass', 'sweep', 'echo'] : ['bass', 'sweep', 'bass', 'blend', 'under'])
+             : tm && tm.diff > .15 ? ['echo', 'tape', 'reverb', 'dub', 'dark']
+             : kd != null && kd > .5 ? ['echo', 'reverb', 'dub'] : ['sweep', 'echo', 'under', 'radio'];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 async function srcFor(t){
@@ -796,29 +936,45 @@ function nextIndexAuto(){
 let xfadeStarting = false;
 async function maybeCrossfade(force, fxOverride){
   if (fade || xfadeStarting || mode !== 'audio' || audio.paused) return false;
-  const d = audio.duration, left = d - audio.currentTime;
-  const len = force ? Math.max(S.xfade || 0, 6) : S.xfade;
-  if (!force && (!S.xfade || document.hidden || !isFinite(d) || d < S.xfade * 2 + 5 || left > S.xfade)) return false;
+  const d = audio.duration, left = d - audio.currentTime, curT = current(), fi = trackDJ(curT);
+  const djLen = S.dj ? Math.max(5, Math.min(14, (fi.bpm ? 16 * 60 / fi.bpm : 8))) : 0;
+  const len = force ? Math.max(S.xfade || 0, djLen, 6) : (S.dj ? djLen : S.xfade);
+  if (!force && (!len || document.hidden || !isFinite(d) || d < len * 2 + 5 || left > len + (S.dj ? 4 * 60 / (fi.bpm || 120) : 0))) return false;
+  if (!force && S.dj) djArrange();
   const ni = force ? (S.qi + 1 < S.queue.length ? S.qi + 1 : (S.queue.length > 1 ? 0 : -1)) : nextIndexAuto();
   if (ni < 0) { if (force) toast('Queue another song to hear the transition'); return false; }
   const nt = S.queue[ni]; if (!nt || nt.source === 'youtube') { if (force) toast('Effects work between Audius songs and your own files — not YouTube'); return false; }
   xfadeStarting = true;
   try {
-    const fx = pickFx(fxOverride || S.fx);
+    const fx = pickFx(fxOverride || S.fx, curT, nt);
     const src = await srcFor(nt); if (!src || mode !== 'audio') return false;
-    const from = audio, to = otherPlayer();
+    const from = audio, to = otherPlayer(), ti = trackDJ(nt);
+    // DJ: wait for the next bar line of the outgoing song so the mix lands on the beat
+    if (S.dj && !force && fi.bpm && fi.off != null) {
+      const bar = 4 * 60 / fi.bpm, wait = bar - (((from.currentTime - fi.off) % bar) + bar) % bar;
+      if (wait > .08 && wait < bar && from.duration - from.currentTime - wait > len * .6) await new Promise(r => setTimeout(r, wait * 1000 / (from.playbackRate || 1)));
+      if (fade || mode !== 'audio' || audio !== from || from.paused) return false;
+    }
     resetChain(to); to.muted = isMuted; setLevel(to, 0); to.src = src;
+    let beat = false;
+    if (S.dj && S.beatmatch && fi.bpm && ti.bpm && fx.id !== 'spin') {
+      const m = tempoMatch(fi.bpm * (from.playbackRate || 1), ti.bpm);
+      if (m.diff < .08) { to.playbackRate = m.rate; beat = true; }
+    }
+    if (S.dj && ti.off != null) { try { to.currentTime = ti.off; } catch {} }
     try { await to.play(); } catch { return false; }
     const ms = Math.max(1000, (force ? len : Math.min(left, len)) * 1000), start = performance.now();
     audio = to; S.qi = ni; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
     const cf = chains.get(from), ct = chains.get(to);
-    fade = { from, to, fx, timer: setInterval(() => {
+    fade = { from, to, fx, beat, timer: setInterval(() => {
       const k = Math.min(1, (performance.now() - start) / ms);
       try { fx.frame(k, from, to, cf, ct, ms); } catch { setLevel(from, 1 - k); setLevel(to, k); }
       if (k >= 1) cancelFade();
     }, 30) };
-    if (force || fx.id !== 'blend') toast(`${fx.icon} ${fx.name}`);
+    if (force || fx.id !== 'blend' || S.dj) toast(`${fx.icon} ${fx.name}${beat ? ' · beatmatched' : ''}`);
     updateNow(); renderQueue(); highlight(); mediaSession(nt); syncPlay(); tickUI();
+    if (S.dj) setTimeout(djPrepare, 1500);
+    setTimeout(() => prefetchLyrics(nt), 800);
     return true;
   } finally { xfadeStarting = false; }
 }
@@ -883,6 +1039,8 @@ async function playIndex(i){
   }
   updateNow(); renderQueue(); highlight(); mediaSession(t); syncPlay();
   if (pendingFadeIn) { pendingFadeIn = false; fadeInCurrent(); }
+  if (S.dj) setTimeout(djPrepare, 1500);
+  setTimeout(() => prefetchLyrics(t), 800);
   if (S.autoNP && !document.body.classList.contains('np-open') && !matchMedia('(max-width:1100px)').matches) openNP('np');
 }
 function playList(list, i){ S.queue = list.slice(); if (S.shuffle) { const first = S.queue.splice(i,1)[0]; shuffleArr(S.queue); S.queue.unshift(first); i = 0; } playIndex(i); }
@@ -914,6 +1072,7 @@ async function autoplayMore(){
     else if (last?.artistId) more = (await api(`/users/${encodeURIComponent(last.artistId)}/tracks`, { sort: 'plays', limit: 20 }) || []).filter(t => t.is_streamable !== false).map(normalize);
     const trend = (await api('/tracks/trending', { time: 'week', limit: 50, ...(last?.genre && last.source === 'audius' ? { genre: last.genre } : {}) }) || []).filter(t => t.is_streamable !== false).map(normalize);
     more = shuffleArr([...more.slice(0, 8), ...trend.slice(0, 20)]);
+    if (S.dj && last) more.sort((x, y) => mixScore(last, x) - mixScore(last, y));
   } catch {}
   more = more.filter(t => !inQ.has(t.id) && (inQ.add(t.id), true)).slice(0, 15);
   if (!more.length) { pPause(); pSeek(0); return; }
@@ -966,7 +1125,7 @@ function maybeYTFade(){
 }
 function tickUI(){
   const d = pDur(), c = pTime();
-  maybeYTFade();
+  maybeYTFade(); lyricTick();
   if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && d && isFinite(d)) { try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(c, d), playbackRate: 1 }); } catch {} }
   $('#cur').textContent = fmt(c); $('#dur').textContent = fmt(d);
   if (!seeking) { const p = d ? c / d * 1000 : 0; $('#seek').value = p; $('#seek').style.setProperty('--p', p/10 + '%'); const ns = document.getElementById('npSeek'); if (ns) { ns.value = p; ns.style.setProperty('--p', p/10 + '%'); } }
@@ -1090,6 +1249,7 @@ document.addEventListener('keydown', e => {
   else if (e.key.toLowerCase() === 'm') $('#muteBtn').click();
   else if (e.key.toLowerCase() === 's') $('#shuffleBtn').click();
   else if (e.key.toLowerCase() === 'r') $('#repeatBtn').click();
+  else if (e.key.toLowerCase() === 'l') toggleLyrics();
   else if (e.key === '/') { e.preventDefault(); go('search'); }
 });
 
@@ -1181,7 +1341,7 @@ async function download(t){
     const meta = { ...t, size: blob.size, addedAt: Date.now() };
     await dbPut({ ...meta, audio: blob, art });
     if (art) meta.artUrl = URL.createObjectURL(art);
-    S.downloads.set(t.id, meta); toast(`Downloaded “${t.title}”`);
+    S.downloads.set(t.id, meta); toast(`Downloaded “${t.title}”`); prefetchLyrics(meta);
   } catch (e) {
     toast('Download failed — check your connection'); console.error(e);
   } finally { S.downloading.delete(t.id); refreshActs(t.id); updateCounts(); if (S.view === 'downloads') render(); }
@@ -1208,7 +1368,7 @@ async function importFiles(files){
     const meta = { id: 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2,7), title, artist, genre: 'Imported', duration: 0, artUrl: '', source: 'local', size: f.size, fileName: f.name, addedAt: Date.now() };
     const d = await new Promise(res => { const a = new Audio(); a.preload='metadata'; a.onloadedmetadata = () => { res(a.duration); URL.revokeObjectURL(a.src); }; a.onerror = () => res(0); a.src = URL.createObjectURL(f); });
     meta.duration = d || 0;
-    await dbPut({ ...meta, audio: f, art: null }); S.downloads.set(meta.id, meta); n++;
+    await dbPut({ ...meta, audio: f, art: null }); S.downloads.set(meta.id, meta); n++; prefetchLyrics(meta);
   }
   toast(n ? `Imported ${n} song${n>1?'s':''}${dup ? ` (${dup} already in library)` : ''}` : dup ? 'Those songs are already in your library' : 'No audio files found'); updateCounts(); render();
 }
@@ -1239,7 +1399,7 @@ async function loadFeed(){
 const savePls = () => { store.set('playlists', S.playlists); updateCounts(); renderSidePls(); };
 const getPl = id => S.playlists.find(p => p.id === id);
 const plMeta = t => ({ id: t.id, title: t.title, artist: t.artist, artistId: t.artistId || '', genre: t.genre || '', duration: t.duration || 0,
-  artUrl: String(t.artUrl || '').startsWith('blob:') ? '' : (t.artUrl || ''), source: t.source, released: t.released || '', ytId: t.ytId || '' });
+  artUrl: String(t.artUrl || '').startsWith('blob:') ? '' : (t.artUrl || ''), source: t.source, released: t.released || '', ytId: t.ytId || '', bpm: t.bpm || null, key: t.key || '' });
 function createPlaylist(name, firstTrack){
   const pl = { id: 'pl' + Date.now().toString(36) + Math.random().toString(36).slice(2,5), name: name.trim() || 'My playlist', tracks: firstTrack ? [plMeta(firstTrack)] : [], createdAt: Date.now() };
   S.playlists.push(pl); savePls(); toast(firstTrack ? `Added to ${pl.name}` : `Created ${pl.name}`); return pl;
@@ -1316,6 +1476,178 @@ $('#newPlSide').onclick = () => newPlaylistFlow();
 function toggleLike(t){
   if (S.liked.has(t.id)) S.liked.delete(t.id); else S.liked.set(t.id, { ...t, artUrl: t.source === 'audius' && !String(t.artUrl).startsWith('blob:') ? t.artUrl : '' });
   store.set('liked', [...S.liked]); updateCounts(); refreshActs(t.id); if (S.view === 'liked') render();
+}
+
+/* ---------- Lyrics: fetched from LRCLIB (free, community lyrics) or read from the song file itself; saved for offline ---------- */
+const LRCLIB = 'https://lrclib.net/api';
+const lyrMem = new Map();
+const lyrGet = id => idb('readonly', st => st.get(id), 'lyrics');
+const lyrPut = v => idb('readwrite', st => st.put(v), 'lyrics');
+const lyrCount = () => idb('readonly', st => st.count(), 'lyrics');
+function parseLRC(text){
+  if (!text) return null;
+  const out = [];
+  for (const raw of String(text).split(/\r?\n/)) {
+    const stamps = [...raw.matchAll(/\[(\d{1,2}):(\d{1,2}(?:[.:]\d{1,3})?)\]/g)]; if (!stamps.length) continue;
+    const line = raw.replace(/\[[^\]]*\]/g, '').trim();
+    for (const m of stamps) out.push({ t: +m[1] * 60 + parseFloat(m[2].replace(':', '.')), text: line });
+  }
+  out.sort((a, b) => a.t - b.t);
+  return out.length > 1 ? out : null;
+}
+function lookupNames(t){
+  const title = String(t.title || '').replace(/\s*[\(\[][^\)\]]*(feat|ft\.|with|prod|remix|version|edit|mix|live|lyrics?|audio|video)[^\)\]]*[\)\]]/ig, '').replace(/\s+(feat|ft)\.?\s.*$/i, '').trim();
+  const artist = String(t.artist || '').split(/\s*(?:,|&| x | feat\.?| ft\.?| and )\s*/i)[0].trim();
+  return { title, artist };
+}
+async function fetchLRCLIB(t){
+  const { title, artist } = lookupNames(t), dur = Math.round(t.duration || 0);
+  if (!title) return null;
+  const q = new URLSearchParams({ track_name: title, artist_name: artist });
+  let j = null;
+  const r = await fetch(`${LRCLIB}/get?${q}${dur ? `&duration=${dur}` : ''}`);
+  if (r.ok) j = await r.json();
+  if (!j || (!j.syncedLyrics && !j.plainLyrics && !j.instrumental)) {
+    const sr = await fetch(`${LRCLIB}/search?${q}`); let list = sr.ok ? await sr.json() : [];
+    if (!list.length && artist) { const s2 = await fetch(`${LRCLIB}/search?q=${encodeURIComponent(artist + ' ' + title)}`); list = s2.ok ? await s2.json() : []; }
+    list = list.filter(x => x.syncedLyrics || x.plainLyrics || x.instrumental);
+    list.sort((a, b) => (!!b.syncedLyrics - !!a.syncedLyrics) || (dur ? Math.abs((a.duration || 0) - dur) - Math.abs((b.duration || 0) - dur) : 0));
+    j = list.find(x => !dur || !x.duration || Math.abs(x.duration - dur) <= 8) || null;
+  }
+  if (!j) return null;
+  return { synced: parseLRC(j.syncedLyrics), plain: j.plainLyrics || null, instrumental: !!j.instrumental };
+}
+/* Lyrics stored inside MP3 files (ID3 USLT / SYLT frames) — works fully offline */
+function id3Text(b, enc){
+  if (enc === 0) return new TextDecoder('latin1').decode(b);
+  if (enc === 3) return new TextDecoder('utf-8').decode(b);
+  if (enc === 2) return new TextDecoder('utf-16be').decode(b);
+  return new TextDecoder(b[0] === 0xFE ? 'utf-16be' : 'utf-16le').decode(b[0] === 0xFE || b[0] === 0xFF ? b.subarray(2) : b);
+}
+function id3Term(b, start, enc){
+  if (enc === 0 || enc === 3) { const i = b.indexOf(0, start); return i < 0 ? b.length : i; }
+  for (let i = start; i + 1 < b.length; i += 2) if (b[i] === 0 && b[i + 1] === 0) return i;
+  return b.length;
+}
+async function embeddedLyrics(blob){
+  const h = new Uint8Array(await blob.slice(0, 10).arrayBuffer());
+  if (h[0] !== 0x49 || h[1] !== 0x44 || h[2] !== 0x33 || h[3] < 3) return null;
+  const ss = (a, i) => ((a[i] & 127) << 21) | ((a[i + 1] & 127) << 14) | ((a[i + 2] & 127) << 7) | (a[i + 3] & 127);
+  const u32 = (a, i) => ((a[i] << 24) >>> 0) + (a[i + 1] << 16) + (a[i + 2] << 8) + a[i + 3];
+  const v = h[3], size = ss(h, 6), tag = new Uint8Array(await blob.slice(10, 10 + size).arrayBuffer());
+  let p = 0; if (h[5] & 0x40) p = v === 4 ? ss(tag, 0) : u32(tag, 0) + 4;
+  let plain = null, synced = null;
+  while (p + 10 <= tag.length) {
+    const id = String.fromCharCode(tag[p], tag[p + 1], tag[p + 2], tag[p + 3]); if (!/^[A-Z0-9]{4}$/.test(id)) break;
+    const fs = v === 4 ? ss(tag, p + 4) : u32(tag, p + 4), body = tag.subarray(p + 10, p + 10 + fs); p += 10 + fs;
+    if (id === 'USLT' && !plain && body.length > 5) {
+      const enc = body[0], dEnd = id3Term(body, 4, enc), tStart = dEnd + (enc === 1 || enc === 2 ? 2 : 1);
+      plain = id3Text(body.subarray(tStart), enc).replace(/\0+$/, '').trim() || null;
+    } else if (id === 'TXXX' && !plain && body.length > 3) {
+      // some tools save lyrics as a custom text tag named LYRICS / UNSYNCEDLYRICS / USLT
+      const enc = body[0], dEnd = id3Term(body, 1, enc), desc = id3Text(body.subarray(1, dEnd), enc);
+      if (/lyric|uslt/i.test(desc)) plain = id3Text(body.subarray(dEnd + (enc === 1 || enc === 2 ? 2 : 1)), enc).replace(/\0+$/, '').trim() || null;
+    } else if (id === 'SYLT' && !synced && body.length > 7 && body[4] === 2) {
+      const enc = body[0], wide = enc === 1 || enc === 2; let q = id3Term(body, 6, enc) + (wide ? 2 : 1); const lines = [];
+      while (q < body.length) { const e = id3Term(body, q, enc), text = id3Text(body.subarray(q, e), enc).replace(/^\n/, ''); q = e + (wide ? 2 : 1); if (q + 4 > body.length) break; lines.push({ t: u32(body, q) / 1000, text: text.trim() }); q += 4; }
+      if (lines.length > 1) synced = lines;
+    }
+  }
+  if (!synced && plain) synced = parseLRC(plain);           // some taggers save timed (LRC) lyrics as plain text
+  if (synced && plain && /^\s*\[\d/.test(plain)) plain = synced.map(l => l.text).join('\n');
+  return synced || plain ? { synced, plain } : null;
+}
+async function getLyrics(t, network = true){
+  if (!t) return null;
+  if (lyrMem.has(t.id)) return lyrMem.get(t.id);
+  let rec = await lyrGet(t.id).catch(() => null);
+  if (rec && (rec.synced || rec.plain || rec.instrumental)) { lyrMem.set(t.id, rec); return rec; }
+  if (rec?.none && Date.now() - rec.at < 3 * 864e5) return rec;
+  if (S.downloads.has(t.id)) {
+    const r = await dbGet(t.id).catch(() => null);
+    if (r?.audio) { const e = await embeddedLyrics(r.audio).catch(() => null); if (e) { rec = { id: t.id, ...e, source: 'file', at: Date.now() }; lyrPut(rec).catch(() => {}); lyrMem.set(t.id, rec); return rec; } }
+  }
+  if (!network || !navigator.onLine) return { id: t.id, offline: true };
+  try { const f = await fetchLRCLIB(t); rec = f ? { id: t.id, ...f, source: 'lrclib', at: Date.now() } : { id: t.id, none: true, at: Date.now() }; }
+  catch { return { id: t.id, error: true }; }
+  lyrPut(rec).catch(() => {}); lyrMem.set(t.id, rec); return rec;
+}
+const prefetchLyrics = t => { if (t) getLyrics(t, navigator.onLine).catch(() => {}); };
+
+/* Lyrics screen + live highlighting */
+let lyrLines = null, lyrIdx = -1, lyrUserScroll = 0, lyrFor = null;
+const lyrOffset = () => (lyrFor && lyrMem.get(lyrFor)?.offset) || 0;
+function lyricsBody(rec, t){
+  if (!rec) return spinner();
+  if (rec.synced) return `<div class="lyr-lines">${rec.synced.map((l, i) => `<p data-i="${i}">${esc(l.text) || '♪'}</p>`).join('')}</div>
+    <div class="lyr-foot">${rec.source === 'file' ? 'Lyrics from the song file' : 'Lyrics provided by <a href="https://lrclib.net" target="_blank" rel="noopener">LRCLIB</a>'}
+    <span class="lyr-off">Timing <button data-off="-0.5">−0.5s</button><b id="lyrOffV">${(rec.offset || 0) > 0 ? '+' : ''}${(rec.offset || 0).toFixed(1)}s</b><button data-off="0.5">+0.5s</button></span></div>`;
+  if (rec.plain) return `<div class="lyr-plain">${esc(rec.plain)}</div><div class="lyr-foot">These lyrics aren't synced to the song · ${rec.source === 'file' ? 'from the song file' : 'provided by <a href="https://lrclib.net" target="_blank" rel="noopener">LRCLIB</a>'}</div>`;
+  if (rec.instrumental) return `<div class="lyr-msg"><h3>Instrumental</h3>No words — just enjoy the music ♪</div>`;
+  if (rec.offline) return `<div class="lyr-msg"><h3>You're offline</h3>Lyrics for this song haven't been saved yet. They're saved automatically when you play or download a song while online.</div>`;
+  if (rec.error) return `<div class="lyr-msg"><h3>Couldn't load lyrics</h3><button class="pill white" id="lyrRetry">Try again</button></div>`;
+  return `<div class="lyr-msg"><h3>No lyrics for this one</h3>We couldn't find lyrics for “${esc(t.title)}”.</div>`;
+}
+function renderLyricsView(m){
+  const t = current();
+  if (!t) { m.innerHTML = `<div class="empty"><h3>Play a song to see its lyrics</h3></div>`; return; }
+  lyrFor = t.id; lyrLines = null; lyrIdx = -1;
+  m.innerHTML = `<div class="lyr" style="--lc:${hc(t.title + t.artist, 30)}"><div class="lyr-head"><div class="t-title">${esc(t.title)}</div><div class="t-artist">${esc(t.artist)}</div></div><div id="lyrBox"></div></div>`;
+  const box = $('#lyrBox'); box.innerHTML = lyricsBody(lyrMem.get(t.id) || null, t);
+  const fill = rec => {
+    if (current() !== t || S.view !== 'lyrics') return;
+    box.innerHTML = lyricsBody(rec, t); lyrLines = rec?.synced || null; lyrIdx = -1;
+    box.querySelectorAll('.lyr-lines p').forEach(p => p.onclick = () => { const l = lyrLines[+p.dataset.i]; pSeek(Math.max(0, l.t - lyrOffset())); lyrUserScroll = 0; });
+    box.querySelectorAll('[data-off]').forEach(b => b.onclick = () => { rec.offset = Math.round(((rec.offset || 0) + +b.dataset.off) * 10) / 10; lyrPut(rec).catch(() => {}); $('#lyrOffV').textContent = `${rec.offset > 0 ? '+' : ''}${rec.offset.toFixed(1)}s`; lyrIdx = -1; lyricTick(); });
+    $('#lyrRetry')?.addEventListener('click', () => { lyrMem.delete(t.id); getLyrics(t).then(fill); });
+    lyricTick();
+  };
+  getLyrics(t).then(fill);
+  m.onwheel = m.ontouchmove = () => { lyrUserScroll = performance.now(); };
+}
+function lyricTick(){
+  // big lyrics screen
+  if (S.view === 'lyrics' && lyrLines && lyrFor === current()?.id) {
+    const now = pTime() + lyrOffset(); let i = -1;
+    for (let k = 0; k < lyrLines.length && lyrLines[k].t <= now + .15; k++) i = k;
+    if (i !== lyrIdx) {
+      lyrIdx = i;
+      document.querySelectorAll('.lyr-lines p').forEach((p, k) => { p.classList.toggle('on', k === i); p.classList.toggle('past', k < i); });
+      const el = document.querySelector('.lyr-lines p.on');
+      if (el && performance.now() - lyrUserScroll > 3500) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  // small preview in the Now Playing panel
+  const np = document.getElementById('npLyr'), t = current();
+  if (np && t && np.dataset.id === t.id) {
+    const rec = lyrMem.get(t.id);
+    if (rec?.synced) { const now = pTime() + (rec.offset || 0); let i = 0; for (let k = 0; k < rec.synced.length && rec.synced[k].t <= now + .15; k++) i = k;
+      if (np.dataset.i !== String(i)) { np.dataset.i = i; np.innerHTML = rec.synced.slice(Math.max(0, i - 1), i + 3).map((l, k) => `<p class="${(Math.max(0, i - 1) + k) === i ? 'on' : ''}">${esc(l.text) || '♪'}</p>`).join(''); } }
+  }
+}
+function npLyricsCard(t){
+  return `<div class="np-card np-lyr" style="--lc:${hc(t.title + t.artist, 30)}"><h4>Lyrics <button id="npLyrOpen">Show lyrics</button></h4><div class="nl" id="npLyr" data-id="${esc(t.id)}"><p class="dim">Loading…</p></div></div>`;
+}
+function fillNpLyrics(t){
+  getLyrics(t).then(rec => {
+    const np = document.getElementById('npLyr'); if (!np || np.dataset.id !== t.id) return;
+    if (rec?.synced) { np.dataset.i = ''; lyricTick(); }
+    else np.innerHTML = `<p class="dim">${rec?.plain ? 'Lyrics available — tap Show lyrics' : rec?.instrumental ? 'Instrumental' : rec?.offline ? 'Not saved for offline yet' : 'No lyrics found'}</p>`;
+  });
+}
+function toggleLyrics(){
+  if (S.view === 'lyrics') { goBack(); return; }
+  if (matchMedia('(max-width:760px)').matches) document.body.classList.remove('np-open');
+  go('lyrics');
+}
+async function saveAllLyrics(btn){
+  if (!navigator.onLine) { toast("You're offline — connect to save lyrics"); return; }
+  const list = [...S.downloads.values()]; let done = 0, found = 0;
+  for (const t of list) {
+    const rec = await getLyrics(t).catch(() => null); done++; if (rec?.synced || rec?.plain || rec?.instrumental) found++;
+    if (btn) btn.textContent = `Saving… ${done}/${list.length}`;
+  }
+  toast(`Lyrics saved for ${found} of ${list.length} downloads`); if (S.view === 'settings') render();
 }
 
 /* ---------- Rendering ---------- */
@@ -1469,6 +1801,9 @@ function render(){
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
 
+  } else if (S.view === 'lyrics') {
+    renderLyricsView(m);
+
   } else if (S.view === 'settings') {
     renderSettings(m);
 
@@ -1564,6 +1899,7 @@ function render(){
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
   }
   bindList(); renderSidePls(); afterRender(m);
+  $('#lyrBtn')?.classList.toggle('on', S.view === 'lyrics');
 }
 let lastPageKey = '';
 function afterRender(m){
@@ -1614,6 +1950,8 @@ function updateNow(){
   $('#now .art').onclick = () => openNP('np');
   $('#now').onclick = e => { if (matchMedia('(max-width:760px)').matches && !e.target.closest('button,.a-link')) openNP('np'); };
   document.title = `${t.title} • ${t.artist}`;
+  if (S.view === 'lyrics' && lyrFor !== t.id) render();
+  $('#lyrBtn').classList.toggle('on', S.view === 'lyrics');
   document.body.style.setProperty('--npc', hc(t.title + t.artist, 26)); document.body.style.setProperty('--mini', hc(t.title + t.artist, 18));
   renderNP();
 }
@@ -1648,11 +1986,14 @@ function renderNP(){
       <div class="np-title"><div><div class="t-title">${esc(t.title)}</div><div class="t-artist">${artistLink(t)}</div></div><button class="ic ${S.liked.has(t.id)?'on':''}" id="npLike">${S.liked.has(t.id)?I.heartF:I.heart}</button></div>
       <div class="np-ctrl"><div class="bar"><span id="npCur">0:00</span><input type="range" id="npSeek" min="0" max="1000" value="0"><span id="npDur">0:00</span></div>
         <div class="btns"><button class="ic ${S.shuffle?'on':''}" id="npShuf">${IC.shuffle}</button><button class="ic" id="npPrev"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button><button class="play" id="npPlay">${pPaused() ? I.play : I.pause}</button><button class="ic" id="npNext"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button><button class="ic" id="npQueue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h13M3 18h9M19 14v7m-3-3l3 3 3-3"/></svg></button></div></div>
+      ${S.dj && djLabel(t) ? `<div class="djchips"><span>🎧 ${esc(djLabel(t))}</span>${S.queue[S.qi + 1] && djLabel(S.queue[S.qi + 1]) ? `<span>Next · ${esc(djLabel(S.queue[S.qi + 1]))}</span>` : ''}</div>` : ''}
+      ${npLyricsCard(t)}
       <div id="npAbout"></div>
       ${t.source === 'youtube' ? `<div class="np-card"><div class="nc-body"><div class="nc-row"><b>Streaming from YouTube</b><a class="outline" style="display:inline-flex;align-items:center;text-decoration:none" href="https://www.youtube.com/watch?v=${esc(t.ytId)}" target="_blank" rel="noopener">Open ↗</a></div><p>YouTube songs stream only. Download Audius songs or import your own files to listen offline.</p></div></div>` : ''}
       ${nx ? `<div class="np-card"><h4>Next in queue <button id="npOpenQ">Open queue</button></h4><div style="padding:0 8px 8px"><div class="q-item" data-qi="${S.qi + 1}">${artHTML(nx)}<div><div class="t-title">${esc(nx.title)}</div><div class="t-artist">${esc(nx.artist)}</div></div></div></div></div>` : ''}
     </div>`;
     $('#npLike').onclick = () => { toggleLike(t); updateNow(); };
+    $('#npLyrOpen').onclick = toggleLyrics; fillNpLyrics(t);
     p.querySelector('.a-link')?.addEventListener('click', e => { if (matchMedia('(max-width:760px)').matches) document.body.classList.remove('np-open'); openArtist(e.currentTarget.dataset.artist); });
     $('#npOpenQ')?.addEventListener('click', () => openNP('queue'));
     p.querySelectorAll('[data-qi]').forEach(el => el.onclick = () => playIndex(+el.dataset.qi));
@@ -1677,6 +2018,7 @@ function updateCounts(){ renderSidePls(); }
 $('#queueBtn').onclick = () => openNP('queue');
 $('#npBtn').onclick = () => openNP('np');
 $('#fxBtn').onclick = () => openFxCatalogue();
+$('#lyrBtn').onclick = toggleLyrics;
 $('#closeQ').onclick = () => {};
 
 /* ---------- Library list (sidebar + mobile Library tab) ---------- */
@@ -1792,6 +2134,9 @@ function renderSettings(m){
     <h2 class="shead">Playback</h2>
     ${srow('Crossfade songs', 'Blend the end of one song into the start of the next.', `<div class="inline"><input type="range" id="sXf" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><span class="val">${S.xfade ? S.xfade + ' s' : 'Off'}</span></div>`)}
     ${srow('Transition effect', `Currently: <b>${fxById(S.fx).icon} ${esc(fxById(S.fx).name)}</b>${S.xfade ? '' : ' — turn on crossfade to hear it'}`, `<button class="outline" id="sFx">Browse effects</button>`)}
+    ${srow('DJ mode', 'Mix like a DJ: put the next songs in an order where tempo and key flow, start each mix on the beat and pick the transition to suit.', toggleHTML('sDj', S.dj))}
+    ${srow('Beatmatch', 'Gently speed the next song up or down to lock to the beat (without changing its pitch), then glide back to normal.', toggleHTML('sBeat', S.beatmatch), S.dj ? '' : 'dim')}
+    ${srow('Harmonic mixing', 'Prefer next songs in a matching musical key.', toggleHTML('sHarm', S.harmonic), S.dj ? '' : 'dim')}
     ${srow('Autoplay', 'When your music runs out, keep playing similar songs.', toggleHTML('sAuto', S.autoplay))}
     ${srow('Keep music going with the screen off', 'YouTube songs can\'t play in the background. When your screen is off, skip to the next Audius song or downloaded file instead of stopping.', toggleHTML('sBgYT', S.bgSkipYT))}
     ${srow('Shuffle', 'Play songs in random order.', toggleHTML('sShuf', S.shuffle))}
@@ -1818,12 +2163,13 @@ function renderSettings(m){
 
     <h2 class="shead">Storage</h2>
     ${srow('Downloads', `${n(S.downloads.size, 'song')} · ${(bytes/1048576).toFixed(1)} MB saved on this device`, `<button class="outline danger" id="sClearDl" ${S.downloads.size ? '' : 'disabled'}>Remove all downloads</button>`)}
+    ${srow('Lyrics for offline', '<span id="lyrCountTxt">Lyrics are saved when you play or download songs.</span>', `<button class="outline" id="sLyr" ${S.downloads.size ? '' : 'disabled'}>Save lyrics for all downloads</button>`)}
     ${srow('Cache', 'Clear the saved copy of the app. It reloads fresh next time.', `<button class="outline" id="sCache">Clear cache</button>`)}
     ${srow('Back up your library', 'Save your liked songs, playlists and followed artists to a file.', `<button class="outline" id="sExport">Export</button>`)}
     ${srow('Restore a backup', 'Load a library backup file.', `<button class="outline" id="sImport">Import</button>`)}
 
     <h2 class="shead">Keyboard shortcuts</h2>
-    <div class="keys">${[['Space', 'Play / pause'], ['Shift + →', 'Next song'], ['Shift + ←', 'Previous song'], ['→ / ←', 'Skip forward / back 10 s'], ['S', 'Shuffle'], ['R', 'Repeat'], ['M', 'Mute'], ['/', 'Search']].map(([k, d]) => `<div><kbd>${k}</kbd><span>${d}</span></div>`).join('')}</div>
+    <div class="keys">${[['Space', 'Play / pause'], ['L', 'Lyrics'], ['Shift + →', 'Next song'], ['Shift + ←', 'Previous song'], ['→ / ←', 'Skip forward / back 10 s'], ['S', 'Shuffle'], ['R', 'Repeat'], ['M', 'Mute'], ['/', 'Search']].map(([k, d]) => `<div><kbd>${k}</kbd><span>${d}</span></div>`).join('')}</div>
 
     <h2 class="shead">About</h2>
     ${srow('Sauti', 'Free music player · music from Audius and YouTube · your library stays on this device.', `<a class="outline" href="install.html" style="text-decoration:none;display:inline-flex;align-items:center">Install app</a>`)}
@@ -1835,6 +2181,9 @@ function renderSettings(m){
   xf.onchange = () => render();
   on('sFx', openFxCatalogue);
   flip('sAuto', 'autoplay');
+  flip('sDj', 'dj', () => { djArrangedFor = null; if (S.dj) { if (S.fx === 'blend') { S.fx = 'auto'; store.set('fx', 'auto'); } djPrepare(); toast('🎧 DJ mode on'); } });
+  flip('sBeat', 'beatmatch');
+  flip('sHarm', 'harmonic', () => { djArrangedFor = null; });
   flip('sBgYT', 'bgSkipYT');
   on('sShuf', () => { $('#shuffleBtn').click(); render(); });
   $('#sRep').onchange = e => { S.repeat = e.target.value; store.set('repeat', S.repeat); syncModes(); };
@@ -1853,6 +2202,8 @@ function renderSettings(m){
     for (const id of [...S.downloads.keys()]) { await dbDel(id); if (objectUrls.has(id)) { URL.revokeObjectURL(objectUrls.get(id)); objectUrls.delete(id); } }
     S.downloads.clear(); toast('All downloads removed'); updateCounts(); render();
   });
+  on('sLyr', e => saveAllLyrics(e.currentTarget));
+  lyrCount().then(n => { const el = $('#lyrCountTxt'); if (el) el.textContent = `Lyrics saved on this device for ${n} song${n === 1 ? '' : 's'}. They're saved automatically when you play or download songs.`; }).catch(() => {});
   on('sCache', async () => { try { for (const k of await caches.keys()) await caches.delete(k); toast('Cache cleared'); } catch { toast("Couldn't clear the cache"); } });
   on('sExport', () => {
     const data = { app: 'sauti', version: 1, exportedAt: new Date().toISOString(), liked: [...S.liked], following: [...S.following], playlists: S.playlists,
