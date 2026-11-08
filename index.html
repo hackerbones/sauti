@@ -695,6 +695,15 @@ S.xfade = store.get('xfade', 0);                // crossfade seconds (0 = off)
 S.fx = store.get('fx', 'blend');                // transition effect id
 let fade = null;                                // { from, to, timer, fx } while a crossfade is running
 const otherPlayer = () => players[0] === audio ? players[1] : players[0];
+/* Phones let a web app keep playing in the background but not START new sound there.
+   While YouTube plays, the music player runs a silent loop so that, when the app is left,
+   the next real song can be swapped into a player that's already playing. */
+const SILENCE = (() => { const sr = 8000, n = sr, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+  const w = (o, str) => [...str].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([b], { type: 'audio/wav' })); })();
+const keepAlive = { on(){ audio.loop = true; if (audio.src !== SILENCE) audio.src = SILENCE; audio.play().catch(() => {}); }, off(){ audio.loop = false; } };
 
 /* ---------- Effects engine (Web Audio) ----------
    each player → highpass → lowpass → level ─┬─→ master → speakers
@@ -990,7 +999,10 @@ function ensureYT(){
         playerVars: { playsinline: 1, rel: 0, modestbranding: 1, origin: location.origin },
         events: {
           onReady: () => { applyVolume(); res(); },
-          onStateChange: e => { ytState = e.data; if (e.data === 0) next(true); syncPlay(); },
+          onStateChange: e => { ytState = e.data; if (e.data === 0) next(true);
+            else if (e.data === 2 && document.hidden && ytWanted && !userPaused) bgHandoff();
+            else if (e.data === 1 && audio.paused && mode === 'yt') keepAlive.on();
+            syncPlay(); },
           onError: e => { const why = { 2: 'bad video id', 5: 'player error', 100: 'video removed or private', 101: 'owner blocks playing outside YouTube', 150: 'owner blocks playing outside YouTube' }[e.data] || 'error';
             toast(`Can't play this one here (${why}) — skipping`); setTimeout(() => next(true), 1200); },
         },
@@ -1005,8 +1017,9 @@ function ensureYT(){
 const pPaused = () => mode === 'yt' ? !(ytState === 1 || ytState === 3) : audio.paused;
 const pTime = () => mode === 'yt' ? (yt?.getCurrentTime?.() || 0) : audio.currentTime;
 const pDur = () => mode === 'yt' ? (yt?.getDuration?.() || current()?.duration || 0) : (audio.duration || current()?.duration || 0);
-function pPlay(){ if (needsGraph() && !actx) wantOutput(); if (actx?.state === 'suspended') actx.resume().catch(() => {}); userPaused = false; ytWanted = true; if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
-function pPause(){ userPaused = true; ytWanted = false; if (mode === 'yt') yt?.pauseVideo(); else { cancelFade(); audio.pause(); } }
+function pPlay(){ if (mode === 'yt' && document.hidden && bgHandoff()) return; if (mode === 'yt') keepAlive.on();
+  if (needsGraph() && !actx) wantOutput(); if (actx?.state === 'suspended') actx.resume().catch(() => {}); userPaused = false; ytWanted = true; if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
+function pPause(){ userPaused = true; ytWanted = false; if (mode === 'yt') { yt?.pauseVideo(); audio.pause(); } else { cancelFade(); audio.pause(); } }
 function pSeek(sec){ sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
 function applyVolume(){ applyMaster(); const v = Math.round(userVol * 100); if (yt?.setVolume) { yt.setVolume(v); isMuted ? yt.mute() : yt.unMute(); } }
 function showYT(on, t){
@@ -1024,13 +1037,13 @@ async function playIndex(i){
   userPaused = false; ytWanted = true; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
   S.qi = i; const t = current();
   if (t.source === 'youtube') {
-    audio.pause(); audio.removeAttribute('src'); mode = 'yt'; showYT(true, t);
+    mode = 'yt'; keepAlive.on(); showYT(true, t);
     try { await ensureYT(); } catch (e) { toast("Couldn't load the YouTube player"); return; }
     if (current() !== t) return;
     yt.loadVideoById(t.ytId);
   } else {
     if (mode === 'yt') { yt?.stopVideo(); ytState = -1; showYT(false); }
-    mode = 'audio';
+    mode = 'audio'; keepAlive.off();
     const src = await srcFor(t);
     if (!src) { toast('File missing'); return; }
     if (current() !== t) return;
@@ -1046,6 +1059,21 @@ async function playIndex(i){
 function playList(list, i){ S.queue = list.slice(); if (S.shuffle) { const first = S.queue.splice(i,1)[0]; shuffleArr(S.queue); S.queue.unshift(first); i = 0; } playIndex(i); }
 function shuffleArr(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 let pendingFadeIn = false;
+function bgFallback(){
+  const inQ = new Set(S.queue.map(t => t.id));
+  const dl = shuffleArr([...S.downloads.values()].filter(t => !inQ.has(t.id))).slice(0, 30);
+  if (dl.length) return dl;
+  return (S.results || []).filter(t => t.source !== 'youtube' && !inQ.has(t.id)).slice(0, 20);
+}
+let handingOff = false;
+function bgHandoff(){
+  if (handingOff || !S.bgSkipYT || userPaused || mode !== 'yt') return false;
+  let j = bgPlayableIndex(S.qi + 1);
+  if (j < 0) { const fb = bgFallback(); if (!fb.length) return false; S.queue.splice(S.qi + 1, 0, ...fb); j = S.qi + 1; }
+  handingOff = true;
+  try { playIndex(j); } finally { setTimeout(() => { handingOff = false; }, 0); }   // playIndex stops the YouTube video itself
+  return true;
+}
 function bgPlayableIndex(from){
   // with the screen off only non-YouTube songs can play: find the next one
   for (let j = from; j < S.queue.length; j++) if (S.queue[j].source !== 'youtube') return j;
@@ -1055,8 +1083,9 @@ function next(auto=false){
   if (!S.queue.length) return;
   if (auto && S.repeat === 'one') { pSeek(0); pPlay(); return; }
   pendingFadeIn = auto && S.xfade > 0 && !document.hidden;
-  if (document.hidden && S.bgSkipYT && S.queue[S.qi + 1]?.source === 'youtube') {
-    const j = bgPlayableIndex(S.qi + 1);
+  if (document.hidden && S.bgSkipYT && (S.queue[S.qi + 1]?.source === 'youtube' || (S.qi + 1 >= S.queue.length && mode === 'yt'))) {
+    let j = bgPlayableIndex(S.qi + 1);
+    if (j < 0) { const fb = bgFallback(); if (fb.length) { S.queue.splice(S.qi + 1, 0, ...fb); j = S.qi + 1; } }
     if (j >= 0) { playIndex(j); return; }
   }
   if (S.qi + 1 < S.queue.length) playIndex(S.qi + 1);
@@ -1132,8 +1161,8 @@ function tickUI(){
   const nc = document.getElementById('npCur'); if (nc) { nc.textContent = fmt(c); document.getElementById('npDur').textContent = fmt(d); }
 }
 players.forEach(el => {
-  el.addEventListener('timeupdate', () => { if (el === audio && mode === 'audio') { tickUI(); maybeCrossfade(); } });
-  el.addEventListener('ended', () => { if (el === audio && mode === 'audio') next(true); });
+  el.addEventListener('timeupdate', () => { if (el === audio && mode === 'audio') { tickUI(); maybeCrossfade(); bgEarlyAdvance(); } });
+  el.addEventListener('ended', () => { if (el === audio && mode === 'audio' && earlyFor !== current()?.id + ':' + S.qi) next(true); });
   el.addEventListener('play', () => { if (el === audio) syncPlay(); });
   el.addEventListener('pause', () => { if (el === audio) syncPlay(); });
   el.addEventListener('error', () => {
@@ -1149,6 +1178,17 @@ players.forEach(el => {
   el.addEventListener('playing', () => { if (el === audio && el.crossOrigin && !corsOK && lastGood.t > 3) { corsOK = true; } });
   el.addEventListener('timeupdate', () => { if (el === audio && el.currentTime > 0) { lastGood.t = el.currentTime; lastGood.at = performance.now(); if (rec.id === current()?.id && el.currentTime > rec.pos + 8) rec.n = 0; } });
 });
+
+/* In the background, move to the next song a moment BEFORE this one ends, so the player never
+   stops — phones block a stopped web player from starting again while the app isn't on screen. */
+let earlyFor = null;
+function bgEarlyAdvance(){
+  if (!document.hidden || fade || userPaused || S.repeat === 'one' || audio.loop) return;
+  const d = audio.duration, t = current();
+  if (!t || !isFinite(d) || d < 5 || d - audio.currentTime > .45 || earlyFor === t.id + ':' + S.qi) return;
+  earlyFor = t.id + ':' + S.qi;
+  next(true);
+}
 
 /* ---------- Keep playing through network drops ----------
    If the stream errors or stalls mid-song, reload the same song and continue
@@ -1201,12 +1241,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     if (fade) cancelFade();                 // finish any crossfade now: timers freeze with the screen off
     if (ytFade) { clearInterval(ytFade); ytFade = null; try { yt?.setPlaybackRate(1); } catch {} applyVolume(); }
-    // A YouTube song stops when the screen goes off; move on to the next song that can keep playing
-    if (mode === 'yt' && S.bgSkipYT && ytWanted && !userPaused) setTimeout(() => {
-      if (!document.hidden || mode !== 'yt' || ytState === 1) return;
-      const j = bgPlayableIndex(S.qi + 1);
-      if (j >= 0) { yt?.pauseVideo(); playIndex(j); }
-    }, 1500);
+    // YouTube can't play in the background: hand over to the next song that can, right away
+    if (mode === 'yt' && ytWanted && !userPaused) { if (!bgHandoff()) { try { yt?.pauseVideo(); } catch {} } }
   } else if (actx && actx.state !== 'running' && !userPaused) actx.resume().catch(() => {});
 });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') wasPlaying = !pPaused(); });
@@ -2138,7 +2174,7 @@ function renderSettings(m){
     ${srow('Beatmatch', 'Gently speed the next song up or down to lock to the beat (without changing its pitch), then glide back to normal.', toggleHTML('sBeat', S.beatmatch), S.dj ? '' : 'dim')}
     ${srow('Harmonic mixing', 'Prefer next songs in a matching musical key.', toggleHTML('sHarm', S.harmonic), S.dj ? '' : 'dim')}
     ${srow('Autoplay', 'When your music runs out, keep playing similar songs.', toggleHTML('sAuto', S.autoplay))}
-    ${srow('Keep music going with the screen off', 'YouTube songs can\'t play in the background. When your screen is off, skip to the next Audius song or downloaded file instead of stopping.', toggleHTML('sBgYT', S.bgSkipYT))}
+    ${srow('Keep music going with the screen off', 'YouTube songs can\'t play in the background. When you leave the app or turn the screen off, carry on with the next Audius song or download in your queue — or your Downloads if the queue is all YouTube.', toggleHTML('sBgYT', S.bgSkipYT))}
     ${srow('Shuffle', 'Play songs in random order.', toggleHTML('sShuf', S.shuffle))}
     ${srow('Repeat', 'What happens at the end of the queue.', selectHTML('sRep', [['off', 'Off'], ['all', 'Repeat all'], ['one', 'Repeat one song']], S.repeat))}
 
