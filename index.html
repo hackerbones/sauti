@@ -15,7 +15,10 @@
 <title>Sauti — Stream & Download Music</title>
 <meta name="theme-color" content="#000000" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://api.audius.co" />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" /></noscript>
 <style>
   :root{
     --bg:#000; --panel:#121212; --panel2:#1f1f1f; --hover:#2a2a2a; --line:#2a2a2a;
@@ -368,6 +371,8 @@
   .fx-try:hover{border-color:#fff}
   .fx-sel{font-size:12px;font-weight:700;color:var(--accent)}
 
+  .upd{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:60;background:var(--accent);color:#14080a;font-weight:700;font-size:13px;padding:10px 16px;border-radius:500px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+
   /* tab bar (mobile) */
   .tabbar{display:none}
   .drawer{display:none}
@@ -488,7 +493,7 @@
 </style>
 </head>
 <body>
-<div id="splash" style="position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .4s"><div style="animation:splashPulse 1.2s ease-in-out infinite;filter:drop-shadow(0 10px 40px rgba(255,122,61,.35))"><svg width="104" height="104" style="display:block;width:104px;height:104px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#lg2)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg></div></div>
+<div id="splash" style="position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .2s"><div style="animation:splashPulse 1.2s ease-in-out infinite;filter:drop-shadow(0 10px 40px rgba(255,122,61,.35))"><svg width="104" height="104" style="display:block;width:104px;height:104px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#lg2)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg></div></div>
 <style>@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}</style>
 <div class="app">
   <header class="topbar">
@@ -580,10 +585,10 @@ const artHTML = (t, cls='art') => t.artUrl ? `<img class="${cls}" src="${esc(t.a
 
 /* ---------- Audius API ---------- */
 let host = null;
+let hostFallback = false;
 async function getHost(){
   if (host) return host;
-  // api.audius.co serves /v1 directly; fall back to a discovery node from its list
-  try { const r = await fetch(`https://api.audius.co/v1/tracks/trending?limit=1&app_name=${APP}`); if (r.ok) return host='https://api.audius.co'; } catch {}
+  if (!hostFallback) return host = 'https://api.audius.co';   // serves /v1 directly — no extra round trip
   const r = await fetch('https://api.audius.co'); const j = await r.json();
   const list = j.data || []; host = list[Math.floor(Math.random()*list.length)];
   if (!host) throw new Error('No Audius host available');
@@ -592,7 +597,9 @@ async function getHost(){
 async function api(path, params={}){
   const h = await getHost();
   const q = new URLSearchParams({...params, app_name: APP});
-  const r = await fetch(`${h}/v1${path}?${q}`);
+  let r;
+  try { r = await fetch(`${h}/v1${path}?${q}`); }
+  catch (e) { if (!hostFallback && navigator.onLine) { hostFallback = true; host = null; const h2 = await getHost(); r = await fetch(`${h2}/v1${path}?${q}`); } else throw e; }
   if (!r.ok) throw new Error(`API ${r.status}`);
   return (await r.json()).data;
 }
@@ -648,7 +655,8 @@ const objectUrls = new Map();     // id -> blob url for offline audio/art
 /* ---------- Playback engine: <audio> for Audius/local, YouTube IFrame player for YouTube ---------- */
 const players = [new Audio(), new Audio()];
 // crossOrigin lets the effects engine process Audius streams; if a server refuses it we fall back (see 'error' handler)
-let corsOK = store.get('corsOK', true);
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let corsOK = store.get('corsOK', true) && !isIOS;   // effects engine is off on iOS so music keeps playing with the screen locked
 players.forEach(a => { a.preload = 'auto'; if (corsOK) a.crossOrigin = 'anonymous'; });
 let audio = players[0];                         // the element that is "the current song"
 let userVol = store.get('vol', 80) / 100, isMuted = false;
@@ -687,6 +695,7 @@ function ensureGraph(){
       chains.set(el, { hp, lp, level, echoSend, delay, fb, revSend });
     });
     applyMaster();
+    actx.onstatechange = () => { if (actx.state !== 'running' && !userPaused && mode === 'audio' && !audio.paused) actx.resume().catch(() => {}); };
     if (actx.state === 'suspended') actx.resume().catch(() => {});
     return true;
   } catch (e) { console.warn('effects unavailable', e); actx = null; return false; }
@@ -789,7 +798,7 @@ async function maybeCrossfade(force, fxOverride){
   if (fade || xfadeStarting || mode !== 'audio' || audio.paused) return false;
   const d = audio.duration, left = d - audio.currentTime;
   const len = force ? Math.max(S.xfade || 0, 6) : S.xfade;
-  if (!force && (!S.xfade || !isFinite(d) || d < S.xfade * 2 + 5 || left > S.xfade)) return false;
+  if (!force && (!S.xfade || document.hidden || !isFinite(d) || d < S.xfade * 2 + 5 || left > S.xfade)) return false;
   const ni = force ? (S.qi + 1 < S.queue.length ? S.qi + 1 : (S.queue.length > 1 ? 0 : -1)) : nextIndexAuto();
   if (ni < 0) { if (force) toast('Queue another song to hear the transition'); return false; }
   const nt = S.queue[ni]; if (!nt || nt.source === 'youtube') { if (force) toast('Effects work between Audius songs and your own files — not YouTube'); return false; }
@@ -855,7 +864,8 @@ const current = () => S.queue[S.qi];
 async function playIndex(i){
   if (i < 0 || i >= S.queue.length) return;
   if (needsGraph() && !actx) wantOutput();
-  cancelFade(); otherPlayer().pause(); userPaused = false; ytWanted = true; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
+  cancelFade(); otherPlayer().pause(); if (ytFade) { clearInterval(ytFade); ytFade = null; try { yt?.setPlaybackRate(1); } catch {} applyVolume(); }
+  userPaused = false; ytWanted = true; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
   S.qi = i; const t = current();
   if (t.source === 'youtube') {
     audio.pause(); audio.removeAttribute('src'); mode = 'yt'; showYT(true, t);
@@ -872,13 +882,25 @@ async function playIndex(i){
     try { await audio.play(); } catch (e) { if (e.name !== 'AbortError') toast('Playback blocked — press play'); }
   }
   updateNow(); renderQueue(); highlight(); mediaSession(t); syncPlay();
+  if (pendingFadeIn) { pendingFadeIn = false; fadeInCurrent(); }
   if (S.autoNP && !document.body.classList.contains('np-open') && !matchMedia('(max-width:1100px)').matches) openNP('np');
 }
 function playList(list, i){ S.queue = list.slice(); if (S.shuffle) { const first = S.queue.splice(i,1)[0]; shuffleArr(S.queue); S.queue.unshift(first); i = 0; } playIndex(i); }
 function shuffleArr(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+let pendingFadeIn = false;
+function bgPlayableIndex(from){
+  // with the screen off only non-YouTube songs can play: find the next one
+  for (let j = from; j < S.queue.length; j++) if (S.queue[j].source !== 'youtube') return j;
+  return -1;
+}
 function next(auto=false){
   if (!S.queue.length) return;
   if (auto && S.repeat === 'one') { pSeek(0); pPlay(); return; }
+  pendingFadeIn = auto && S.xfade > 0 && !document.hidden;
+  if (document.hidden && S.bgSkipYT && S.queue[S.qi + 1]?.source === 'youtube') {
+    const j = bgPlayableIndex(S.qi + 1);
+    if (j >= 0) { playIndex(j); return; }
+  }
   if (S.qi + 1 < S.queue.length) playIndex(S.qi + 1);
   else if (S.repeat === 'all' || !auto) playIndex(0);
   else if (S.autoplay) autoplayMore();
@@ -905,8 +927,47 @@ function toggle(){
 }
 function addToQueue(t){ S.queue.push(t); if (S.qi < 0) playIndex(S.queue.length-1); renderQueue(); toast('Added to queue'); }
 
+/* YouTube can't be mixed with another song, so its transitions are a fade-out then a fade-in,
+   shaped by the chosen effect (chops for Stutter gate, a hard cut for Quick cut, smooth otherwise). */
+let ytFade = null;
+function fxVolumeShape(id){
+  return id === 'gate' ? k => (Math.sin((performance.now() / 1000) * Math.PI * 2 * (4 + 12 * k)) > 0 ? 1 : .05) * (1 - k)
+       : id === 'cut' ? k => k < .9 ? 1 : 0
+       : id === 'tape' || id === 'dark' ? k => 1 - k * k
+       : k => Math.cos(k * Math.PI / 2);
+}
+function ytFadeOut(sec, fxId, then){
+  if (ytFade || !yt?.setVolume) return;
+  const shape = fxVolumeShape(fxId === 'random' ? FX[Math.floor(Math.random() * (FX.length - 2))].id : fxId), start = performance.now(), ms = sec * 1000;
+  if (fxId === 'tape' || fxId === 'dark') { try { yt.setPlaybackRate(.5); } catch {} }
+  ytFade = setInterval(() => {
+    const k = Math.min(1, (performance.now() - start) / ms);
+    yt.setVolume(Math.round(userVol * 100 * Math.max(0, shape(k))));
+    if (k >= 1) { clearInterval(ytFade); ytFade = null; try { yt.setPlaybackRate(1); } catch {} then?.(); }
+  }, 40);
+}
+function fadeInCurrent(){
+  const sec = Math.min(S.xfade / 2, 5); if (!sec) return;
+  const start = performance.now(), ms = sec * 1000, isYT = mode === 'yt';
+  if (!isYT) setLevel(audio, 0); else yt?.setVolume(0);
+  const tm = setInterval(() => {
+    const k = Math.min(1, (performance.now() - start) / ms), v = Math.sin(k * Math.PI / 2);
+    if (document.hidden) { clearInterval(tm); isYT ? applyVolume() : setLevel(audio, 1); return; }
+    if (isYT) yt?.setVolume(Math.round(userVol * 100 * v)); else if (!fade) setLevel(audio, v);
+    if (k >= 1) { clearInterval(tm); isYT ? applyVolume() : setLevel(audio, 1); }
+  }, 40);
+}
+function maybeYTFade(){
+  if (mode !== 'yt' || !S.xfade || ytFade || document.hidden || ytState !== 1) return;
+  const d = pDur(), rem = d - pTime(), half = Math.min(S.xfade / 2, 5);
+  if (!d || d < half * 3 || rem > half || rem < .4) return;
+  if (S.qi + 1 >= S.queue.length && S.repeat !== 'all' && !S.autoplay) return;
+  ytFadeOut(rem - .2, S.fx);
+}
 function tickUI(){
   const d = pDur(), c = pTime();
+  maybeYTFade();
+  if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && d && isFinite(d)) { try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(c, d), playbackRate: 1 }); } catch {} }
   $('#cur').textContent = fmt(c); $('#dur').textContent = fmt(d);
   if (!seeking) { const p = d ? c / d * 1000 : 0; $('#seek').value = p; $('#seek').style.setProperty('--p', p/10 + '%'); const ns = document.getElementById('npSeek'); if (ns) { ns.value = p; ns.style.setProperty('--p', p/10 + '%'); } }
   const nc = document.getElementById('npCur'); if (nc) { nc.textContent = fmt(c); document.getElementById('npDur').textContent = fmt(d); }
@@ -976,6 +1037,19 @@ document.addEventListener('visibilitychange', () => {
   if (mode === 'audio' && audio.paused && audio.getAttribute('src') && !audio.ended && wasPlaying) audio.play().catch(() => {});
 });
 let wasPlaying = false, ytWanted = false;
+S.bgSkipYT = store.get('bgSkipYT', true);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (fade) cancelFade();                 // finish any crossfade now: timers freeze with the screen off
+    if (ytFade) { clearInterval(ytFade); ytFade = null; try { yt?.setPlaybackRate(1); } catch {} applyVolume(); }
+    // A YouTube song stops when the screen goes off; move on to the next song that can keep playing
+    if (mode === 'yt' && S.bgSkipYT && ytWanted && !userPaused) setTimeout(() => {
+      if (!document.hidden || mode !== 'yt' || ytState === 1) return;
+      const j = bgPlayableIndex(S.qi + 1);
+      if (j >= 0) { yt?.pauseVideo(); playIndex(j); }
+    }, 1500);
+  } else if (actx && actx.state !== 'running' && !userPaused) actx.resume().catch(() => {});
+});
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') wasPlaying = !pPaused(); });
 
 let seeking = false;
@@ -1002,6 +1076,7 @@ function mediaSession(t){
   const ms = navigator.mediaSession;
   ms.setActionHandler('play', pPlay); ms.setActionHandler('pause', pPause);
   ms.setActionHandler('nexttrack', () => next()); ms.setActionHandler('previoustrack', prev);
+  for (const [a, fn] of [['seekto', d => pSeek(d.seekTime)], ['seekforward', () => pSeek(pTime() + 10)], ['seekbackward', () => pSeek(pTime() - 10)], ['stop', pPause]]) { try { ms.setActionHandler(a, fn); } catch {} }
 }
 
 document.addEventListener('keydown', e => {
@@ -1052,8 +1127,10 @@ async function ytSearch(q){
 }
 async function ytChart(){
   if (ytCache.has('chart')) return ytCache.get('chart');
+  const saved = store.get('ytChart', null);
+  if (saved && Date.now() - saved.at < 3 * 3600 * 1000 && saved.region === store.get('ytRegion', 'KE')) { ytCache.set('chart', saved.list); return saved.list; }
   const vr = await ytApi('videos', { part: 'snippet,contentDetails', chart: 'mostPopular', videoCategoryId: '10', regionCode: store.get('ytRegion', 'KE'), maxResults: '30' });
-  const out = (vr.items || []).map(ytTrack); ytCache.set('chart', out); return out;
+  const out = (vr.items || []).map(ytTrack); ytCache.set('chart', out); store.set('ytChart', { at: Date.now(), region: store.get('ytRegion', 'KE'), list: out }); return out;
 }
 function ytSetup(){
   return new Promise(res => {
@@ -1678,7 +1755,7 @@ function openFxCatalogue(){
   const bg = document.createElement('div'); bg.className = 'modal-bg';
   const draw = () => {
     bg.innerHTML = `<div class="fxcat">
-      <div class="fx-head"><div><h3>Transition effects</h3><p>How one song hands over to the next when crossfade is on. Works between Audius songs and your own files.</p></div><button class="roundic" data-x title="Close">✕</button></div>
+      <div class="fx-head"><div><h3>Transition effects</h3><p>How one song hands over to the next when crossfade is on. Every effect works between Audius songs and your own files; YouTube songs get a fade out and in shaped by the effect.</p></div><button class="roundic" data-x title="Close">✕</button></div>
       <div class="fx-len"><span>Crossfade length</span><input type="range" id="fxLen" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><b id="fxLenV">${S.xfade ? S.xfade + ' s' : 'Off'}</b></div>
       <div class="fx-grid">${FX.map(f => `<div class="fx-card ${S.fx === f.id ? 'on' : ''}" data-fx="${f.id}" style="--t:${f.tint}">
         <div class="fx-ic">${f.icon}</div><div class="fx-name">${esc(f.name)}${f.web && !corsOK ? ' <small>(n/a)</small>' : ''}</div><div class="fx-desc">${esc(f.desc)}</div>
@@ -1689,8 +1766,10 @@ function openFxCatalogue(){
     bg.querySelectorAll('[data-fx]').forEach(c => {
       c.querySelector('.fx-use')?.addEventListener('click', e => { e.stopPropagation(); choose(c.dataset.fx); });
       c.querySelector('.fx-try')?.addEventListener('click', async e => { e.stopPropagation();
-        if (mode !== 'audio' || !current() || audio.paused) { toast('Play an Audius song or one of your files first, then tap Try it'); return; }
-        choose(c.dataset.fx, true); await maybeCrossfade(true, c.dataset.fx); });
+        if (!current() || pPaused()) { toast('Play a song first, then tap Try it'); return; }
+        choose(c.dataset.fx, true);
+        if (mode === 'yt') { if (S.qi + 1 >= S.queue.length) { toast('Queue another song to hear the transition'); return; } toast(`${fxById(c.dataset.fx).icon} ${fxById(c.dataset.fx).name}`); ytFadeOut(Math.min(Math.max(S.xfade, 6) / 2, 5), c.dataset.fx, () => { pendingFadeIn = true; next(); }); return; }
+        await maybeCrossfade(true, c.dataset.fx); });
       c.addEventListener('click', () => choose(c.dataset.fx));
     });
     bg.querySelector('[data-x]').onclick = () => bg.remove();
@@ -1714,10 +1793,12 @@ function renderSettings(m){
     ${srow('Crossfade songs', 'Blend the end of one song into the start of the next.', `<div class="inline"><input type="range" id="sXf" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><span class="val">${S.xfade ? S.xfade + ' s' : 'Off'}</span></div>`)}
     ${srow('Transition effect', `Currently: <b>${fxById(S.fx).icon} ${esc(fxById(S.fx).name)}</b>${S.xfade ? '' : ' — turn on crossfade to hear it'}`, `<button class="outline" id="sFx">Browse effects</button>`)}
     ${srow('Autoplay', 'When your music runs out, keep playing similar songs.', toggleHTML('sAuto', S.autoplay))}
+    ${srow('Keep music going with the screen off', 'YouTube songs can\'t play in the background. When your screen is off, skip to the next Audius song or downloaded file instead of stopping.', toggleHTML('sBgYT', S.bgSkipYT))}
     ${srow('Shuffle', 'Play songs in random order.', toggleHTML('sShuf', S.shuffle))}
     ${srow('Repeat', 'What happens at the end of the queue.', selectHTML('sRep', [['off', 'Off'], ['all', 'Repeat all'], ['one', 'Repeat one song']], S.repeat))}
 
     <h2 class="shead">Audio quality &amp; sound</h2>
+    ${isIOS ? `<div class="sdesc" style="margin:4px 0 8px">On iPhone and iPad these sound settings are turned off so music keeps playing when the screen locks.</div>` : ''}
     ${srow('Normalize volume', 'Even out loud and quiet songs so you don\'t have to keep changing the volume.', toggleHTML('sNorm', S.normalize))}
     ${srow('Mono audio', 'Play the left and right speakers the same — handy with one earbud.', toggleHTML('sMono', S.mono))}
     ${srow('Equalizer', 'Shape the sound with presets or your own settings.', toggleHTML('sEq', eqOn))}
@@ -1754,6 +1835,7 @@ function renderSettings(m){
   xf.onchange = () => render();
   on('sFx', openFxCatalogue);
   flip('sAuto', 'autoplay');
+  flip('sBgYT', 'bgSkipYT');
   on('sShuf', () => { $('#shuffleBtn').click(); render(); });
   $('#sRep').onchange = e => { S.repeat = e.target.value; store.set('repeat', S.repeat); syncModes(); };
   flip('sNorm', 'normalize', () => { if (!wantOutput()) { S.normalize = false; store.set('normalize', false); } });
@@ -1831,13 +1913,22 @@ $('#backNav').onclick = goBack;
 /* ---------- Data loading ---------- */
 let reqId = 0;
 async function loadTrending(){
-  const my = ++reqId; S.loading = true; S.error = ''; render();
+  const my = ++reqId, key = 'trend:' + S.genre, cached = store.get(key, null);
+  S.error = '';
+  if (cached?.list?.length) { S.results = cached.list; S.loading = false; render(); }   // instant: last list
+  else { S.loading = true; render(); }
+  if (cached && Date.now() - cached.at < 10 * 60 * 1000) return;                      // fresh enough
   try {
     const params = { time: 'week', limit: 50 }; if (S.genre !== 'All') params.genre = S.genre;
     const data = await api('/tracks/trending', params);
-    if (my !== reqId) return; S.results = (data || []).filter(t => t.is_streamable !== false).map(normalize);
-  } catch (e) { if (my === reqId) S.error = navigator.onLine ? 'The Audius API did not respond.' : "You're offline — your downloads still work."; }
-  if (my === reqId) { S.loading = false; if (S.view === 'home') render(); }
+    if (my !== reqId) return;
+    const list = (data || []).filter(t => t.is_streamable !== false).map(normalize);
+    const changed = JSON.stringify(list.map(t => t.id)) !== JSON.stringify((cached?.list || []).map(t => t.id));
+    S.results = list; store.set(key, { at: Date.now(), list });
+    if (my === reqId) { S.loading = false; if (S.view === 'home' && (changed || !cached)) render(); }
+    return;
+  } catch (e) { if (my === reqId && !cached) S.error = navigator.onLine ? 'The Audius API did not respond.' : "You're offline — your downloads still work."; }
+  if (my === reqId) { S.loading = false; if (S.view === 'home' && !cached) render(); }
 }
 let ytReq = 0;
 async function runYT(q, force){
@@ -1896,6 +1987,11 @@ function go(v, keep){
 document.querySelectorAll('.nav').forEach(n => n.onclick = () => go(n.dataset.view));
 
 /* ---------- Installable app ---------- */
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  if (e.data?.type !== 'sauti-updated' || document.getElementById('updBar')) return;
+  const b = document.createElement('button'); b.id = 'updBar'; b.className = 'upd'; b.textContent = 'A new version of Sauti is ready — tap to refresh';
+  b.onclick = () => location.reload(); document.body.appendChild(b);
+});
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW failed', e)));
 }
@@ -1910,11 +2006,14 @@ window.addEventListener('offline', () => toast("You're offline — downloads sti
 /* ---------- Boot ---------- */
 (async () => {
   try {
-    for (const r of await dbAll()) { const { audio: _a, art, ...meta } = r; if (art) meta.artUrl = URL.createObjectURL(art); S.downloads.set(meta.id, meta); }
+    const recs = await Promise.race([dbAll(), new Promise(r => setTimeout(() => r(null), 400))]);
+    const load = list => { for (const r of list || []) { const { audio: _a, art, ...meta } = r; if (art && !S.downloads.has(meta.id)) meta.artUrl = URL.createObjectURL(art); S.downloads.set(meta.id, meta); } };
+    if (recs) load(recs); else dbAll().then(l => { load(l); updateCounts(); if (['downloads', 'home', 'library'].includes(S.view)) render(); }).catch(() => {});
   } catch (e) { console.warn('IndexedDB unavailable', e); }
   updateCounts(); restoring = true; go('home'); restoring = false;
-  const sp = $('#splash'); const hide = () => { sp.style.opacity = '0'; setTimeout(() => sp.remove(), 420); };
-  const started = performance.now(); const wait = () => (!S.loading || performance.now() - started > 4000) ? setTimeout(hide, Math.max(0, 700 - (performance.now() - started))) : setTimeout(wait, 100); wait();
+  const sp = $('#splash'); const hide = () => { if (!sp.isConnected) return; sp.style.opacity = '0'; setTimeout(() => sp.remove(), 220); };
+  requestAnimationFrame(() => requestAnimationFrame(hide));   // logo shows only until the first screen is drawn
+  setTimeout(hide, 1500);
 })();
 </script>
 </body>
