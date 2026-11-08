@@ -1057,7 +1057,8 @@ const pDur = () => mode === 'yt' ? (yt?.getDuration?.() || current()?.duration |
 function pPlay(){ if (mode === 'yt' && document.hidden && bgHandoff()) return; if (mode === 'yt') keepAlive.on();
   if (needsGraph() && !actx) wantOutput(); if (actx?.state === 'suspended') actx.resume().catch(() => {}); userPaused = false; ytWanted = true; if (mode === 'yt') yt?.playVideo(); else audio.play().catch(() => {}); }
 function pPause(){ userPaused = true; ytWanted = false; if (mode === 'yt') { yt?.pauseVideo(); audio.pause(); } else { cancelFade(); audio.pause(); } }
-function pSeek(sec){ setTimeout(() => nativeUpdate(true), 300); sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
+function pSeek(sec){ setTimeout(() => nativeUpdate(true), 300);
+  if (S.resume && current()?.id === S.resume.id && !(mode === 'yt' ? ytState !== -1 : audio.getAttribute('src'))) { const d = current().duration || 0; S.resume.pos = Math.max(0, Math.min(sec, d || sec)); $('#cur').textContent = fmt(S.resume.pos); const pct = d ? S.resume.pos / d * 1000 : 0; $('#seek').value = pct; $('#seek').style.setProperty('--p', pct / 10 + '%'); saveSession(); return; } sec = Math.max(0, Math.min(pDur() || 0, sec)); if (mode !== 'yt') cancelFade(); if (mode === 'yt') yt?.seekTo(sec, true); else audio.currentTime = sec; tickUI(); }
 function applyVolume(){ applyMaster(); const v = Math.round(userVol * 100); if (yt?.setVolume) { yt.setVolume(v); isMuted ? yt.mute() : yt.unMute(); } }
 function showYT(on, t){
   $('#ytPanel').classList.toggle('show', on); document.body.classList.toggle('yt-on', on);
@@ -1077,7 +1078,7 @@ async function playIndex(i){
     mode = 'yt'; keepAlive.on(); showYT(true, t);
     try { await ensureYT(); } catch (e) { toast("Couldn't load the YouTube player"); return; }
     if (current() !== t) return;
-    yt.loadVideoById(t.ytId);
+    const rp = takeResume(t); if (rp) yt.loadVideoById({ videoId: t.ytId, startSeconds: rp }); else yt.loadVideoById(t.ytId);
   } else {
     if (mode === 'yt') { yt?.stopVideo(); ytState = -1; showYT(false); }
     mode = 'audio'; keepAlive.off();
@@ -1085,9 +1086,11 @@ async function playIndex(i){
     if (!src) { toast('File missing'); return; }
     if (current() !== t) return;
     resetChain(audio); setLevel(audio, 1); audio.src = src;
+    const rp = takeResume(t); if (rp) { try { audio.currentTime = rp; } catch {} audio.addEventListener('loadedmetadata', () => { if (audio.currentTime < rp - 1 && rp < (audio.duration || Infinity) - 2) audio.currentTime = rp; }, { once: true }); }
     try { await audio.play(); } catch (e) { if (e.name !== 'AbortError') toast('Playback blocked — press play'); }
   }
   updateNow(); renderQueue(); highlight(); mediaSession(t); syncPlay();
+  setTimeout(saveSession, 1500);
   if (pendingFadeIn) { pendingFadeIn = false; fadeInCurrent(); }
   if (S.dj) setTimeout(djPrepare, 1500);
   setTimeout(() => prefetchLyrics(t), 800);
@@ -1190,6 +1193,7 @@ function maybeYTFade(){
   ytFadeOut(rem - .2, S.fx);
 }
 function tickUI(){
+  if (performance.now() - sessionSavedAt > 5000 && !pPaused()) saveSession();
   const d = pDur(), c = pTime();
   maybeYTFade(); lyricTick();
   if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && d && isFinite(d)) { try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(c, d), playbackRate: 1 }); } catch {} }
@@ -1294,7 +1298,7 @@ vol.addEventListener('input', () => { userVol = vol.value/100; isMuted = false; 
 $('#muteBtn').onclick = () => { isMuted = !isMuted; syncVol(); };
 syncVol();
 
-function syncPlay(){ nativeUpdate(); const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; const np = document.getElementById('npPlay'); if (np) np.innerHTML = paused ? I.play : I.pause; try { highlight(); } catch {} document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
+function syncPlay(){ nativeUpdate(); if (typeof saveSession === 'function' && current()) saveSession(); const paused = pPaused(); $('#playBtn').innerHTML = paused ? I.play : I.pause; const np = document.getElementById('npPlay'); if (np) np.innerHTML = paused ? I.play : I.pause; try { highlight(); } catch {} document.body.classList.toggle('paused', paused); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; }
 syncPlay();
 $('#playBtn').onclick = toggle; $('#nextBtn').onclick = () => next(); $('#prevBtn').onclick = prev;
 const syncModes = () => { $('#shuffleBtn').classList.toggle('on', S.shuffle); const r=$('#repeatBtn'); r.classList.toggle('on', S.repeat!=='off'); r.title = `Repeat: ${S.repeat}`; r.style.position='relative'; r.dataset.one = S.repeat==='one'; r.querySelector('.one')?.remove(); if (S.repeat==='one') r.insertAdjacentHTML('beforeend','<b class="one" style="position:absolute;font-size:9px;top:4px;right:4px">1</b>'); };
@@ -2412,6 +2416,37 @@ function go(v, keep){
 }
 document.querySelectorAll('.nav').forEach(n => n.onclick = () => go(n.dataset.view));
 
+/* ---------- Remember what was playing (restored, paused, when the app is reopened) ---------- */
+function takeResume(t){
+  const r = S.resume; S.resume = null;
+  return r && t && r.id === t.id && r.pos > 2 ? r.pos : 0;
+}
+let sessionSavedAt = 0;
+function saveSession(){
+  try {
+    if (!S.queue.length || S.qi < 0) return;
+    const from = Math.max(0, S.qi - 50), q = S.queue.slice(from, S.qi + 150).map(plMeta);
+    const pos = S.resume && S.resume.id === current()?.id ? S.resume.pos : pTime();
+    store.set('session', { q, qi: S.qi - from, pos: Math.max(0, Math.floor(pos || 0)), at: Date.now() });
+    sessionSavedAt = performance.now();
+  } catch {}
+}
+function restoreSession(){
+  const ss = store.get('session', null);
+  if (!ss?.q?.length || ss.qi < 0 || ss.qi >= ss.q.length) return;
+  S.queue = ss.q.map(t => (S.downloads.has(t.id) ? { ...t, artUrl: S.downloads.get(t.id).artUrl || t.artUrl } : t));
+  S.qi = ss.qi;
+  const t = current();
+  S.resume = { id: t.id, pos: ss.pos || 0 };
+  updateNow();
+  const d = t.duration || 0, pos = Math.min(ss.pos || 0, d || Infinity);
+  $('#cur').textContent = fmt(pos); $('#dur').textContent = fmt(d);
+  const pct = d ? pos / d * 1000 : 0; $('#seek').value = pct; $('#seek').style.setProperty('--p', pct / 10 + '%');
+  syncPlay();
+}
+addEventListener('pagehide', saveSession);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveSession(); });
+
 /* ---------- Installable app ---------- */
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
   if (e.data?.type !== 'sauti-updated' || document.getElementById('updBar')) return;
@@ -2437,6 +2472,7 @@ window.addEventListener('offline', () => toast("You're offline — downloads sti
     if (recs) load(recs); else dbAll().then(l => { load(l); updateCounts(); if (['downloads', 'home', 'library'].includes(S.view)) render(); }).catch(() => {});
   } catch (e) { console.warn('IndexedDB unavailable', e); }
   updateCounts(); restoring = true; go('home'); restoring = false;
+  restoreSession();
   const sp = $('#splash'); const hide = () => { if (!sp.isConnected) return; sp.style.opacity = '0'; setTimeout(() => sp.remove(), 220); };
   requestAnimationFrame(() => requestAnimationFrame(hide));   // logo shows only until the first screen is drawn
   setTimeout(hide, 1500);
