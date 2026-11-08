@@ -24,7 +24,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      - name: Android SDK (preinstalled on the runner)
+        run: echo "ANDROID_HOME=$ANDROID_HOME"; ls "$ANDROID_HOME/platforms" || true
 
       - name: Create the Android project
         run: |
