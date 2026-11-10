@@ -400,6 +400,12 @@
   .djchips span{background:var(--panel2);border-radius:500px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--muted)}
   .srow.dim{opacity:.5}
 
+  /* lite mode */
+  .lite *,.lite *::before,.lite *::after{animation:none!important;transition:none!important}
+  .lite .fade{opacity:1}
+  .lite .eq b{height:9px}.lite .eq b:nth-child(2){height:14px}
+  .lite .cart,.lite .np-art,.lite .phead .part,.lite .bigplay,.lite .cplay{box-shadow:none}
+
   /* tab bar (mobile) */
   .tabbar{display:none}
   .drawer{display:none}
@@ -730,6 +736,10 @@ let audio = players[0];                         // the element that is "the curr
 let userVol = store.get('vol', 80) / 100, isMuted = false;
 S.xfade = store.get('xfade', 0);                // crossfade seconds (0 = off)
 S.fx = store.get('fx', 'blend');                // transition effect id
+S.lite = store.get('lite', false); document.body.classList.toggle('lite', S.lite);   // Lite mode: no effects engine, no animations
+const coarse = matchMedia('(pointer:coarse)').matches;
+const bgFadeOK = () => !coarse && !NATIVE && !!actx && actx.state === 'running';   // on a computer, scheduled mixes keep running when the window is hidden
+let corsProven = store.get('corsProven', false);
 let fade = null;                                // { from, to, timer, fx } while a crossfade is running
 const otherPlayer = () => players[0] === audio ? players[1] : players[0];
 /* Phones let a web app keep playing in the background but not START new sound there.
@@ -749,13 +759,15 @@ const keepAlive = { on(){ audio.loop = true; if (audio.src !== SILENCE) audio.sr
 let actx = null, master = null; const chains = new Map();
 function ensureGraph(){
   if (actx) { if (actx.state === 'suspended') actx.resume().catch(() => {}); return true; }
-  if (!corsOK) return false;
+  if (!corsOK || S.lite) return false;
   try {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
-    actx = new AC(); master = actx.createGain(); master.connect(actx.destination);
+    try { actx = new AC({ latencyHint: 'playback' }); } catch { actx = new AC(); }   // bigger audio buffer: fewer glitches, less CPU
+    master = actx.createGain(); master.connect(actx.destination);
     // generated reverb impulse: 2.8s of decaying stereo noise
     const len = Math.floor(actx.sampleRate * 2.8), imp = actx.createBuffer(2, len, actx.sampleRate);
     for (let c = 0; c < 2; c++) { const d = imp.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    const conv = actx.createConvolver(); conv.buffer = imp; conv.connect(master);   // one shared reverb
     players.forEach(el => {
       const src = actx.createMediaElementSource(el);
       const hp = actx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 10; hp.Q.value = 0.7;
@@ -765,10 +777,9 @@ function ensureGraph(){
       const delay = actx.createDelay(2); delay.delayTime.value = 0.36;
       const fb = actx.createGain(); fb.gain.value = 0.5;
       const revSend = actx.createGain(); revSend.gain.value = 0;
-      const conv = actx.createConvolver(); conv.buffer = imp;
       src.connect(hp); hp.connect(lp); lp.connect(level); level.connect(master);
       lp.connect(echoSend); echoSend.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(master);
-      lp.connect(revSend); revSend.connect(conv); conv.connect(master);
+      lp.connect(revSend); revSend.connect(conv);
       chains.set(el, { hp, lp, level, echoSend, delay, fb, revSend });
     });
     applyMaster();
@@ -778,23 +789,71 @@ function ensureGraph(){
   } catch (e) { console.warn('effects unavailable', e); actx = null; return false; }
 }
 function applyMaster(){ if (master) master.gain.value = isMuted ? 0 : userVol; }
+const pset = (param, v) => { try { param.cancelScheduledValues(0); } catch {} param.value = v; };
+let recMap = null;                               // while an effect is being pre-computed: stand-in element → recorder
 function setLevel(el, v){
   v = Math.max(0, Math.min(1, v));
+  if (recMap) { const r = recMap.get(el); if (r) { r.level.gain.value = v; return; } }
   const c = chains.get(el);
-  if (c) { el.volume = 1; c.level.gain.value = v; } else el.volume = userVol * v;
+  if (c) { el.volume = 1; pset(c.level.gain, v); } else el.volume = userVol * v;
 }
 function resetChain(el, keepRate){
-  if (!keepRate) el.playbackRate = 1; el.preservesPitch = true; el.mozPreservesPitch = true; el.webkitPreservesPitch = true;
+  if (!keepRate) { el.playbackRate = 1; el.preservesPitch = true; el.mozPreservesPitch = true; el.webkitPreservesPitch = true; }
   const c = chains.get(el); if (!c) return;
-  c.hp.frequency.value = 10; c.lp.frequency.value = 22000; c.lp.Q.value = 0.7; c.echoSend.gain.value = 0; c.revSend.gain.value = 0;
+  pset(c.hp.frequency, 10); pset(c.lp.frequency, 22000); pset(c.lp.Q, 0.7); pset(c.echoSend.gain, 0); pset(c.revSend.gain, 0);
+  try { c.fb.gain.cancelScheduledValues(0); c.delay.delayTime.cancelScheduledValues(0); } catch {}
+}
+/* Stable transitions: the whole effect is computed up front and handed to the audio engine as
+   smooth curves, so the mix no longer depends on the page's timers (which lag when the computer
+   is busy or the window is in the background — that lag was the stutter). */
+const FX_PARAMS = [['hp', 'frequency'], ['lp', 'frequency'], ['lp', 'Q'], ['level', 'gain'], ['echoSend', 'gain'], ['fb', 'gain'], ['delay', 'delayTime'], ['revSend', 'gain']];
+function scheduleFx(fx, from, to, ms){
+  const cf = chains.get(from), ct = chains.get(to);
+  if (!cf || !ct || !actx || actx.state !== 'running') return null;
+  const N = Math.max(48, Math.min(1200, Math.round(ms / 10)));
+  let i = 0; const all = [];
+  const mk = c => { const o = {};
+    for (const [n, pn] of FX_PARAMS) { const param = c[n][pn], arr = new Float32Array(N).fill(param.value); all.push([param, arr]);
+      (o[n] ||= {})[pn] = { get value(){ return arr[i]; }, set value(v){ arr[i] = v; } }; }
+    return o; };
+  const rf = mk(cf), rt = mk(ct);
+  const fF = { playbackRate: from.playbackRate, preservesPitch: from.preservesPitch }, fT = { playbackRate: to.playbackRate, preservesPitch: to.preservesPitch };
+  const rateF = new Float32Array(N), rateT = new Float32Array(N), ppF = new Uint8Array(N), ppT = new Uint8Array(N);
+  recMap = new Map([[fF, rf], [fT, rt]]);
+  try {
+    for (i = 0; i < N; i++) {
+      if (i) for (const [, arr] of all) arr[i] = arr[i - 1];
+      fx.frame(i / (N - 1), fF, fT, rf, rt, ms);
+      rateF[i] = fF.playbackRate; rateT[i] = fT.playbackRate; ppF[i] = fF.preservesPitch ? 1 : 0; ppT[i] = fT.preservesPitch ? 1 : 0;
+    }
+  } catch (e) { recMap = null; return null; }
+  recMap = null;
+  const t0 = actx.currentTime + .03, dur = ms / 1000, used = [];
+  try {
+    for (const [param, arr] of all) {
+      let flat = Math.abs(arr[0] - param.value) < 1e-6; for (let j = 1; flat && j < N; j++) if (Math.abs(arr[j] - arr[0]) > 1e-6) flat = false;
+      if (flat) continue;
+      param.cancelScheduledValues(0); param.setValueCurveAtTime(arr, t0, dur); used.push(param);
+    }
+  } catch (e) { used.forEach(pm => { try { pm.cancelScheduledValues(0); } catch {} }); return null; }
+  const varies = a => { for (let j = 1; j < N; j++) if (Math.abs(a[j] - a[0]) > 1e-4) return true; return false; };
+  return { N, rateF: varies(rateF) ? rateF : null, rateT: varies(rateT) ? rateT : null, ppF, ppT };
+}
+function applyRates(sc, k, from, to){
+  const j = Math.min(sc.N - 1, Math.round(k * (sc.N - 1)));
+  if (sc.rateF) { const pp = !!sc.ppF[j]; if (from.preservesPitch !== pp) pitch(from, !pp); if (Math.abs(from.playbackRate - sc.rateF[j]) > .004) from.playbackRate = sc.rateF[j]; }
+  if (sc.rateT) { const pp = !!sc.ppT[j]; if (to.preservesPitch !== pp) pitch(to, !pp); if (Math.abs(to.playbackRate - sc.rateT[j]) > .004) to.playbackRate = sc.rateT[j]; }
 }
 let glideTimer = null;
 function glideRate(el){
-  clearInterval(glideTimer); const r0 = el.playbackRate; if (Math.abs(r0 - 1) < .002) { el.playbackRate = 1; return; }
-  if (document.hidden) { el.playbackRate = 1; return; }
-  const t0 = performance.now(), ms = 12000;
-  glideTimer = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / ms); if (el !== audio || document.hidden) { el.playbackRate = 1; clearInterval(glideTimer); return; }
-    el.playbackRate = r0 + (1 - r0) * k; if (k >= 1) clearInterval(glideTimer); }, 100);
+  // Beatmatching works like a DJ deck's pitch fader (speed and pitch move together by a tiny amount),
+  // so easing back to normal speed is perfectly smooth — no time-stretching, which caused stutter.
+  clearInterval(glideTimer); const r0 = el.playbackRate;
+  const done = () => { clearInterval(glideTimer); el.playbackRate = 1; el.preservesPitch = true; el.mozPreservesPitch = true; el.webkitPreservesPitch = true; };
+  if (Math.abs(r0 - 1) < .002 || document.hidden) { done(); return; }
+  const t0 = performance.now(), ms = 15000;
+  glideTimer = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / ms); if (el !== audio || fade) { clearInterval(glideTimer); return; } if (document.hidden || k >= 1) { done(); return; }
+    el.playbackRate = r0 + (1 - r0) * k; }, 200);
 }
 function setVols(){ players.forEach(a => { a.muted = isMuted; }); applyMaster(); if (!fade) setLevel(audio, 1); }
 function cancelFade(){
@@ -844,10 +903,10 @@ const FX = [
     frame(k, f, t, cf){ const r = smooth(seg(k, 0, .3)); cf.hp.frequency.value = expf(10, 900, r); cf.lp.frequency.value = expf(20000, 2600, r); cf.lp.Q.value = 2;
       setLevel(f, 1 - smooth(seg(k, .45, .85))); setLevel(t, smooth(seg(k, .5, 1))); } },
   { id: 'gate', name: 'Stutter gate', icon: '⚡', tint: '#5a1f4e', desc: 'Rhythmic chops that speed up as the track hands over.',
-    frame(k, f, t, cf, ct, ms){ const rate = 4 + 12 * k, on = Math.sin((performance.now() / 1000) * Math.PI * 2 * rate) > 0;
+    frame(k, f, t, cf, ct, ms){ const rate = 4 + 12 * k, on = Math.sin((k * ms / 1000) * Math.PI * 2 * rate) > 0;
       setLevel(f, (on ? 1 : .05) * (1 - smooth(seg(k, .4, .9)))); setLevel(t, smooth(seg(k, .55, 1))); } },
   { id: 'wobble', name: 'Wobble', icon: '🔊', tint: '#2e5a1c', web: true, desc: 'A pulsing wobble filter takes the old song out.',
-    frame(k, f, t, cf){ const lfo = .5 + .5 * Math.sin((performance.now() / 1000) * Math.PI * 2 * (3 + 3 * k)); cf.lp.Q.value = 9;
+    frame(k, f, t, cf, ct, ms){ const lfo = .5 + .5 * Math.sin((k * ms / 1000) * Math.PI * 2 * (3 + 3 * k)); cf.lp.Q.value = 9;
       cf.lp.frequency.value = Math.max(120, expf(6000, 300, k) * (.25 + .75 * lfo)); setLevel(f, 1 - smooth(seg(k, .45, .9))); setLevel(t, smooth(seg(k, .4, 1))); } },
   { id: 'dark', name: 'Dark descent', icon: '🌑', tint: '#1a1a2e', web: true, desc: 'Slows, darkens and sinks into reverb — moody and cinematic.',
     frame(k, f, t, cf, ct){ pitch(f, true); f.playbackRate = 1 - .4 * smooth(seg(k, 0, .7)); cf.lp.frequency.value = expf(20000, 180, smooth(seg(k, 0, .75)));
@@ -863,7 +922,9 @@ function pickFx(id, fromT, toT){
   let fx = fxById(id);
   if (fx.id === 'auto') fx = fxById(djPickFx(fromT, toT));
   if (fx.id === 'random') { const pool = FX.filter(x => !['random', 'auto', 'cut'].includes(x.id) && (!x.web || corsOK)); fx = pool[Math.floor(Math.random() * pool.length)]; }
-  if (fx.web && !ensureGraph()) fx = FX[0];
+  if (S.lite) fx = FX[0];
+  else if (!ensureGraph() && fx.web) fx = FX[0];
+  if (document.hidden && ['tape', 'spin', 'dark'].includes(fx.id)) fx = FX[0];
   if (actx?.state === 'suspended') actx.resume().catch(() => {});
   return fx;
 }
@@ -946,6 +1007,7 @@ async function analyzeBlob(blob){
 }
 let djBusy = false;
 async function djPrepare(){
+  if (S.lite) { djArrange(); return; }             // Lite mode: no tempo analysis of files
   if (!S.dj || djBusy) return; djBusy = true;
   try {
     const list = [current(), ...S.queue.slice(S.qi + 1, S.qi + 7)].filter(Boolean);
@@ -979,13 +1041,23 @@ function nextIndexAuto(){
   if (S.qi + 1 < S.queue.length) return S.qi + 1;
   return S.repeat === 'all' && S.queue.length > 1 ? 0 : -1;
 }
+let pre = null;                                  // next song loading quietly on the second player
+function prebufferNext(){
+  if (pre || fade || xfadeStarting || mode !== 'audio' || audio.paused || !(S.xfade || S.dj)) return;
+  const d = audio.duration, left = d - audio.currentTime;
+  if (!isFinite(d) || left > 30 || left < 2) return;
+  const ni = nextIndexAuto(), nt = ni >= 0 ? S.queue[ni] : null;
+  if (!nt || nt.source === 'youtube') return;
+  const el = otherPlayer(); pre = { id: nt.id, el };
+  srcFor(nt).then(src => { if (!src || !pre || pre.id !== nt.id || fade || el !== otherPlayer()) return; resetChain(el); el.muted = isMuted; setLevel(el, 0); el.src = src; el.load(); }).catch(() => {});
+}
 let xfadeStarting = false;
 async function maybeCrossfade(force, fxOverride){
   if (fade || xfadeStarting || mode !== 'audio' || audio.paused) return false;
   const d = audio.duration, left = d - audio.currentTime, curT = current(), fi = trackDJ(curT);
   const djLen = S.dj ? Math.max(5, Math.min(14, (fi.bpm ? 16 * 60 / fi.bpm : 8))) : 0;
   const len = force ? Math.max(S.xfade || 0, djLen, 6) : (S.dj ? djLen : S.xfade);
-  if (!force && (!len || document.hidden || !isFinite(d) || d < len * 2 + 5 || left > len + (S.dj ? 4 * 60 / (fi.bpm || 120) : 0))) return false;
+  if (!force && (!len || (document.hidden && !bgFadeOK()) || !isFinite(d) || d < len * 2 + 5 || left > len + (S.dj ? 4 * 60 / (fi.bpm || 120) : 0))) return false;
   if (!force && S.dj) djArrange();
   const ni = force ? (S.qi + 1 < S.queue.length ? S.qi + 1 : (S.queue.length > 1 ? 0 : -1)) : nextIndexAuto();
   if (ni < 0) { if (force) toast('Queue another song to hear the transition'); return false; }
@@ -1001,22 +1073,30 @@ async function maybeCrossfade(force, fxOverride){
       if (wait > .08 && wait < bar && from.duration - from.currentTime - wait > len * .6) await new Promise(r => setTimeout(r, wait * 1000 / (from.playbackRate || 1)));
       if (fade || mode !== 'audio' || audio !== from || from.paused) return false;
     }
-    resetChain(to); to.muted = isMuted; setLevel(to, 0); to.src = src;
+    const preloaded = pre && pre.id === nt.id && pre.el === to && !!to.getAttribute('src'); pre = null;
+    resetChain(to); to.muted = isMuted; setLevel(to, 0); if (!preloaded) to.src = src;
     let beat = false;
     if (S.dj && S.beatmatch && fi.bpm && ti.bpm && fx.id !== 'spin') {
       const m = tempoMatch(fi.bpm * (from.playbackRate || 1), ti.bpm);
-      if (m.diff < .08) { to.playbackRate = m.rate; beat = true; }
+      if (m.diff < .06) { pitch(to, true); to.playbackRate = m.rate; beat = true; }
     }
+    // don't start the mix until the next song has enough loaded to play without gaps
+    if (to.readyState < 3) await new Promise(r => { to.addEventListener('canplay', r, { once: true }); setTimeout(r, 2500); });
+    if (fade || mode !== 'audio' || audio !== from || from.paused) return false;
+    if (to.readyState < 2) { pre = { id: nt.id, el: to }; return false; }
     if (S.dj && ti.off != null) { try { to.currentTime = ti.off; } catch {} }
     try { await to.play(); } catch { return false; }
-    const ms = Math.max(1000, (force ? len : Math.min(left, len)) * 1000), start = performance.now();
+    const leftNow = from.duration - from.currentTime;
+    const ms = Math.max(1000, (force ? len : Math.min(isFinite(leftNow) ? leftNow : left, len)) * 1000), start = performance.now();
     audio = to; S.qi = ni; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
     const cf = chains.get(from), ct = chains.get(to);
-    fade = { from, to, fx, beat, timer: setInterval(() => {
+    const sched = scheduleFx(fx, from, to, ms);
+    fade = { from, to, fx, beat, sched, timer: setInterval(() => {
       const k = Math.min(1, (performance.now() - start) / ms);
-      try { fx.frame(k, from, to, cf, ct, ms); } catch { setLevel(from, 1 - k); setLevel(to, k); }
+      if (sched) applyRates(sched, k, from, to);
+      else { try { fx.frame(k, from, to, cf, ct, ms); } catch { setLevel(from, 1 - k); setLevel(to, k); } }
       if (k >= 1) cancelFade();
-    }, 30) };
+    }, sched ? 50 : 30) };
     if (force || fx.id !== 'blend' || S.dj) toast(`${fx.icon} ${fx.name}${beat ? ' · beatmatched' : ''}`);
     updateNow(); renderQueue(); highlight(); mediaSession(nt); syncPlay(); tickUI();
     if (S.dj) setTimeout(djPrepare, 1500);
@@ -1071,7 +1151,8 @@ const current = () => S.queue[S.qi];
 async function playIndex(i){
   if (i < 0 || i >= S.queue.length) return;
   if (needsGraph() && !actx) wantOutput();
-  cancelFade(); otherPlayer().pause(); if (ytFade) { clearInterval(ytFade); ytFade = null; try { yt?.setPlaybackRate(1); } catch {} applyVolume(); }
+  if (!actx && corsProven && !coarse && (S.xfade || S.dj)) ensureGraph();
+  cancelFade(); { const o = otherPlayer(); o.pause(); if (pre || o.getAttribute('src')) { pre = null; o.removeAttribute('src'); o.load(); } } if (ytFade) { clearInterval(ytFade); ytFade = null; try { yt?.setPlaybackRate(1); } catch {} applyVolume(); }
   userPaused = false; ytWanted = true; lastGood.t = 0; lastGood.at = performance.now(); rec.pos = 0;
   S.qi = i; const t = current();
   if (t.source === 'youtube') {
@@ -1195,14 +1276,16 @@ function maybeYTFade(){
 function tickUI(){
   if (performance.now() - sessionSavedAt > 5000 && !pPaused()) saveSession();
   const d = pDur(), c = pTime();
-  maybeYTFade(); lyricTick();
+  maybeYTFade();
   if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && d && isFinite(d)) { try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(c, d), playbackRate: 1 }); } catch {} }
+  if (document.hidden && !NATIVE) return;          // in the background (e.g. while gaming): no screen updates at all
+  lyricTick();
   $('#cur').textContent = fmt(c); $('#dur').textContent = fmt(d);
   if (!seeking) { const p = d ? c / d * 1000 : 0; $('#seek').value = p; $('#seek').style.setProperty('--p', p/10 + '%'); const ns = document.getElementById('npSeek'); if (ns) { ns.value = p; ns.style.setProperty('--p', p/10 + '%'); } }
   const nc = document.getElementById('npCur'); if (nc) { nc.textContent = fmt(c); document.getElementById('npDur').textContent = fmt(d); }
 }
 players.forEach(el => {
-  el.addEventListener('timeupdate', () => { if (el === audio && mode === 'audio') { tickUI(); maybeCrossfade(); bgEarlyAdvance(); } });
+  el.addEventListener('timeupdate', () => { if (el === audio && mode === 'audio') { tickUI(); prebufferNext(); maybeCrossfade(); bgEarlyAdvance(); if (!corsProven && el.crossOrigin && el.currentTime > 3 && !el.src.startsWith('blob:')) { corsProven = true; store.set('corsProven', true); } } });
   el.addEventListener('ended', () => { if (el === audio && mode === 'audio' && earlyFor !== current()?.id + ':' + S.qi) next(true); });
   el.addEventListener('play', () => { if (el === audio) syncPlay(); });
   el.addEventListener('pause', () => { if (el === audio) syncPlay(); });
@@ -1280,7 +1363,7 @@ let wasPlaying = false, ytWanted = false;
 S.bgSkipYT = store.get('bgSkipYT', true);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    if (fade) cancelFade();                 // finish any crossfade now: timers freeze with the screen off
+    if (fade && !(fade.sched && bgFadeOK())) cancelFade();   // phones: finish the crossfade now (timers freeze with the screen off)
     if (ytFade) { clearInterval(ytFade); ytFade = null; try { yt?.setPlaybackRate(1); } catch {} applyVolume(); }
     // YouTube can't play in the background: hand over to the next song that can, right away
     if (mode === 'yt' && ytWanted && !userPaused) { if (!bgHandoff()) { try { yt?.pauseVideo(); } catch {} } }
@@ -2146,7 +2229,7 @@ S.mono = store.get('mono', false);
 S.autoplay = store.get('autoplay', true);
 S.autoNP = store.get('autoNP', false);
 let eqNodes = null, comp = null;
-const needsGraph = () => S.eq.on || S.normalize || S.mono;
+const needsGraph = () => !S.lite && (S.eq.on || S.normalize || S.mono);
 function buildOutput(){
   if (!actx || eqNodes) return;
   master.disconnect();
@@ -2165,6 +2248,7 @@ function applyOutput(){
   master.channelCount = S.mono ? 1 : 2; master.channelCountMode = S.mono ? 'explicit' : 'max'; master.channelInterpretation = 'speakers';
 }
 function wantOutput(){
+  if (S.lite && (S.eq.on || S.normalize || S.mono)) { toast('Turn off Lite mode to use this sound setting'); return false; }
   if (!needsGraph()) { applyOutput(); return true; }
   if (!ensureGraph()) { toast("This audio setting isn't available for these songs"); return false; }
   buildOutput(); applyOutput(); return true;
@@ -2210,6 +2294,7 @@ function renderSettings(m){
     <h1 class="greet" style="font-size:32px">Settings</h1>
 
     <h2 class="shead">Playback</h2>
+    ${srow('Lite mode (for gaming)', 'Uses as little of your computer as possible: no sound effects engine, equalizer, tempo analysis or animations — just a simple, smooth crossfade. Best with Audius songs and downloads (YouTube plays video, which is heavier).', toggleHTML('sLite', S.lite))}
     ${srow('Crossfade songs', 'Blend the end of one song into the start of the next.', `<div class="inline"><input type="range" id="sXf" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><span class="val">${S.xfade ? S.xfade + ' s' : 'Off'}</span></div>`)}
     ${srow('Transition effect', `Currently: <b>${fxById(S.fx).icon} ${esc(fxById(S.fx).name)}</b>${S.xfade ? '' : ' — turn on crossfade to hear it'}`, `<button class="outline" id="sFx">Browse effects</button>`)}
     ${srow('DJ mode', 'Mix like a DJ: put the next songs in an order where tempo and key flow, start each mix on the beat and pick the transition to suit.', toggleHTML('sDj', S.dj))}
@@ -2259,6 +2344,11 @@ function renderSettings(m){
   const xf = $('#sXf'); xf.oninput = () => { S.xfade = +xf.value; store.set('xfade', S.xfade); xf.style.setProperty('--p', S.xfade/12*100 + '%'); xf.nextElementSibling.textContent = S.xfade ? S.xfade + ' s' : 'Off'; };
   xf.onchange = () => render();
   on('sFx', openFxCatalogue);
+  on('sLite', async () => {
+    S.lite = !S.lite; store.set('lite', S.lite); document.body.classList.toggle('lite', S.lite); render();
+    if (S.lite && actx) { if (await ask({ title: 'Restart Sauti?', text: 'Lite mode fully switches on after a restart. Your song and queue are remembered.', ok: 'Restart now' })) { saveSession(); location.reload(); } }
+    else toast(S.lite ? 'Lite mode on' : 'Lite mode off');
+  });
   flip('sAuto', 'autoplay');
   flip('sDj', 'dj', () => { djArrangedFor = null; if (S.dj) { if (S.fx === 'blend') { S.fx = 'auto'; store.set('fx', 'auto'); } djPrepare(); toast('🎧 DJ mode on'); } });
   flip('sBeat', 'beatmatch');
