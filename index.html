@@ -72,6 +72,10 @@
   .signcard{display:block;width:100%;text-align:left;background:linear-gradient(135deg,#3b1f8e,#a3195b);border-radius:8px;padding:14px 16px;margin-bottom:14px}
   .signcard b{display:block;font-size:16px}
   .signcard span{font-size:13px;color:rgba(255,255,255,.85)}
+  .gbtn{width:100%;justify-content:center;background:#fff;color:#000;margin-bottom:4px}
+  .gbtn b{font-size:18px;font-weight:800;color:#4285f4}
+  .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:12px 0}
+  .or::before,.or::after{content:'';flex:1;height:1px;background:#3e3e3e}
   .acct{height:40px;padding:0 18px;border-radius:500px;background:#fff;color:#000;font-weight:700;font-size:14px;white-space:nowrap;flex:none}
   .acct:hover{transform:scale(1.04)}
   .acct.in{width:40px;padding:0;background:var(--accent);color:#14080a;font-size:16px}
@@ -2638,6 +2642,7 @@ async function syncNow(manual){
 function accountDialog(){
   const bg = document.createElement('div'); bg.className = 'modal-bg';
   bg.innerHTML = `<form class="modal"><h3>Your account</h3><p>Sign in to keep your liked songs, playlists and followed artists the same on your phone and computer. Downloads stay on each device.</p>
+    <div id="acG" style="display:none"><button type="button" class="btn gbtn" id="acGoogle"><b>G</b> Continue with Google</button><div class="or"><span>or use email</span></div></div>
     <input type="email" id="acEmail" placeholder="Email" autocomplete="email" required>
     <input type="password" id="acPw" placeholder="Password (at least 6 characters)" autocomplete="current-password" minlength="6" required>
     <p id="acMsg" style="min-height:18px;margin:-6px 0 12px;color:var(--accent2)"></p>
@@ -2652,6 +2657,20 @@ function accountDialog(){
     try { const j = await sbAuth('signup', v); if (j.access_token) await done(j); else msg('Almost there: open the confirmation link we just emailed you (the page it opens can be closed), then come back and tap Sign in.'); }
     catch (er) { msg(er.message); } };
   bg.querySelector('#acEmail').focus();
+  // Google sign-in appears only when it has been switched on for this app (and not inside the Android app, where Google blocks it)
+  if (!NATIVE) fetch(`${SB.url}/auth/v1/settings`, { headers: { apikey: SB.key } }).then(r => r.json()).then(j => { if (j?.external?.google && bg.isConnected) bg.querySelector('#acG').style.display = ''; }).catch(() => {});
+  bg.querySelector('#acGoogle').onclick = () => { saveSession(); location.href = `${SB.url}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(location.origin + location.pathname)}`; };
+}
+async function finishOAuth(hash){
+  const q = new URLSearchParams(hash);
+  try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+  if (q.get('error') || q.get('error_description')) { toast(q.get('error_description') || "Google sign-in didn't finish"); return; }
+  try {
+    const tk = q.get('access_token'), r = await fetch(`${SB.url}/auth/v1/user`, { headers: { apikey: SB.key, Authorization: `Bearer ${tk}` } });
+    if (!r.ok) throw 0; const user = await r.json();
+    setAuth({ access_token: tk, refresh_token: q.get('refresh_token'), expires_in: +q.get('expires_in') || 3600, user });
+    toast(`Signed in as ${user.email}`); await syncNow(true);
+  } catch { toast("Google sign-in didn't finish — please try again"); }
 }
 function syncAcctBtn(){
   const b = document.getElementById('acctBtn'); if (!b) return;
@@ -2759,6 +2778,7 @@ async function sharedTrack(kind, id){
   return { id: 'yt:' + id, ytId: id, title: 'Shared song', artist: 'YouTube', artistId: '', genre: 'YouTube', duration: 0, artUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, source: 'youtube', released: '' };
 }
 async function handleHash(){
+  if (/(^|[#&])(access_token|error_description)=/.test(location.hash)) return finishOAuth(location.hash.slice(1));
   const h = decodeURIComponent(location.hash.slice(1)); if (!h) return;
   const m = h.match(/^(track|yt|artist|list)-(.+)$/); if (!m) return;
   try { history.replaceState(null, '', location.pathname + location.search); } catch {}
