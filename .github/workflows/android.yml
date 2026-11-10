@@ -46,12 +46,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/android/app/build/outputs/apk/release/app-release.apk Sauti.apk
+          cp app/android/app/build/outputs/apk/release/app-release.apk Nightwave.apk
+          cp Nightwave.apk Sauti.apk
           gh release delete latest-apk -y --cleanup-tag || true
-          gh release create latest-apk Sauti.apk --title "Sauti for Android" --latest \
-            --notes "Install Sauti on Android: download Sauti.apk, open it and allow installing from your browser/files app. Music keeps playing with the screen off or after leaving the app. The app updates itself automatically from the website."
+          gh release create latest-apk Nightwave.apk Sauti.apk --title "Nightwave for Android" --latest \
+            --notes "Install Nightwave on Android: download Nightwave.apk, open it and allow installing from your browser/files app. Music keeps playing with the screen off or after leaving the app. The app updates itself automatically from the website."
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Sauti-apk
-          path: Sauti.apk
+          name: Nightwave-apk
+          path: Nightwave.apk

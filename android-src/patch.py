@@ -32,6 +32,8 @@ svc = '''
             <intent-filter><action android:name="android.intent.action.MEDIA_BUTTON" /></intent-filter>
         </receiver>
 '''
+if 'usesCleartextTraffic' not in m:
+    m = m.replace('<application', '<application android:usesCleartextTraffic="true"', 1)   # lets the app reach the PC music server on your Wi-Fi
 m = m.replace('</application>', svc + '    </application>', 1)
 open(mf, 'w').write(m)
 
@@ -62,7 +64,7 @@ open(gf, 'w').write(g)
 sf = os.path.join(MAIN, 'res', 'values', 'strings.xml')
 if os.path.exists(sf):
     s = open(sf).read()
-    s = re.sub(r'(<string name="app_name">)[^<]*(</string>)', r'\1Sauti\2', s)
-    s = re.sub(r'(<string name="title_activity_main">)[^<]*(</string>)', r'\1Sauti\2', s)
+    s = re.sub(r'(<string name="app_name">)[^<]*(</string>)', r'\1Nightwave\2', s)
+    s = re.sub(r'(<string name="title_activity_main">)[^<]*(</string>)', r'\1Nightwave\2', s)
     open(sf, 'w').write(s)
-print('Sauti Android project patched (version 1.%d)' % run)
+print('Nightwave Android project patched (version 1.%d)' % run)

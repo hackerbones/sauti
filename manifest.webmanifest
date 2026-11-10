@@ -1,12 +1,12 @@
 {
-  "name": "Sauti — Stream & Download Music",
-  "short_name": "Sauti",
+  "name": "Nightwave — Stream & Download Music",
+  "short_name": "Nightwave",
   "description": "Stream full-length music for free and download tracks for offline listening.",
   "start_url": "/sauti/",
   "scope": "/sauti/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#000000",
+  "background_color": "#0d0920",
   "theme_color": "#000000",
   "categories": [
     "music",

@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Sauti" />
+<meta name="apple-mobile-web-app-title" content="Nightwave" />
 <meta name="description" content="Stream full-length music for free and download tracks for offline listening." />
-<title>Sauti — Stream & Download Music</title>
+<title>Nightwave — Stream &amp; Download Music</title>
 <meta name="theme-color" content="#000000" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -400,6 +400,26 @@
   .djchips span{background:var(--panel2);border-radius:500px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--muted)}
   .srow.dim{opacity:.5}
 
+  .tile-stats{background:linear-gradient(135deg,#a3195b,#ff7a3d);display:grid;place-items:center;color:#fff;font-weight:800}
+  .tile-pc{background:linear-gradient(135deg,#1e3a5f,#4da3ff);display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px}
+  .phead .tile-stats svg,.phead .tile-pc svg{width:80px;height:80px}
+  .stat-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat-tiles div{background:var(--panel2);border-radius:8px;padding:16px;min-width:0}
+  .stat-tiles b{display:block;font-size:22px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stat-tiles span{font-size:13px;color:var(--muted)}
+  .rank{max-width:680px}
+  .rk{display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:6px}
+  .rk:hover{background:rgba(255,255,255,.07)}
+  .rn{width:20px;color:var(--muted);text-align:center}
+  .rname{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rv{color:var(--muted);font-size:13px;white-space:nowrap}
+  .sin,.pcfilter{background:#2a2a2a;border:1px solid #3e3e3e;border-radius:4px;padding:8px 12px;color:var(--text);font-size:14px;outline:0;width:230px;max-width:100%}
+  .sin:focus,.pcfilter:focus{border-color:#7c7c7c}
+  .pcfilter{width:100%;max-width:360px;margin-bottom:14px}
+  .dragging{opacity:.4}
+  .dropabove{box-shadow:0 -2px 0 var(--accent)}
+  .row[draggable=true],.q-item[draggable=true]{cursor:grab}
+
   /* lite mode */
   .lite *,.lite *::before,.lite *::after{animation:none!important;transition:none!important}
   .lite .fade{opacity:1}
@@ -527,11 +547,11 @@
 </style>
 </head>
 <body>
-<div id="splash" style="position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .2s"><div style="animation:splashPulse 1.2s ease-in-out infinite;filter:drop-shadow(0 10px 40px rgba(255,122,61,.35))"><svg width="104" height="104" style="display:block;width:104px;height:104px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#lg2)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg></div></div>
+<div id="splash" style="position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .2s"><div style="animation:splashPulse 1.2s ease-in-out infinite;filter:drop-shadow(0 10px 40px rgba(255,122,61,.35))"><svg width="104" height="104" style="display:block;width:104px;height:104px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="sg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc857"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient><linearGradient id="sb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241a4d"/><stop offset="1" stop-color="#0d0920"/></linearGradient><mask id="sm2"><rect width="64" height="64" fill="#fff"/><circle cx="39" cy="20" r="14" fill="#000"/></mask></defs><circle cx="32" cy="32" r="32" fill="url(#sb2)"/><circle cx="31" cy="25" r="16" fill="url(#sg2)" mask="url(#sm2)"/><path d="M11 47c4-7 8-7 12 0s8 7 12 0 8-7 12 0 5 5 7 3" fill="none" stroke="url(#sg2)" stroke-width="4.2" stroke-linecap="round"/><circle cx="46" cy="14" r="1.6" fill="#ffe9b0"/><circle cx="52" cy="24" r="1.1" fill="#ffe9b0"/></svg></div></div>
 <style>@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}</style>
 <div class="app">
   <header class="topbar">
-    <div class="logo"><svg width="32" height="32" style="display:block;width:32px;height:32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="url(#lg1)"/><g fill="#14080a"><rect x="13.5" y="27" width="5" height="10" rx="2.5"/><rect x="21.5" y="19" width="5" height="26" rx="2.5"/><rect x="29.5" y="13" width="5" height="38" rx="2.5"/><rect x="37.5" y="21" width="5" height="22" rx="2.5"/><rect x="45.5" y="26" width="5" height="12" rx="2.5"/></g><circle cx="47.9" cy="17.5" r="3.2" fill="#14080a"/></svg><span>Sauti</span></div>
+    <div class="logo"><svg width="32" height="32" style="display:block;width:32px;height:32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="sg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc857"/><stop offset=".55" stop-color="#ff7a3d"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient><linearGradient id="sb1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241a4d"/><stop offset="1" stop-color="#0d0920"/></linearGradient><mask id="sm1"><rect width="64" height="64" fill="#fff"/><circle cx="39" cy="20" r="14" fill="#000"/></mask></defs><circle cx="32" cy="32" r="32" fill="url(#sb1)"/><circle cx="31" cy="25" r="16" fill="url(#sg1)" mask="url(#sm1)"/><path d="M11 47c4-7 8-7 12 0s8 7 12 0 8-7 12 0 5 5 7 3" fill="none" stroke="url(#sg1)" stroke-width="4.2" stroke-linecap="round"/><circle cx="46" cy="14" r="1.6" fill="#ffe9b0"/><circle cx="52" cy="24" r="1.1" fill="#ffe9b0"/></svg><span>Nightwave</span></div>
     <button class="navbtn" id="backNav" title="Go back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="center">
       <button class="homebtn nav" data-view="home" title="Home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7.5V21a1 1 0 0 1-1 1h-5.5v-6.5h-5V22H4a1 1 0 0 1-1-1V10.5z"/></svg></button>
@@ -592,7 +612,7 @@
 
 <script>
 /* ---------- Config ---------- */
-const APP = 'Sauti';
+const APP = 'Nightwave';
 const GENRES = ['All','Electronic','Hip-Hop/Rap','Alternative','R&B/Soul','Pop','Afrobeat','Reggae','Lo-Fi','House','Jazz','Rock','Ambient'];
 
 /* ---------- Icons ---------- */
@@ -625,7 +645,7 @@ function nativeUpdate(force){
   if (!NATIVE) return;
   try {
     const t = current(); if (!t) return;
-    const info = { title: t.title || 'Sauti', artist: t.artist || '', artwork: /^https?:/.test(t.artUrl || '') ? t.artUrl : '',
+    const info = { title: t.title || 'Nightwave', artist: t.artist || '', artwork: /^https?:/.test(t.artUrl || '') ? t.artUrl : '',
       playing: !pPaused(), duration: Math.round(pDur() || t.duration || 0), position: Math.round(pTime() || 0) };
     const key = JSON.stringify([info.title, info.artist, info.artwork, info.playing, info.duration]);
     if (key === nativeLast && !force) return; nativeLast = key;
@@ -667,11 +687,11 @@ async function getHost(){
 }
 async function api(path, params={}){
   const h = await getHost();
-  const q = new URLSearchParams({...params, app_name: APP});
+  const q = new URLSearchParams({...params, app_name: APP}); const ak = store.get('audiusKey', ''); if (ak) q.set('api_key', ak);
   let r;
   try { r = await fetch(`${h}/v1${path}?${q}`); }
   catch (e) { if (!hostFallback && navigator.onLine) { hostFallback = true; host = null; const h2 = await getHost(); r = await fetch(`${h2}/v1${path}?${q}`); } else throw e; }
-  if (!r.ok) throw new Error(`API ${r.status}`);
+  if (!r.ok) { const e = new Error(r.status === 401 || r.status === 403 ? 'Audius is asking for an API key. Add a free one in Settings → Search.' : r.status === 429 ? 'Audius is limiting requests right now — try again in a minute.' : `Audius error ${r.status}`); e.audius = true; throw e; }
   return (await r.json()).data;
 }
 const normalize = t => ({
@@ -692,7 +712,7 @@ const normUser = u => ({
 const compact = n => n >= 1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,'')+'M' : n >= 1e3 ? (n/1e3).toFixed(1).replace(/\.0$/,'')+'K' : String(n);
 const avatarHTML = u => u.avatar ? `<img class="avatar" src="${esc(u.avatar)}" alt="" loading="lazy">` : `<div class="avatar">${esc((u.name||'?')[0].toUpperCase())}</div>`;
 const artistLink = t => t.artistId ? `<span class="a-link" data-artist="${esc(t.artistId)}">${esc(t.artist)}</span>` : esc(t.artist);
-const streamUrl = id => `${host || 'https://api.audius.co'}/v1/tracks/${id}/stream?app_name=${APP}`;
+const streamUrl = id => { const ak = store.get('audiusKey', ''); return `${host || 'https://api.audius.co'}/v1/tracks/${id}/stream?app_name=${APP}${ak ? '&api_key=' + encodeURIComponent(ak) : ''}`; };
 
 /* ---------- IndexedDB (offline downloads) ---------- */
 let dbP;
@@ -1033,6 +1053,7 @@ async function srcFor(t){
     if (!objectUrls.has(t.id)) { const rec = await dbGet(t.id); if (rec?.audio) objectUrls.set(t.id, URL.createObjectURL(rec.audio)); }
     if (objectUrls.get(t.id)) return objectUrls.get(t.id);
   }
+  if (t.source === 'pc') return S.pc ? pcUrl(t) : null;
   if (t.source !== 'audius') return null;
   await getHost().catch(() => {}); return streamUrl(t.id);
 }
@@ -1053,7 +1074,7 @@ function prebufferNext(){
 }
 let xfadeStarting = false;
 async function maybeCrossfade(force, fxOverride){
-  if (fade || xfadeStarting || mode !== 'audio' || audio.paused) return false;
+  if (fade || xfadeStarting || mode !== 'audio' || audio.paused || (S.sleep?.end && !force)) return false;
   const d = audio.duration, left = d - audio.currentTime, curT = current(), fi = trackDJ(curT);
   const djLen = S.dj ? Math.max(5, Math.min(14, (fi.bpm ? 16 * 60 / fi.bpm : 8))) : 0;
   const len = force ? Math.max(S.xfade || 0, djLen, 6) : (S.dj ? djLen : S.xfade);
@@ -1202,6 +1223,7 @@ function bgPlayableIndex(from){
 }
 function next(auto=false){
   if (!S.queue.length) return;
+  if (auto && S.sleep?.end) { S.sleep = null; pPause(); toast('Sleep timer — music paused'); return; }
   if (auto && S.repeat === 'one') { pSeek(0); pPlay(); return; }
   pendingFadeIn = auto && S.xfade > 0 && !document.hidden;
   if (document.hidden && S.bgSkipYT && (S.queue[S.qi + 1]?.source === 'youtube' || (S.qi + 1 >= S.queue.length && mode === 'yt'))) {
@@ -1274,6 +1296,7 @@ function maybeYTFade(){
   ytFadeOut(rem - .2, S.fx);
 }
 function tickUI(){
+  statTick(); sleepTick();
   if (performance.now() - sessionSavedAt > 5000 && !pPaused()) saveSession();
   const d = pDur(), c = pTime();
   maybeYTFade();
@@ -1457,9 +1480,9 @@ function ytSetup(){
     const bg = document.createElement('div'); bg.className = 'modal-bg';
     bg.innerHTML = `<div class="setup" style="max-height:90vh;overflow:auto">
       <h3>Connect YouTube</h3>
-      <p>YouTube lets Sauti search and play almost any song for free — you just need your own free API key (about 5 minutes, no payment).</p>
+      <p>YouTube lets Nightwave search and play almost any song for free — you just need your own free API key (about 5 minutes, no payment).</p>
       <ol>
-        <li>Open <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud → New project</a>, name it <code>Sauti</code>, click <b>Create</b>.</li>
+        <li>Open <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud → New project</a>, name it <code>Nightwave</code>, click <b>Create</b>.</li>
         <li>Open <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">YouTube Data API v3</a> and click <b>Enable</b>.</li>
         <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Credentials</a> → <b>Create credentials</b> → <b>API key</b>, and copy it.</li>
         <li>Recommended: click the key → <b>Website restrictions</b> → add <code>${esc(location.origin)}/*</code>, and under <b>API restrictions</b> pick YouTube Data API v3. Save.</li>
@@ -1490,8 +1513,8 @@ async function download(t){
   if (S.downloads.has(t.id) || S.downloading.has(t.id)) return;
   S.downloading.set(t.id, 0); refreshActs(t.id);
   try {
-    await getHost();
-    const r = await fetch(streamUrl(t.id));
+    if (t.source !== 'pc') await getHost();
+    const r = await fetch(t.source === 'pc' ? pcUrl(t) : streamUrl(t.id));
     if (!r.ok) throw new Error(r.status);
     const total = +r.headers.get('content-length') || 0;
     const reader = r.body.getReader(); const chunks = []; let got = 0;
@@ -1528,7 +1551,10 @@ async function importFiles(files){
     const meta = { id: 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2,7), title, artist, genre: 'Imported', duration: 0, artUrl: '', source: 'local', size: f.size, fileName: f.name, addedAt: Date.now() };
     const d = await new Promise(res => { const a = new Audio(); a.preload='metadata'; a.onloadedmetadata = () => { res(a.duration); URL.revokeObjectURL(a.src); }; a.onerror = () => res(0); a.src = URL.createObjectURL(f); });
     meta.duration = d || 0;
-    await dbPut({ ...meta, audio: f, art: null }); S.downloads.set(meta.id, meta); n++; prefetchLyrics(meta);
+    const tg = /\.mp3$/i.test(f.name) || f.type === 'audio/mpeg' ? await id3Tags(f) : {};
+    if (tg.title) meta.title = tg.title; if (tg.artist) meta.artist = tg.artist; meta.tagged = true;
+    await dbPut({ ...meta, audio: f, art: tg.art || null }); if (tg.art) meta.artUrl = URL.createObjectURL(tg.art);
+    S.downloads.set(meta.id, meta); n++; prefetchLyrics(meta);
   }
   toast(n ? `Imported ${n} song${n>1?'s':''}${dup ? ` (${dup} already in library)` : ''}` : dup ? 'Those songs are already in your library' : 'No audio files found'); updateCounts(); render();
 }
@@ -1539,7 +1565,7 @@ function toggleFollow(u){
   if (!u?.id) return;
   if (S.following.has(u.id)) { S.following.delete(u.id); toast(`Unfollowed ${u.name}`); }
   else { S.following.set(u.id, { id: u.id, name: u.name, handle: u.handle, avatar: u.avatar, verified: u.verified, followers: u.followers, followedAt: Date.now() }); toast(`Following ${u.name}`); }
-  store.set('following', [...S.following]); S.feed = null; updateCounts();
+  store.set('following', [...S.following]); touch('following'); S.feed = null; updateCounts();
   if (['artist','following','search','home'].includes(S.view)) render();
 }
 const followBtn = (u, mini) => { const on = S.following.has(u.id); return `<button class="${mini ? 'follow-mini' : 'btn'} ${on ? 'following' : ''}" data-follow="${esc(u.id)}">${on ? '✓ Following' : '+ Follow'}</button>`; };
@@ -1556,7 +1582,7 @@ async function loadFeed(){
   S.feedLoading = false; if (S.view === 'following') render();
 }
 /* ---------- Playlists ---------- */
-const savePls = () => { store.set('playlists', S.playlists); updateCounts(); renderSidePls(); };
+const savePls = () => { store.set('playlists', S.playlists); touch('playlists'); updateCounts(); renderSidePls(); };
 const getPl = id => S.playlists.find(p => p.id === id);
 const plMeta = t => ({ id: t.id, title: t.title, artist: t.artist, artistId: t.artistId || '', genre: t.genre || '', duration: t.duration || 0,
   artUrl: String(t.artUrl || '').startsWith('blob:') ? '' : (t.artUrl || ''), source: t.source, released: t.released || '', ytId: t.ytId || '', bpm: t.bpm || null, key: t.key || '' });
@@ -1579,7 +1605,7 @@ function mosaicHTML(pl, size){
 const totalTime = list => { const m = Math.round(list.reduce((a,t) => a + (t.duration||0), 0) / 60); return m >= 60 ? `${Math.floor(m/60)} hr ${m%60} min` : `${m} min`; };
 function openPlaylist(id){ pushHist(); if (matchMedia('(max-width:760px)').matches) { document.body.classList.remove('np-open'); syncNPBtns(); } S.plId = id; S.view = 'playlist'; $('#drawer').classList.remove('open'); render(); $('#main').scrollTop = 0; }
 async function downloadAll(list){
-  const todo = list.filter(t => t.source === 'audius' && !S.downloads.has(t.id));
+  const todo = list.filter(t => (t.source === 'audius' || t.source === 'pc') && !S.downloads.has(t.id));
   if (!todo.length) { toast('Everything here is already downloaded'); return; }
   toast(`Downloading ${todo.length} track${todo.length>1?'s':''}…`);
   for (const t of todo) await download(t);
@@ -1612,7 +1638,8 @@ function openMenu(t, anchor){
   closeMenu();
   const m = document.createElement('div'); m.className = 'menu';
   m.innerHTML = `<button data-m="queue">${I.plus} Add to queue</button><button data-m="next">⏭&nbsp; Play next</button>
-    ${t.artistId ? `<button data-m="artist">👤&nbsp; Go to artist</button>` : ''}<hr><div class="lbl">Add to playlist</div>
+    ${t.artistId ? `<button data-m="artist">👤&nbsp; Go to artist</button>` : ''}${trackHash(t) ? `<button data-m="share">🔗&nbsp; Share song</button>` : ''}
+    ${S.view === 'playlist' ? `<button data-m="up">↑&nbsp; Move up</button><button data-m="down">↓&nbsp; Move down</button>` : ''}<hr><div class="lbl">Add to playlist</div>
     <button data-m="new">＋&nbsp; New playlist</button>
     ${S.playlists.map(p => `<button data-m="pl" data-id="${esc(p.id)}">${p.tracks.some(x => x.id === t.id) ? '✓' : '♪'}&nbsp; ${esc(p.name)}</button>`).join('')}`;
   document.body.appendChild(m);
@@ -1625,6 +1652,8 @@ function openMenu(t, anchor){
     if (k === 'queue') addToQueue(t);
     else if (k === 'next') { if (S.qi < 0) addToQueue(t); else { S.queue.splice(S.qi + 1, 0, t); renderQueue(); toast('Playing next'); } }
     else if (k === 'artist') openArtist(t.artistId);
+    else if (k === 'share') shareLink(trackHash(t), `${t.title} · ${t.artist}`);
+    else if (k === 'up' || k === 'down') { const pl = getPl(S.plId), i = pl ? pl.tracks.findIndex(x => x.id === t.id) : -1, j = i + (k === 'up' ? -1 : 1); if (i >= 0 && j >= 0 && j < pl.tracks.length) { [pl.tracks[i], pl.tracks[j]] = [pl.tracks[j], pl.tracks[i]]; savePls(); render(); } }
     else if (k === 'new') newPlaylistFlow(t);
     else if (k === 'pl') { const pl = getPl(b.dataset.id); if (pl) addToPlaylist(pl, t); }
   };
@@ -1635,7 +1664,7 @@ $('#newPlSide').onclick = () => newPlaylistFlow();
 
 function toggleLike(t){
   if (S.liked.has(t.id)) S.liked.delete(t.id); else S.liked.set(t.id, { ...t, artUrl: t.source === 'audius' && !String(t.artUrl).startsWith('blob:') ? t.artUrl : '' });
-  store.set('liked', [...S.liked]); updateCounts(); refreshActs(t.id); if (S.view === 'liked') render();
+  store.set('liked', [...S.liked]); touch('liked'); updateCounts(); refreshActs(t.id); if (S.view === 'liked') render();
 }
 
 /* ---------- Lyrics: fetched from LRCLIB (free, community lyrics) or read from the song file itself; saved for offline ---------- */
@@ -1839,7 +1868,7 @@ function actsHTML(t){
   else if (dl) dlBtn = S.view === 'downloads'
       ? `<button class="ic" data-a="save" title="Save file to device">${I.save}</button><button class="ic" data-a="rm" title="Remove download">${I.trash}</button>`
       : `<button class="ic done" title="Downloaded — plays offline">${I.check}</button>`;
-  else dlBtn = t.source === 'audius' ? `<button class="ic" data-a="dl" title="Download for offline">${I.dl}</button>` : '';
+  else dlBtn = t.source === 'audius' || t.source === 'pc' ? `<button class="ic" data-a="dl" title="Download for offline">${I.dl}</button>` : '';
   return `<button class="ic ${liked?'on':''}" data-a="like" title="${liked?'Remove from Liked Songs':'Save to Liked Songs'}">${liked?I.heartF:I.heart}</button>${dlBtn}${S.view === 'playlist' ? `<button class="ic" data-a="plrm" title="Remove from this playlist">${I.trash}</button>` : ''}<button class="ic" data-a="menu" title="More options">${I.plus}</button>`;
 }
 function numHTML(t, i){
@@ -1887,6 +1916,8 @@ function playTarget(key){
   else if (k === 'chart') playList(S.ytChartList || [], +id);
   else if (k === 'trend') playList(S.results, +id);
   else if (k === 'artist') { api(`/users/${encodeURIComponent(id)}/tracks`, { sort: 'plays', limit: 50 }).then(d => { const l = (d||[]).filter(t => t.is_streamable !== false).map(normalize); l.length ? playList(l, 0) : toast('No songs to play'); }).catch(() => toast("Couldn't load songs")); }
+  else if (k === 'recent') playList(S.recent.map(t => S.downloads.get(t.id) || t), +id || 0);
+  else if (k === 'mix') { const mx = buildMix(); mx.length ? playList(mx, 0) : toast('Play a few songs first and your mix will build itself'); }
   else if (k === 'feed') { if (S.feed?.length) playList(S.feed, 0); else { go('following'); } }
 }
 function bindCards(m){
@@ -1899,7 +1930,7 @@ function bindCards(m){
 
 function render(){
   const m = $('#main');
-  document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.view === S.view || (b.dataset.view === 'library' && ['liked','downloads','playlist','playlists','following'].includes(S.view))));
+  document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.view === S.view || (b.dataset.view === 'library' && ['liked','downloads','playlist','playlists','following','stats','pc'].includes(S.view))));
   $('#backNav').disabled = !hist.length;
   const sb = $('#searchBox'); sb.classList.toggle('has', !!$('#q').value);
 
@@ -1908,6 +1939,7 @@ function render(){
     const tiles = [
       { open: 'liked', play: 'liked', art: `<div class="tart tile-liked">${I.heartF}</div>`, name: 'Liked Songs' },
       { open: 'downloads', play: 'dl', art: `<div class="tart tile-dl">${I.dl}</div>`, name: 'Downloads' },
+      ...(S.stats.total > 300 || S.liked.size > 4 ? [{ open: 'stats', play: 'mix', art: `<div class="tart tile-stats">♫</div>`, name: 'Your daily mix' }] : []),
       ...pls.slice(0, 4).map(p => ({ open: 'pl:' + p.id, play: 'pl:' + p.id, art: mosaicHTML(p).replace('class="mosaic', 'class="tart mosaic'), name: p.name })),
       ...arts.slice(0, 2).map(u => ({ open: 'artist:' + u.id, play: 'artist:' + u.id, art: imgOr(u.avatar, 'tart', esc((u.name||'?')[0])), name: u.name })),
     ].slice(0, 8);
@@ -1916,6 +1948,7 @@ function render(){
     m.innerHTML = `<div class="grad" style="--hc:${hc(greeting(), 26)}"><div class="pad">
       <h1 class="greet">${greeting()}</h1>
       <div class="tiles">${tiles.map(t => `<div class="tile" data-open="${esc(t.open)}">${t.art}<div class="tname">${esc(t.name)}</div><button class="cplay" data-play="${esc(t.play)}" title="Play">${playSVG}</button></div>`).join('')}</div>
+      ${S.recent.length ? `<h2 class="sec">Recently played</h2><div class="shelf">${S.recent.slice(0, 12).map((t, i) => { const x = S.downloads.get(t.id) || t; return cardHTML({ art: imgOr(x.artUrl, 'cart'), name: x.title, sub: esc(x.artist), data: `data-play="recent:${i}"`, play: 'recent:' + i }); }).join('')}</div>` : ''}
       ${chart?.length ? `<h2 class="sec">Top music in Kenya <small>YouTube</small></h2><div class="shelf">${chart.slice(0, 12).map((t, i) => cardHTML({ art: imgOr(t.artUrl, 'cart'), name: t.title, sub: esc(t.artist), data: `data-open="chart:${i}"`, play: 'chart:' + i })).join('')}</div>` : ''}
       ${arts.length ? `<h2 class="sec">Your artists</h2><div class="shelf">${arts.map(u => cardHTML({ art: imgOr(u.avatar, 'cart round', esc((u.name||'?')[0])), name: u.name, sub: 'Artist', data: `data-open="artist:${esc(u.id)}"`, play: 'artist:' + u.id })).join('')}</div>` : ''}
       ${pls.length ? `<h2 class="sec">Your playlists</h2><div class="shelf">${pls.map(p => cardHTML({ art: mosaicHTML(p).replace('class="mosaic', 'class="cart mosaic'), name: p.name, sub: `Playlist • ${n(p.tracks.length, 'song')}`, data: `data-open="pl:${esc(p.id)}"`, play: 'pl:' + p.id })).join('')}</div>` : ''}
@@ -1934,7 +1967,7 @@ function render(){
     const src = S.src, Y = S.yt;
     let content = '';
     if (src === 'youtube') {
-      if (!ytKey()) content = `<div class="setup" style="margin-top:8px"><h3>Search YouTube for any song</h3><p>Drake, Burna Boy, Sauti Sol, SZA — stream almost any song for free. Connect a free YouTube API key once to turn it on.</p><p style="margin-top:8px">YouTube songs play in a small video window and stream only (no downloads). Audius songs can still be downloaded.</p><br><button class="btn primary" id="ytConnect">Connect YouTube</button></div>`;
+      if (!ytKey()) content = `<div class="setup" style="margin-top:8px"><h3>Search YouTube for any song</h3><p>Drake, Burna Boy, Nightwave Sol, SZA — stream almost any song for free. Connect a free YouTube API key once to turn it on.</p><p style="margin-top:8px">YouTube songs play in a small video window and stream only (no downloads). Audius songs can still be downloaded.</p><br><button class="btn primary" id="ytConnect">Connect YouTube</button></div>`;
       else if (!S.query) {
         if (!S.ytChartList) { ytChart().then(l => { S.ytChartList = l; if (S.view === 'search' && !S.query) render(); }).catch(e => { S.ytChartList = []; toast(e.message); }); content = spinner(); }
         else content = S.ytChartList.length ? `<h2 class="sec" style="margin-top:8px">Top music videos in Kenya</h2><div class="abar" style="padding:0 0 16px;background:none"><button class="bigplay" id="playAll">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}</div>${listHTML(S.ytChartList, 'Source')}` : '';
@@ -1961,6 +1994,12 @@ function render(){
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
 
+  } else if (S.view === 'stats') {
+    renderStats(m);
+
+  } else if (S.view === 'pc') {
+    renderPC(m);
+
   } else if (S.view === 'lyrics') {
     renderLyricsView(m);
 
@@ -1975,7 +2014,7 @@ function render(){
   } else if (S.view === 'downloads') {
     const list = dlList(), bytes = list.reduce((s,x) => s + (x.size||0), 0);
     m.innerHTML = `<div class="grad" style="--hc:#0d5c3e">
-      ${pageHead({ art: `<div class="part tile-dl">${I.dl}</div>`, kind: 'Playlist', title: 'Downloads', meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}</span><span class="dot">${(bytes/1048576).toFixed(1)} MB</span><span class="dot">plays offline</span>` })}
+      ${pageHead({ art: `<div class="part tile-dl">${I.dl}</div>`, kind: 'Playlist', title: 'Downloads', meta: `<b>Nightwave</b><span class="dot">${n(list.length, 'song')}</span><span class="dot">${(bytes/1048576).toFixed(1)} MB</span><span class="dot">plays offline</span>` })}
       <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}
         <button class="outline" id="importBtn">Import</button></div>
       <div class="content">
@@ -1994,7 +2033,7 @@ function render(){
           ${u.verified ? `<div class="kind"><svg class="verified" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.2 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 22l-2.4-2.2-3.2.4-.9-3.1-2.9-1.5 1-3.1-1-3.1 2.9-1.5.9-3.1 3.2.4z"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg>Verified Artist</div>` : '<div class="kind">Artist</div>'}
           <h1 class="ptitle">${esc(u.name)}</h1><div class="pmeta">${compact(u.followers)} followers<span class="dot">${n(u.trackCount, 'track')}</span>${u.location ? `<span class="dot">${esc(u.location)}</span>` : ''}</div></div></div>
         <div class="grad" style="--hc:${hc(u.name, 18)}">
-        <div class="abar">${tracks.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}${followBtn(u)}${u.handle ? `<a class="ic" href="https://audius.co/${encodeURIComponent(u.handle)}" target="_blank" rel="noopener" title="Open on Audius">${IC.ext}</a>` : ''}</div>
+        <div class="abar">${tracks.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}${followBtn(u)}<button class="ic" id="shArtist" title="Share artist">🔗</button>${u.handle ? `<a class="ic" href="https://audius.co/${encodeURIComponent(u.handle)}" target="_blank" rel="noopener" title="Open on Audius">${IC.ext}</a>` : ''}</div>
         <div class="content">
           <h2 class="sec" style="margin-top:0">${A.sort === 'plays' ? 'Popular' : 'Latest releases'}</h2>
           <div class="seg"><button class="chip ${A.sort==='plays'?'on':''}" data-sort="plays">Popular</button><button class="chip ${A.sort==='date'?'on':''}" data-sort="date">Latest</button></div>
@@ -2004,7 +2043,7 @@ function render(){
       $('#playAll')?.addEventListener('click', () => playList(tracks, 0));
       $('#shuffleAll')?.addEventListener('click', () => playShuffled(tracks));
       m.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => loadArtistTracks(b.dataset.sort));
-      bindFollow(() => u);
+      bindFollow(() => u); $('#shArtist').onclick = () => shareLink('artist-' + u.id, u.name);
     }
 
   } else if (S.view === 'following') {
@@ -2012,7 +2051,7 @@ function render(){
     if (arts.length && !S.feed && !S.feedLoading) loadFeed();
     const feed = S.feed || [];
     m.innerHTML = `<div class="grad" style="--hc:#7a3510">
-      ${pageHead({ art: `<div class="part tile-follow">${IC.people}</div>`, kind: 'Collection', title: 'New releases', meta: `<b>Sauti</b><span class="dot">from ${n(arts.length, 'artist')} you follow</span>` })}
+      ${pageHead({ art: `<div class="part tile-follow">${IC.people}</div>`, kind: 'Collection', title: 'New releases', meta: `<b>Nightwave</b><span class="dot">from ${n(arts.length, 'artist')} you follow</span>` })}
       <div class="abar">${feed.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}</div>
       <div class="content">
       ${!arts.length ? `<div class="empty"><h3>Follow artists to see their new releases</h3>Open an artist's profile and tap <b>Follow</b>.<br><button class="pill white" onclick="go('search')">Find artists</button></div>` : `
@@ -2038,21 +2077,23 @@ function render(){
     const list = pl.tracks, dlCount = list.filter(t => S.downloads.has(t.id)).length, canDl = list.some(t => t.source === 'audius');
     const allDl = canDl && list.filter(t => t.source === 'audius').every(t => S.downloads.has(t.id));
     m.innerHTML = `<div class="grad" style="--hc:${hc(pl.name)}">
-      ${pageHead({ art: mosaicHTML(pl).replace('class="mosaic', 'class="part mosaic'), kind: 'Playlist', title: pl.name, small: pl.name.length > 18, meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}${list.length ? `, ${totalTime(list)}` : ''}</span>${dlCount ? `<span class="dot">${dlCount} downloaded</span>` : ''}` })}
+      ${pageHead({ art: mosaicHTML(pl).replace('class="mosaic', 'class="part mosaic'), kind: 'Playlist', title: pl.name, small: pl.name.length > 18, meta: `<b>Nightwave</b><span class="dot">${n(list.length, 'song')}${list.length ? `, ${totalTime(list)}` : ''}</span>${dlCount ? `<span class="dot">${dlCount} downloaded</span>` : ''}` })}
       <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}
         ${canDl ? `<button class="ic ${allDl ? 'on' : ''}" id="dlAll" title="${allDl ? 'Downloaded' : 'Download all'}">${allDl ? I.check : I.dl}</button>` : ''}
-        <button class="ic" id="renPl" title="Rename">${IC.edit}</button><button class="ic" id="delPl" title="Delete playlist">${I.trash}</button></div>
+        <button class="ic" id="shPl" title="Share playlist">${IC.ext}</button><button class="ic" id="renPl" title="Rename">${IC.edit}</button><button class="ic" id="delPl" title="Delete playlist">${I.trash}</button></div>
       <div class="content">${list.length ? listHTML(list) : `<div class="empty"><h3>Let's find something for your playlist</h3>Tap ＋ on any song and choose <b>${esc(pl.name)}</b>.<br><button class="pill white" onclick="go('search')">Find songs</button></div>`}</div></div>`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
     $('#shuffleAll')?.addEventListener('click', () => playShuffled(list));
     $('#dlAll')?.addEventListener('click', () => downloadAll(list));
+    $('#shPl').onclick = () => sharePlaylist(pl);
+    if (!coarse) makeSortable($('#list'), '.row', (a, b) => { moveItem(pl.tracks, +a.dataset.i, +b.dataset.i); savePls(); render(); });
     $('#renPl').onclick = async () => { const nn = await ask({ title: 'Edit details', value: pl.name, ok: 'Save' }); if (nn) { pl.name = nn; savePls(); render(); } };
     $('#delPl').onclick = async () => { if (await ask({ title: `Delete “${pl.name}”?`, text: 'This will delete the playlist from Your Library. Downloaded songs stay in Downloads.', ok: 'Delete', danger: true })) { S.playlists = S.playlists.filter(p => p.id !== pl.id); savePls(); toast('Removed from Your Library'); go('library'); } };
 
   } else if (S.view === 'liked') {
     const list = likedList();
     m.innerHTML = `<div class="grad" style="--hc:#3b1f8e">
-      ${pageHead({ art: `<div class="part tile-liked">${I.heartF}</div>`, kind: 'Playlist', title: 'Liked Songs', meta: `<b>Sauti</b><span class="dot">${n(list.length, 'song')}</span>` })}
+      ${pageHead({ art: `<div class="part tile-liked">${I.heartF}</div>`, kind: 'Playlist', title: 'Liked Songs', meta: `<b>Nightwave</b><span class="dot">${n(list.length, 'song')}</span>` })}
       <div class="abar">${list.length ? `<button class="bigplay" id="playAll" title="Play">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}</div>
       <div class="content">${list.length ? listHTML(list) : `<div class="empty"><h3>Songs you like will appear here</h3>Save songs by tapping the heart icon.<br><button class="pill white" onclick="go('search')">Find songs</button></div>`}</div></div>`;
     $('#playAll')?.addEventListener('click', () => playList(list, 0));
@@ -2101,6 +2142,10 @@ function bindList(){
     }
   };
   l.ondblclick = null;
+  let sw = null;
+  l.ontouchstart = e => { const r = e.target.closest('.row'); sw = r ? { r, x: e.touches[0].clientX, y: e.touches[0].clientY } : null; };
+  l.ontouchmove = e => { if (!sw) return; const dx = e.touches[0].clientX - sw.x, dy = e.touches[0].clientY - sw.y; if (Math.abs(dy) > 24) { sw.r.style.transform = ''; sw = null; return; } if (dx > 12) sw.r.style.transform = `translateX(${Math.min(90, dx)}px)`; };
+  l.ontouchend = e => { if (!sw) return; const dx = e.changedTouches[0].clientX - sw.x, r = sw.r; sw = null; r.style.transform = ''; if (dx > 80) { e.preventDefault(); const t = shown[+r.dataset.i]; if (t) addToQueue(t); } };
 }
 function updateNow(){
   const t = current(); if (!t) return;
@@ -2137,6 +2182,7 @@ function renderNP(){
       <div class="q-label">Next up</div>${nextUp.length ? nextUp.map((x, j) => `<div class="q-item" data-qi="${S.qi + 1 + j}">${artHTML(x)}<div><div class="t-title">${esc(x.title)}</div><div class="t-artist">${esc(x.artist)}</div></div></div>`).join('') : '<div class="t-artist" style="padding:8px">Nothing queued. Use ＋ → Add to queue on any song.</div>'}
     </div>`;
     p.querySelectorAll('[data-qi]').forEach(el => el.onclick = () => playIndex(+el.dataset.qi));
+    makeSortable(p.querySelector('.np-body'), '.q-item:not(.cur)', (a, b) => { moveItem(S.queue, +a.dataset.qi, +b.dataset.qi); saveSession(); renderNP(); });
   } else if (!t) {
     p.innerHTML = `<div class="np-head"><span>Now playing</span>${close}</div><div class="np-body"><div class="empty">Play something to see it here.</div></div>`;
   } else {
@@ -2193,6 +2239,8 @@ function renderLibraryInto(chipsEl, listEl){
   if (f === 'all' || f === 'playlists') items.push(`<button class="li ${on('liked')?'on':''}" data-go="liked"><div class="lart tile-liked">${I.heartF}</div><div class="ltxt"><div class="lname">Liked Songs</div><div class="lsub">Playlist • ${n(S.liked.size, 'song')}</div></div></button>`);
   if (f === 'all' || f === 'downloaded') items.push(`<button class="li ${on('downloads')?'on':''}" data-go="downloads"><div class="lart tile-dl">${I.dl}</div><div class="ltxt"><div class="lname">Downloads</div><div class="lsub">Playlist • ${n(S.downloads.size, 'song')}</div></div></button>`);
   if ((f === 'all' || f === 'artists') && S.following.size) items.push(`<button class="li ${on('following')?'on':''}" data-go="following"><div class="lart tile-follow">${IC.people}</div><div class="ltxt"><div class="lname">New releases</div><div class="lsub">From ${n(S.following.size, 'artist')} you follow</div></div></button>`);
+  if (f === 'all') items.push(`<button class="li ${on('stats')?'on':''}" data-go="stats"><div class="lart tile-stats">♫</div><div class="ltxt"><div class="lname">Your stats</div><div class="lsub">${fmtDur(S.stats.total)} listened</div></div></button>`);
+  if (f === 'all' && S.pc) items.push(`<button class="li ${on('pc')?'on':''}" data-go="pc"><div class="lart tile-pc">PC</div><div class="ltxt"><div class="lname">My PC</div><div class="lsub">Music on your computer</div></div></button>`);
   if (f === 'all' || f === 'playlists') [...S.playlists].reverse().forEach(p => items.push(`<button class="li ${on('playlist', p.id)?'on':''}" data-pl="${esc(p.id)}">${mosaicHTML(p).replace('class="mosaic', 'class="lart mosaic')}<div class="ltxt"><div class="lname">${esc(p.name)}</div><div class="lsub">Playlist • ${n(p.tracks.length, 'song')}</div></div></button>`));
   if (f === 'downloaded') [...S.playlists].reverse().filter(p => p.tracks.length && p.tracks.every(t => S.downloads.has(t.id))).forEach(p => items.push(`<button class="li" data-pl="${esc(p.id)}">${mosaicHTML(p).replace('class="mosaic', 'class="lart mosaic')}<div class="ltxt"><div class="lname">${esc(p.name)}</div><div class="lsub">Playlist • downloaded</div></div></button>`));
   if (f === 'all' || f === 'artists') [...S.following.values()].reverse().forEach(u => items.push(`<button class="li ${on('artist', u.id)?'on':''}" data-artist="${esc(u.id)}">${imgOr(u.avatar, 'lart round', esc((u.name||'?')[0])).replace('font-size:40px', 'font-size:18px')}<div class="ltxt"><div class="lname">${esc(u.name)}</div><div class="lsub">Artist</div></div></button>`));
@@ -2293,6 +2341,10 @@ function renderSettings(m){
   m.innerHTML = `<div class="pad settings">
     <h1 class="greet" style="font-size:32px">Settings</h1>
 
+    <h2 class="shead">Account</h2>
+    ${S.auth ? srow(esc(S.auth.user?.email || 'Signed in'), `Your liked songs, playlists and followed artists sync across your devices.${S.lastSync ? ` Last synced ${relDate(new Date(S.lastSync).toISOString()).toLowerCase()}.` : ''}`, `<button class="outline" id="sSync">Sync now</button><button class="outline" id="sOut">Sign out</button>`)
+             : srow('Sign in to sync', 'Keep your liked songs, playlists and followed artists the same on your phone and computer. Free.', `<button class="outline" id="sIn">Sign in or create account</button>`)}
+
     <h2 class="shead">Playback</h2>
     ${srow('Lite mode (for gaming)', 'Uses as little of your computer as possible: no sound effects engine, equalizer, tempo analysis or animations — just a simple, smooth crossfade. Best with Audius songs and downloads (YouTube plays video, which is heavier).', toggleHTML('sLite', S.lite))}
     ${srow('Crossfade songs', 'Blend the end of one song into the start of the next.', `<div class="inline"><input type="range" id="sXf" min="0" max="12" step="1" value="${S.xfade}" style="--p:${S.xfade/12*100}%"><span class="val">${S.xfade ? S.xfade + ' s' : 'Off'}</span></div>`)}
@@ -2300,6 +2352,7 @@ function renderSettings(m){
     ${srow('DJ mode', 'Mix like a DJ: put the next songs in an order where tempo and key flow, start each mix on the beat and pick the transition to suit.', toggleHTML('sDj', S.dj))}
     ${srow('Beatmatch', 'Gently speed the next song up or down to lock to the beat (without changing its pitch), then glide back to normal.', toggleHTML('sBeat', S.beatmatch), S.dj ? '' : 'dim')}
     ${srow('Harmonic mixing', 'Prefer next songs in a matching musical key.', toggleHTML('sHarm', S.harmonic), S.dj ? '' : 'dim')}
+    ${srow('Sleep timer', S.sleep?.at ? `Music stops in about ${Math.max(1, Math.round((S.sleep.at - Date.now()) / 60000))} min.` : S.sleep?.end ? 'Music stops after this song.' : 'Stop the music after a while.', selectHTML('sSleep', [['0', 'Off'], ['15', '15 minutes'], ['30', '30 minutes'], ['45', '45 minutes'], ['60', '1 hour'], ['end', 'End of this song']], S.sleep?.end ? 'end' : '0'))}
     ${srow('Autoplay', 'When your music runs out, keep playing similar songs.', toggleHTML('sAuto', S.autoplay))}
     ${srow('Keep music going with the screen off', 'YouTube songs can\'t play in the background. When you leave the app or turn the screen off, carry on with the next Audius song or download in your queue — or your Downloads if the queue is all YouTube.', toggleHTML('sBgYT', S.bgSkipYT))}
     ${srow('Shuffle', 'Play songs in random order.', toggleHTML('sShuf', S.shuffle))}
@@ -2320,6 +2373,11 @@ function renderSettings(m){
     ${srow('YouTube', ytKey() ? 'Connected — you can search almost any song.' : 'Not connected. Add a free API key to search and stream almost any song.', `<button class="outline" id="sYt">${ytKey() ? 'Manage key' : 'Connect'}</button>`)}
     ${srow('Charts region', 'Which country\'s top music videos show on Home.', selectHTML('sReg', [['KE', 'Kenya'], ['TZ', 'Tanzania'], ['UG', 'Uganda'], ['NG', 'Nigeria'], ['ZA', 'South Africa'], ['GH', 'Ghana'], ['US', 'United States'], ['GB', 'United Kingdom']], store.get('ytRegion', 'KE')))}
 
+    ${srow('Audius API key (optional)', 'Only needed if Audius songs stop loading: create a free key at audius.co → Settings → Developer Apps and paste it here.', `<input class="sin" id="sAk" placeholder="Paste key" value="${esc(store.get('audiusKey', ''))}" spellcheck="false">`)}
+
+    <h2 class="shead">Music on my PC</h2>
+    ${srow('PC server address', `Run the small Nightwave PC server on your computer (<a href="https://github.com/hackerbones/sauti/tree/main/pc-server" target="_blank" rel="noopener" style="color:var(--accent2)">get it here</a>) and enter the address it shows.${pcBlocked() ? ' <b>This browser will block it</b> — use the Android app, or open that address directly in your phone\'s browser.' : ''}`, `<input class="sin" id="sPc" placeholder="http://192.168.1.20:8844" value="${esc(S.pc)}" spellcheck="false"><button class="outline" id="sPcGo">${S.pc ? 'Open' : 'Connect'}</button>`)}
+
     <h2 class="shead">Display</h2>
     ${srow('Show Now Playing view on play', 'Open the side panel automatically when a song starts.', toggleHTML('sNP', S.autoNP))}
     ${srow('Library filter', 'What Your Library shows by default.', selectHTML('sLib', [['all', 'Everything'], ['playlists', 'Playlists'], ['artists', 'Artists'], ['downloaded', 'Downloaded']], S.libFilter))}
@@ -2335,8 +2393,8 @@ function renderSettings(m){
     <div class="keys">${[['Space', 'Play / pause'], ['L', 'Lyrics'], ['Shift + →', 'Next song'], ['Shift + ←', 'Previous song'], ['→ / ←', 'Skip forward / back 10 s'], ['S', 'Shuffle'], ['R', 'Repeat'], ['M', 'Mute'], ['/', 'Search']].map(([k, d]) => `<div><kbd>${k}</kbd><span>${d}</span></div>`).join('')}</div>
 
     <h2 class="shead">About</h2>
-    ${srow('Sauti', 'Free music player · music from Audius and YouTube · your library stays on this device.', `<a class="outline" href="install.html" style="text-decoration:none;display:inline-flex;align-items:center">Install app</a>`)}
-    ${NATIVE ? '' : srow('Android app', 'Keeps playing with the screen off, with music controls on the lock screen.', `<a class="outline" href="https://github.com/hackerbones/sauti/releases/download/latest-apk/Sauti.apk" style="text-decoration:none;display:inline-flex;align-items:center">Download APK</a>`)}
+    ${srow('Nightwave', 'Free music player · music from Audius and YouTube · your library stays on this device.', `<a class="outline" href="install.html" style="text-decoration:none;display:inline-flex;align-items:center">Install app</a>`)}
+    ${NATIVE ? '' : srow('Android app', 'Keeps playing with the screen off, with music controls on the lock screen.', `<a class="outline" href="https://github.com/hackerbones/sauti/releases/download/latest-apk/Nightwave.apk" style="text-decoration:none;display:inline-flex;align-items:center">Download APK</a>`)}
     <input type="file" id="restoreIn" accept="application/json,.json" hidden>
   </div>`;
   const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };
@@ -2346,9 +2404,13 @@ function renderSettings(m){
   on('sFx', openFxCatalogue);
   on('sLite', async () => {
     S.lite = !S.lite; store.set('lite', S.lite); document.body.classList.toggle('lite', S.lite); render();
-    if (S.lite && actx) { if (await ask({ title: 'Restart Sauti?', text: 'Lite mode fully switches on after a restart. Your song and queue are remembered.', ok: 'Restart now' })) { saveSession(); location.reload(); } }
+    if (S.lite && actx) { if (await ask({ title: 'Restart Nightwave?', text: 'Lite mode fully switches on after a restart. Your song and queue are remembered.', ok: 'Restart now' })) { saveSession(); location.reload(); } }
     else toast(S.lite ? 'Lite mode on' : 'Lite mode off');
   });
+  on('sIn', accountDialog); on('sOut', signOut); on('sSync', () => syncNow(true));
+  $('#sSleep').onchange = e => { setSleep(e.target.value); render(); };
+  $('#sAk').onchange = e => { store.set('audiusKey', e.target.value.trim()); toast(e.target.value.trim() ? 'Audius key saved' : 'Audius key removed'); };
+  on('sPcGo', () => { let v = $('#sPc').value.trim(); if (v && !/^https?:\/\//.test(v)) v = 'http://' + v; S.pc = v.replace(/\/+$/, ''); store.set('pc', S.pc); S.pcList = null; renderSidePls(); if (S.pc) go('pc'); else render(); });
   flip('sAuto', 'autoplay');
   flip('sDj', 'dj', () => { djArrangedFor = null; if (S.dj) { if (S.fx === 'blend') { S.fx = 'auto'; store.set('fx', 'auto'); } djPrepare(); toast('🎧 DJ mode on'); } });
   flip('sBeat', 'beatmatch');
@@ -2390,9 +2452,9 @@ function renderSettings(m){
       (d.liked || []).forEach(([id, t]) => { if (!S.liked.has(id)) { S.liked.set(id, t); added++; } });
       (d.following || []).forEach(([id, u]) => { if (!S.following.has(id)) { S.following.set(id, u); added++; } });
       (d.playlists || []).forEach(p => { if (!S.playlists.some(x => x.id === p.id)) { S.playlists.push(p); added++; } });
-      store.set('liked', [...S.liked]); store.set('following', [...S.following]); savePls(); S.feed = null;
+      store.set('liked', [...S.liked]); store.set('following', [...S.following]); touch('liked'); touch('following'); savePls(); S.feed = null;
       toast(`Restored ${added} item${added === 1 ? '' : 's'}`); updateCounts(); render();
-    } catch { toast("That doesn't look like a Sauti backup file"); }
+    } catch { toast("That doesn't look like a Nightwave backup file"); }
   };
 }
 $('#settingsBtn').onclick = () => go('settings');
@@ -2447,7 +2509,7 @@ async function loadTrending(){
     S.results = list; store.set(key, { at: Date.now(), list });
     if (my === reqId) { S.loading = false; if (S.view === 'home' && (changed || !cached)) render(); }
     return;
-  } catch (e) { if (my === reqId && !cached) S.error = navigator.onLine ? 'The Audius API did not respond.' : "You're offline — your downloads still work."; }
+  } catch (e) { if (my === reqId && !cached) S.error = e?.audius ? e.message : navigator.onLine ? 'The Audius API did not respond.' : "You're offline — your downloads still work."; }
   if (my === reqId) { S.loading = false; if (S.view === 'home' && !cached) render(); }
 }
 let ytReq = 0;
@@ -2469,7 +2531,7 @@ async function search(q, force){
     S.results = (data || []).filter(t => t.is_streamable !== false).map(normalize);
     S.artists = (users || []).map(normUser).sort((a,b) => b.followers - a.followers);
   }
-  catch (e) { if (my === reqId) S.error = navigator.onLine ? 'Search failed.' : "You're offline — your downloads still work."; }
+  catch (e) { if (my === reqId) S.error = e?.audius ? e.message : navigator.onLine ? 'Search failed.' : "You're offline — your downloads still work."; }
   if (my === reqId) { S.loading = false; if (S.view === 'search') render(); }
 }
 async function openArtist(id){
@@ -2506,6 +2568,258 @@ function go(v, keep){
 }
 document.querySelectorAll('.nav').forEach(n => n.onclick = () => go(n.dataset.view));
 
+/* ---------- Account + library sync (Supabase) ---------- */
+const SB = { url: 'https://vyidomtsqputjhvefurz.supabase.co', key: 'sb_publishable_HB_GNGzevXfozZth4t5uwg_XnLwegLc' };
+S.auth = store.get('auth', null);
+S.mt = store.get('mt', { liked: 0, following: 0, playlists: 0 });
+S.lastSync = store.get('lastSync', 0);
+let applyingSync = false, syncTimer = null, syncBusy = false;
+function touch(sec){ if (applyingSync) return; S.mt[sec] = Date.now(); store.set('mt', S.mt); if (S.auth) { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 3000); } }
+async function sbAuth(path, body){
+  const r = await fetch(`${SB.url}/auth/v1/${path}`, { method: 'POST', headers: { apikey: SB.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.msg || j.error_description || j.message || (typeof j.error === 'string' ? j.error : '') || `Account error ${r.status}`);
+  return j;
+}
+function setAuth(j){
+  S.auth = j && j.access_token ? { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() + (j.expires_in || 3600) * 1000,
+    user: { id: j.user?.id || S.auth?.user?.id, email: j.user?.email || S.auth?.user?.email } } : null;
+  store.set('auth', S.auth);
+}
+async function sbToken(){
+  if (!S.auth) return null;
+  if (S.auth.expires_at - Date.now() < 60000) {
+    try { setAuth(await sbAuth('token?grant_type=refresh_token', { refresh_token: S.auth.refresh_token })); }
+    catch (e) { if (navigator.onLine && /invalid|not found|revoked|expired|already used/i.test(e.message)) { setAuth(null); toast('Signed out — please sign in again'); } return null; }
+  }
+  return S.auth?.access_token || null;
+}
+async function sbRest(method, q, body){
+  const tk = await sbToken(); if (!tk) throw new Error("Couldn't reach your account — check your connection");
+  const r = await fetch(`${SB.url}/rest/v1/libraries${q}`, { method, headers: { apikey: SB.key, Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: body ? JSON.stringify(body) : undefined });
+  if (!r.ok) throw new Error(`Sync error ${r.status}`);
+  return method === 'GET' ? r.json() : null;
+}
+const byId = (a, b) => { const m = new Map(b.map(p => [p.id, p])); a.forEach(p => m.set(p.id, p)); return [...m.values()]; };
+const SECTIONS = {
+  liked: { get: () => [...S.liked], set: v => { S.liked = new Map(v); store.set('liked', v); }, merge: (a, b) => [...new Map([...b, ...a])] },
+  following: { get: () => [...S.following], set: v => { S.following = new Map(v); store.set('following', v); S.feed = null; }, merge: (a, b) => [...new Map([...b, ...a])] },
+  playlists: { get: () => S.playlists, set: v => { S.playlists = v; store.set('playlists', v); }, merge: byId },
+};
+async function syncNow(manual){
+  if (!S.auth || syncBusy) return; syncBusy = true;
+  try {
+    const uid = S.auth.user?.id; if (!uid) throw new Error('Please sign in again');
+    const rows = await sbRest('GET', `?select=data&user_id=eq.${uid}`);
+    const remote = rows[0]?.data || {}, rmt = remote.mt || {}, first = store.get('syncUser', '') !== uid;
+    let push = !rows.length, changed = false;
+    applyingSync = true;
+    for (const [sec, h] of Object.entries(SECTIONS)) {
+      const rv = remote[sec];
+      if (first) { if (rv?.length) { h.set(h.merge(h.get(), rv)); changed = true; } S.mt[sec] = Date.now(); push = true; }   // first time on this device: combine both
+      else if ((rmt[sec] || 0) > (S.mt[sec] || 0) && rv) { h.set(rv); S.mt[sec] = rmt[sec]; changed = true; }               // newer elsewhere
+      else if ((S.mt[sec] || 0) > (rmt[sec] || 0)) push = true;                                                             // newer here
+    }
+    applyingSync = false; store.set('mt', S.mt); store.set('syncUser', uid);
+    if (push) await sbRest('POST', '?on_conflict=user_id', { user_id: uid, data: { liked: SECTIONS.liked.get(), following: SECTIONS.following.get(), playlists: S.playlists, mt: S.mt }, updated_at: new Date().toISOString() });
+    S.lastSync = Date.now(); store.set('lastSync', S.lastSync);
+    if (changed) { updateCounts(); if (!['search', 'lyrics'].includes(S.view)) render(); }
+    if (manual) { toast('Library synced'); if (S.view === 'settings') render(); }
+  } catch (e) { applyingSync = false; if (manual) toast(e.message); }
+  finally { syncBusy = false; }
+}
+function accountDialog(){
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  bg.innerHTML = `<form class="modal"><h3>Your account</h3><p>Sign in to keep your liked songs, playlists and followed artists the same on your phone and computer. Downloads stay on each device.</p>
+    <input type="email" id="acEmail" placeholder="Email" autocomplete="email" required>
+    <input type="password" id="acPw" placeholder="Password (at least 6 characters)" autocomplete="current-password" minlength="6" required>
+    <p id="acMsg" style="min-height:18px;margin:-6px 0 12px;color:var(--accent2)"></p>
+    <div class="row-btns"><button type="button" class="btn" data-x>Cancel</button><button type="button" class="btn" id="acNew" style="border:1px solid #7c7c7c">Create account</button><button class="btn primary" id="acIn">Sign in</button></div></form>`;
+  document.body.appendChild(bg);
+  const msg = t => { bg.querySelector('#acMsg').textContent = t; }, val = () => ({ email: bg.querySelector('#acEmail').value.trim(), password: bg.querySelector('#acPw').value });
+  const done = async j => { setAuth(j); bg.remove(); toast('Signed in'); await syncNow(true); if (S.view === 'settings') render(); };
+  bg.onclick = e => { if (e.target === bg || e.target.closest('[data-x]')) bg.remove(); };
+  bg.querySelector('form').onsubmit = async e => { e.preventDefault(); msg('Signing in…'); try { await done(await sbAuth('token?grant_type=password', val())); } catch (er) { msg(/confirm/i.test(er.message) ? 'Confirm your email first: open the link we emailed you, then sign in.' : er.message); } };
+  bg.querySelector('#acNew').onclick = async () => { const v = val(); if (!v.email || v.password.length < 6) { msg('Enter your email and a password of at least 6 characters.'); return; }
+    msg('Creating your account…');
+    try { const j = await sbAuth('signup', v); if (j.access_token) await done(j); else msg('Almost there: open the confirmation link we just emailed you (the page it opens can be closed), then come back and tap Sign in.'); }
+    catch (er) { msg(er.message); } };
+  bg.querySelector('#acEmail').focus();
+}
+function signOut(){ setAuth(null); store.set('syncUser', ''); toast('Signed out — your library stays on this device'); if (S.view === 'settings') render(); }
+setInterval(() => { if (!document.hidden) syncNow(); }, 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - S.lastSync > 60000) syncNow(); });
+
+/* ---------- Listening stats + recently played ---------- */
+S.stats = store.get('stats', { songs: {}, artists: {}, days: {}, total: 0 });
+S.recent = store.get('recent', []);
+let statLast = 0, statCur = null, statSaved = 0;
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const fmtDur = s => { const m = Math.round(s / 60); return m >= 60 ? `${Math.floor(m / 60)} hr ${m % 60} min` : `${m} min`; };
+function saveStats(){
+  const st = S.stats, songs = Object.entries(st.songs);
+  if (songs.length > 600) st.songs = Object.fromEntries(songs.sort((a, b) => b[1].sec - a[1].sec).slice(0, 500));
+  const days = Object.keys(st.days).sort(); if (days.length > 400) days.slice(0, days.length - 400).forEach(k => delete st.days[k]);
+  store.set('stats', st);
+}
+function statTick(){
+  const now = performance.now(), t = current();
+  if (!t || pPaused()) { statLast = now; return; }
+  const dt = Math.min(2.5, (now - statLast) / 1000); statLast = now; if (dt <= 0) return;
+  if (!statCur || statCur.id !== t.id) { statCur = { id: t.id, sec: 0, counted: false }; S.recent = [plMeta(t), ...S.recent.filter(x => x.id !== t.id)].slice(0, 30); store.set('recent', S.recent); }
+  statCur.sec += dt;
+  const st = S.stats, so = st.songs[t.id] || (st.songs[t.id] = { ...plMeta(t), n: 0, sec: 0 }), ar = st.artists[t.artist] || (st.artists[t.artist] = { n: 0, sec: 0, id: t.artistId || '' });
+  so.sec += dt; ar.sec += dt; st.days[dayKey()] = (st.days[dayKey()] || 0) + dt; st.total += dt;
+  if (!statCur.counted && statCur.sec >= 30) { statCur.counted = true; so.n++; ar.n++; }
+  if (now - statSaved > 15000) { statSaved = now; saveStats(); }
+}
+addEventListener('pagehide', saveStats);
+function buildMix(){
+  const top = Object.values(S.stats.songs).sort((a, b) => b.sec - a.sec).slice(0, 30), seen = new Set(), out = [];
+  for (const t of shuffleArr([...top, ...likedList().slice(0, 40), ...S.recent])) if (!seen.has(t.id) && (t.source !== 'local' || S.downloads.has(t.id))) { seen.add(t.id); out.push(S.downloads.get(t.id) || t); }
+  return out.slice(0, 50);
+}
+function renderStats(m){
+  const st = S.stats, songs = Object.values(st.songs).sort((a, b) => b.n - a.n || b.sec - a.sec), arts = Object.entries(st.artists).sort((a, b) => b[1].sec - a[1].sec);
+  let week = 0; for (let i = 0; i < 7; i++) week += st.days[dayKey(new Date(Date.now() - i * 864e5))] || 0;
+  const plays = songs.reduce((a, x) => a + x.n, 0), top = songs.slice(0, 25);
+  m.innerHTML = `<div class="grad" style="--hc:#7a1f4b">
+    ${pageHead({ art: `<div class="part tile-stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div>`, kind: 'Your listening', title: 'Stats', meta: `<b>${fmtDur(st.total)}</b> listened in total<span class="dot">${n(plays, 'play')}</span>` })}
+    <div class="content" style="padding-top:20px">
+    ${!plays && st.total < 60 ? `<div class="empty"><h3>Your stats will appear here</h3>Play some music and come back.</div>` : `
+      <div class="stat-tiles"><div><b>${fmtDur(week)}</b><span>Last 7 days</span></div><div><b>${fmtDur(st.days[dayKey()] || 0)}</b><span>Today</span></div><div><b>${esc(arts[0]?.[0] || '—')}</b><span>Top artist</span></div><div><b>${songs.length}</b><span>Different songs</span></div></div>
+      <h2 class="sec">Top artists</h2><div class="rank">${arts.slice(0, 8).map(([name, a], i) => `<div class="rk"><span class="rn">${i + 1}</span><span class="rname ${a.id ? 'a-link' : ''}" ${a.id ? `data-artist="${esc(a.id)}"` : ''}>${esc(name)}</span><span class="rv">${fmtDur(a.sec)} · ${n(a.n, 'play')}</span></div>`).join('')}</div>
+      <h2 class="sec">Top songs</h2>${top.length ? `<div class="abar" style="padding:0 0 16px;background:none"><button class="bigplay" id="playAll">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}</div>${listHTML(top, 'Plays')}` : ''}`}
+    </div></div>`;
+  m.querySelectorAll('.rank [data-artist]').forEach(el => el.onclick = () => openArtist(el.dataset.artist));
+  $('#playAll')?.addEventListener('click', () => playList(top, 0)); $('#shuffleAll')?.addEventListener('click', () => playShuffled(top));
+  document.querySelectorAll('#list .row').forEach(r => { const t = top[+r.dataset.i]; if (t) r.querySelector('.genre').textContent = `${n(t.n, 'play')} · ${fmtDur(t.sec)}`; });
+}
+
+/* ---------- Sleep timer ---------- */
+S.sleep = null;                                   // { at: time } or { end: true }
+function setSleep(v){
+  S.sleep = v === 'end' ? { end: true } : +v ? { at: Date.now() + +v * 60000 } : null;
+  toast(!S.sleep ? 'Sleep timer off' : S.sleep.end ? 'Music will stop after this song' : `Music will stop in ${v} minutes`);
+}
+function sleepTick(){ if (S.sleep?.at && Date.now() >= S.sleep.at) { S.sleep = null; pPause(); toast('Sleep timer — music paused'); if (S.view === 'settings') render(); } }
+
+/* ---------- Drag to reorder ---------- */
+function makeSortable(container, sel, onMove){
+  if (!container) return; let from = null;
+  container.querySelectorAll(sel).forEach(el => {
+    el.draggable = true;
+    el.addEventListener('dragstart', e => { from = el; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'x'); } catch {} el.classList.add('dragging'); });
+    el.addEventListener('dragend', () => { el.classList.remove('dragging'); container.querySelectorAll('.dropabove').forEach(x => x.classList.remove('dropabove')); from = null; });
+    el.addEventListener('dragover', e => { if (!from || from === el) return; e.preventDefault(); container.querySelectorAll('.dropabove').forEach(x => x.classList.remove('dropabove')); el.classList.add('dropabove'); });
+    el.addEventListener('drop', e => { e.preventDefault(); const f = from; from = null; if (f && f !== el) onMove(f, el); });
+  });
+}
+const moveItem = (arr, i, j) => { const [x] = arr.splice(i, 1); arr.splice(j > i ? j - 1 : j, 0, x); };
+
+/* ---------- Share links ---------- */
+const b64u = { enc: o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''), dec: s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))))) };
+async function shareLink(hash, title){
+  const url = location.origin + location.pathname + '#' + hash;
+  try { if (navigator.share && coarse) { await navigator.share({ title, url }); return; } } catch { return; }
+  try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { ask({ title: 'Copy this link', value: url, ok: 'Done' }); }
+}
+const trackHash = t => t.source === 'youtube' ? 'yt-' + t.ytId : t.source === 'audius' ? 'track-' + t.id : '';
+function sharePlaylist(pl){
+  const ids = pl.tracks.map(t => t.source === 'youtube' ? 'y' + t.ytId : t.source === 'audius' ? 'a' + t.id : '').filter(Boolean).slice(0, 60);
+  if (!ids.length) { toast('Only Audius and YouTube songs can be shared'); return; }
+  shareLink('list-' + b64u.enc({ n: pl.name, t: ids }), pl.name);
+}
+async function sharedTrack(kind, id){
+  if (kind === 'a') return normalize(await api(`/tracks/${encodeURIComponent(id)}`));
+  if (ytKey()) { try { const v = await ytApi('videos', { part: 'snippet,contentDetails', id }); if (v.items?.[0]) return ytTrack(v.items[0]); } catch {} }
+  return { id: 'yt:' + id, ytId: id, title: 'Shared song', artist: 'YouTube', artistId: '', genre: 'YouTube', duration: 0, artUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, source: 'youtube', released: '' };
+}
+async function handleHash(){
+  const h = decodeURIComponent(location.hash.slice(1)); if (!h) return;
+  const m = h.match(/^(track|yt|artist|list)-(.+)$/); if (!m) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+  try {
+    if (m[1] === 'artist') openArtist(m[2]);
+    else if (m[1] === 'list') {
+      const d = b64u.dec(m[2]); toast('Opening shared playlist…');
+      const tracks = (await Promise.all((d.t || []).slice(0, 60).map(x => sharedTrack(x[0], x.slice(1)).catch(() => null)))).filter(Boolean);
+      if (!tracks.length) throw 0;
+      const pl = { id: 'pl' + Date.now().toString(36), name: String(d.n || 'Shared playlist').slice(0, 80), tracks: tracks.map(plMeta), createdAt: Date.now() };
+      S.playlists.push(pl); savePls(); openPlaylist(pl.id); toast(`Added “${pl.name}” to Your Library`);
+    } else {
+      const t = await sharedTrack(m[1] === 'yt' ? 'y' : 'a', m[2]);
+      if (await ask({ title: `Play “${t.title}”?`, text: `${t.artist} · shared with you`, ok: 'Play' })) playList([t], 0);
+    }
+  } catch { toast("Couldn't open that shared link"); }
+}
+addEventListener('hashchange', handleHash);
+
+/* ---------- Music on my PC (small server you run on your computer) ---------- */
+S.pc = store.get('pc', ''); S.pcList = null; S.pcErr = '';
+const pcBase = () => String(S.pc || '').replace(/\/+$/, '');
+const pcUrl = t => `${pcBase()}/file/${encodeURIComponent(t.id.slice(3))}`;
+const pcBlocked = () => location.protocol === 'https:' && !NATIVE && !!S.pc && !/^https:|^http:\/\/(localhost|127\.0\.0\.1)/.test(S.pc);
+async function pcLoad(){
+  S.pcErr = ''; S.pcList = null;
+  try {
+    const r = await fetch(pcBase() + '/api/list'); if (!r.ok) throw 0; const j = await r.json();
+    S.pcList = (j.tracks || []).map(x => ({ id: 'pc:' + x.id, title: x.title, artist: x.artist || 'Unknown artist', artistId: '', genre: 'My PC', duration: x.duration || 0, artUrl: '', source: 'pc', size: x.size || 0, released: '' }));
+  } catch { S.pcErr = pcBlocked() ? 'blocked' : 'down'; S.pcList = []; }
+  if (S.view === 'pc') render();
+}
+function renderPC(m){
+  if (S.pc && !S.pcList) pcLoad();
+  const list = S.pcList || [], q = (S.pcFilter || '').toLowerCase(), shownList = q ? list.filter(t => (t.title + ' ' + t.artist).toLowerCase().includes(q)) : list;
+  m.innerHTML = `<div class="grad" style="--hc:#1e3a5f">
+    ${pageHead({ art: `<div class="part tile-pc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>`, kind: 'Your computer', title: 'My PC', meta: S.pc ? `<b>${esc(S.pc)}</b><span class="dot">${n(list.length, 'song')}</span>` : 'Not connected' })}
+    <div class="abar">${shownList.length ? `<button class="bigplay" id="playAll">${playSVG}</button>${shuffleBtnHTML('shuffleAll')}` : ''}<button class="outline" id="pcRefresh">Refresh</button><button class="outline" onclick="go('settings')">Change address</button></div>
+    <div class="content">
+    ${!S.pc ? `<div class="empty"><h3>Play the music on your computer</h3>Run the small Nightwave PC server on your computer, then enter its address in Settings → Music on my PC.</div>`
+      : !S.pcList ? spinner()
+      : S.pcErr === 'blocked' ? `<div class="empty"><h3>Your browser blocks this connection</h3>Secure websites aren't allowed to talk to a computer on your Wi-Fi. Use the <b>Nightwave Android app</b>, or open <b>${esc(S.pc)}</b> in your phone's browser — the PC server shows Nightwave there with your PC music built in.</div>`
+      : S.pcErr ? `<div class="empty"><h3>Couldn't reach your PC</h3>Check that the PC server is running and that your phone is on the same Wi-Fi.</div>`
+      : `<input class="pcfilter" id="pcFilter" placeholder="Filter your PC music" value="${esc(S.pcFilter || '')}">${shownList.length ? listHTML(shownList, 'Source') : `<div class="empty">No songs match.</div>`}`}
+    </div></div>`;
+  $('#playAll')?.addEventListener('click', () => playList(shownList, 0)); $('#shuffleAll')?.addEventListener('click', () => playShuffled(shownList));
+  $('#pcRefresh').onclick = () => { pcLoad(); render(); };
+  const f = $('#pcFilter'); if (f) { f.oninput = () => { S.pcFilter = f.value; clearTimeout(f._t); f._t = setTimeout(() => { render(); const g = $('#pcFilter'); g.focus(); g.setSelectionRange(g.value.length, g.value.length); }, 250); }; }
+}
+
+/* ---------- Title, artist and cover picture from inside MP3 files ---------- */
+async function id3Tags(blob){
+  try {
+    const h = new Uint8Array(await blob.slice(0, 10).arrayBuffer());
+    if (h[0] !== 0x49 || h[1] !== 0x44 || h[2] !== 0x33 || h[3] < 3) return {};
+    const ss = (a, i) => ((a[i] & 127) << 21) | ((a[i + 1] & 127) << 14) | ((a[i + 2] & 127) << 7) | (a[i + 3] & 127), u32 = (a, i) => ((a[i] << 24) >>> 0) + (a[i + 1] << 16) + (a[i + 2] << 8) + a[i + 3];
+    const v = h[3], size = ss(h, 6), tag = new Uint8Array(await blob.slice(10, 10 + size).arrayBuffer()), out = {};
+    let p = 0; if (h[5] & 0x40) p = v === 4 ? ss(tag, 0) : u32(tag, 0) + 4;
+    while (p + 10 <= tag.length) {
+      const id = String.fromCharCode(tag[p], tag[p + 1], tag[p + 2], tag[p + 3]); if (!/^[A-Z0-9]{4}$/.test(id)) break;
+      const fs = v === 4 ? ss(tag, p + 4) : u32(tag, p + 4), body = tag.subarray(p + 10, p + 10 + fs); p += 10 + fs;
+      if ((id === 'TIT2' || id === 'TPE1') && body.length > 1) { const s = id3Text(body.subarray(1), body[0]).replace(/\0+$/, '').trim(); if (s) out[id === 'TIT2' ? 'title' : 'artist'] = s; }
+      else if (id === 'APIC' && !out.art && body.length > 20) {
+        const enc = body[0], mEnd = body.indexOf(0, 1), mime = new TextDecoder('latin1').decode(body.subarray(1, mEnd)), dEnd = id3Term(body, mEnd + 2, enc), start = dEnd + (enc === 1 || enc === 2 ? 2 : 1);
+        if (start < body.length - 10) out.art = new Blob([body.slice(start)], { type: mime.includes('/') ? mime : 'image/jpeg' });
+      }
+    }
+    return out;
+  } catch { return {}; }
+}
+async function retagImports(){
+  for (const meta of [...S.downloads.values()]) {
+    if (meta.source !== 'local' || meta.tagged) continue;
+    try {
+      const rec = await dbGet(meta.id); if (!rec?.audio) continue;
+      const tg = await id3Tags(rec.audio);
+      rec.tagged = true; if (tg.title) rec.title = tg.title; if (tg.artist) rec.artist = tg.artist; if (tg.art && !rec.art) rec.art = tg.art;
+      await dbPut(rec);
+      Object.assign(meta, { tagged: true, title: rec.title, artist: rec.artist }); if (tg.art && !meta.artUrl) meta.artUrl = URL.createObjectURL(tg.art);
+    } catch {}
+  }
+  if (['downloads', 'home'].includes(S.view)) render();
+}
+
 /* ---------- Remember what was playing (restored, paused, when the app is reopened) ---------- */
 function takeResume(t){
   const r = S.resume; S.resume = null;
@@ -2540,7 +2854,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) saveS
 /* ---------- Installable app ---------- */
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
   if (e.data?.type !== 'sauti-updated' || document.getElementById('updBar')) return;
-  const b = document.createElement('button'); b.id = 'updBar'; b.className = 'upd'; b.textContent = 'A new version of Sauti is ready — tap to refresh';
+  const b = document.createElement('button'); b.id = 'updBar'; b.className = 'upd'; b.textContent = 'A new version of Nightwave is ready — tap to refresh';
   b.onclick = () => location.reload(); document.body.appendChild(b);
 });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
@@ -2548,7 +2862,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 }
 let installEvt = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#installBtn').classList.add('show'); render(); });
-window.addEventListener('appinstalled', () => { installEvt = null; $('#installBtn').classList.remove('show'); toast('Sauti installed'); render(); });
+window.addEventListener('appinstalled', () => { installEvt = null; $('#installBtn').classList.remove('show'); toast('Nightwave installed'); render(); });
 async function install(){ if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; $('#installBtn').classList.remove('show'); render(); }
 $('#installBtn').onclick = install;
 window.addEventListener('online', () => { toast('Back online'); if (S.view === 'home' && S.error) loadTrending(); });
@@ -2563,6 +2877,7 @@ window.addEventListener('offline', () => toast("You're offline — downloads sti
   } catch (e) { console.warn('IndexedDB unavailable', e); }
   updateCounts(); restoring = true; go('home'); restoring = false;
   restoreSession();
+  handleHash(); setTimeout(() => syncNow(), 2500); setTimeout(retagImports, 4000);
   const sp = $('#splash'); const hide = () => { if (!sp.isConnected) return; sp.style.opacity = '0'; setTimeout(() => sp.remove(), 220); };
   requestAnimationFrame(() => requestAnimationFrame(hide));   // logo shows only until the first screen is drawn
   setTimeout(hide, 1500);

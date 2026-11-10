@@ -52,7 +52,7 @@ public class PlaybackService extends Service {
     private WifiManager.WifiLock wifiLock;
     private final Handler main = new Handler(Looper.getMainLooper());
 
-    private String title = "Sauti", artist = "", artworkUrl = "";
+    private String title = "Nightwave", artist = "", artworkUrl = "";
     private Bitmap artwork;
     private boolean playing = false, started = false;
     private long durationMs = 0, positionMs = 0;
@@ -67,7 +67,7 @@ public class PlaybackService extends Service {
             ch.setShowBadge(false);
             getSystemService(NotificationManager.class).createNotificationChannel(ch);
         }
-        session = new MediaSessionCompat(this, "Sauti");
+        session = new MediaSessionCompat(this, "Nightwave");
         session.setCallback(new MediaSessionCompat.Callback() {
             @Override public void onPlay() { SautiBackgroundPlugin.action("play", 0); }
             @Override public void onPause() { SautiBackgroundPlugin.action("pause", 0); }
@@ -79,11 +79,11 @@ public class PlaybackService extends Service {
         session.setActive(true);
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Sauti::playback");
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Nightwave::playback");
         wakeLock.setReferenceCounted(false);
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wm != null) {
-            wifiLock = wm.createWifiLock(Build.VERSION.SDK_INT >= 29 ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY : WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Sauti::stream");
+            wifiLock = wm.createWifiLock(Build.VERSION.SDK_INT >= 29 ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY : WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Nightwave::stream");
             wifiLock.setReferenceCounted(false);
         }
     }
@@ -108,7 +108,7 @@ public class PlaybackService extends Service {
 
     void update(String t, String ar, String artUrl, boolean isPlaying, long dur, long pos) {
         main.post(() -> {
-            title = t != null && !t.isEmpty() ? t : "Sauti";
+            title = t != null && !t.isEmpty() ? t : "Nightwave";
             artist = ar != null ? ar : "";
             playing = isPlaying; durationMs = dur; positionMs = pos;
             if (artUrl != null && !artUrl.equals(artworkUrl)) { artworkUrl = artUrl; artwork = null; loadArtwork(artUrl); }

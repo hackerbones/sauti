@@ -1,13 +1,16 @@
 {
   "appId": "io.sauti.app",
-  "appName": "Sauti",
+  "appName": "Nightwave",
   "webDir": "www",
   "server": {
     "url": "https://hackerbones.github.io/sauti/",
-    "allowNavigation": ["hackerbones.github.io"]
+    "allowNavigation": [
+      "hackerbones.github.io"
+    ],
+    "cleartext": true
   },
   "android": {
     "backgroundColor": "#000000",
-    "allowMixedContent": false
+    "allowMixedContent": true
   }
 }

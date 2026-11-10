@@ -38,7 +38,7 @@ public class SautiBackgroundPlugin extends Plugin {
 
     @PluginMethod
     public void update(PluginCall call) {
-        String title = call.getString("title", "Sauti");
+        String title = call.getString("title", "Nightwave");
         String artist = call.getString("artist", "");
         String artwork = call.getString("artwork", "");
         boolean playing = Boolean.TRUE.equals(call.getBoolean("playing", false));
