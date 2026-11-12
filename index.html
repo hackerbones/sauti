@@ -400,6 +400,14 @@
   .lyr-off button{border:1px solid rgba(255,255,255,.5);border-radius:500px;padding:3px 10px;font-size:12px;font-weight:700}
   .modal textarea{width:100%;background:#3e3e3e;border:1px solid transparent;border-radius:4px;padding:12px 14px;outline:0;margin-bottom:18px;font:inherit;font-size:14px;color:var(--text);resize:vertical}
   .lyr-msg a.pill,.lyr-msg .pill{display:inline-flex}
+  .lyr-lines.k p.on{color:rgba(255,255,255,.42)}
+  .lyr-lines.k p.on span{transition:color .12s linear}
+  .lyr-lines.k p.on span.lit{color:#fff;text-shadow:0 0 18px rgba(255,255,255,.35)}
+  .lyr-lines.est p.on{color:#fff}
+  .syncbar{position:sticky;bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:rgba(0,0,0,.8);border-radius:12px;padding:12px;margin-top:20px;max-width:900px}
+  .syncbar span{color:var(--muted);font-size:13px;margin-right:auto}
+  .syncbar #syTap{height:52px;padding:0 34px;font-size:16px}
+  .syncbar .btn:not(.primary){border:1px solid #6a6a6a}
   .lyr-msg{color:rgba(255,255,255,.85);font-size:16px;padding:40px 0}
   .lyr-msg h3{font-size:28px;font-weight:800;margin-bottom:10px;color:#fff}
   .np-lyr{background:var(--lc)}
@@ -1456,6 +1464,7 @@ function mediaSession(t){
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
   if (document.querySelector('.modal-bg')) return;
+  if (lyrSyncing && S.view === 'lyrics' && (e.code === 'Space' || e.key === 'Enter')) { e.preventDefault(); syncTap(); return; }
   if (e.code === 'Space') { e.preventDefault(); toggle(); }
   else if (e.key === 'ArrowRight' && e.shiftKey) next();
   else if (e.key === 'ArrowLeft' && e.shiftKey) prev();
@@ -1712,8 +1721,9 @@ function parseLRC(text){
   const out = [];
   for (const raw of String(text).split(/\r?\n/)) {
     const stamps = [...raw.matchAll(/\[(\d{1,2}):(\d{1,2}(?:[.:]\d{1,3})?)\]/g)]; if (!stamps.length) continue;
-    const line = raw.replace(/\[[^\]]*\]/g, '').trim();
-    for (const m of stamps) out.push({ t: +m[1] * 60 + parseFloat(m[2].replace(':', '.')), text: line });
+    let line = raw.replace(/\[[^\]]*\]/g, '').trim(), words = null;
+    if (/<\d{1,2}:\d/.test(line)) { words = []; line.replace(/<(\d{1,2}):(\d{1,2}(?:\.\d{1,3})?)>([^<]*)/g, (m0, a, b, w) => { if (w.trim()) words.push({ t: +a * 60 + parseFloat(b), text: w.trim() }); }); line = line.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(); if (!words.length) words = null; }
+    for (const m of stamps) out.push(words ? { t: +m[1] * 60 + parseFloat(m[2].replace(':', '.')), text: line, words } : { t: +m[1] * 60 + parseFloat(m[2].replace(':', '.')), text: line });
   }
   out.sort((a, b) => a.t - b.t);
   return out.length > 1 ? out : null;
@@ -1783,7 +1793,7 @@ function pasteLyricsDialog(t, then){
   bg.querySelector('#lyrTa').focus();
 }
 const lyrSourceLabel = rec => rec.source === 'file' ? 'Lyrics from the song file' : rec.source === 'you' ? 'Lyrics you added' : rec.source === 'ovh' ? 'Lyrics from <a href="https://lyrics.ovh" target="_blank" rel="noopener">lyrics.ovh</a>' : 'Lyrics provided by <a href="https://lrclib.net" target="_blank" rel="noopener">LRCLIB</a>';
-const lyrTools = t => `<span class="lyr-off"><button id="lyrEdit">${lyrMem.get(t.id)?.source === 'you' ? 'Edit lyrics' : 'Use my own lyrics'}</button><button id="lyrAgain">Search again</button></span>`;
+const lyrTools = t => `<span class="lyr-off"><button id="lyrEdit">${lyrMem.get(t.id)?.source === 'you' ? 'Edit lyrics' : 'Use my own lyrics'}</button><button id="lyrSync">Time it myself</button><button id="lyrAgain">Search again</button></span>`;
 /* Lyrics stored inside MP3 files (ID3 USLT / SYLT frames) — works fully offline */
 function id3Text(b, enc){
   if (enc === 0) return new TextDecoder('latin1').decode(b);
@@ -1847,6 +1857,60 @@ const prefetchLyrics = t => { if (t) getLyrics(t, navigator.onLine).catch(() => 
 
 /* Lyrics screen + live highlighting */
 let lyrLines = null, lyrIdx = -1, lyrUserScroll = 0, lyrFor = null;
+/* ---------- Karaoke: words light up with the audio ---------- */
+let kRaf = 0, lyrEst = false, lyrSyncing = null;
+function lineSpan(i){
+  // how long the singing of line i lasts: until the next line, but not longer than the words need
+  const l = lyrLines[i], nx = lyrLines[i + 1], gap = nx ? nx.t - l.t : 6;
+  return Math.max(.6, Math.min(gap, Math.max(1.4, l.text.length * .085 + .7)));
+}
+function karaoke(){
+  if (S.view !== 'lyrics' || !lyrLines || document.hidden || S.lite || lyrSyncing) { kRaf = 0; return; }
+  kRaf = requestAnimationFrame(karaoke);
+  if (pPaused()) return;
+  lyricTick();
+  if (lyrEst || lyrIdx < 0) return;
+  const el = document.querySelector(`.lyr-lines p[data-i="${lyrIdx}"]`), l = lyrLines[lyrIdx]; if (!el || !l.text) return;
+  if (el.dataset.k !== '1') { el.dataset.k = '1'; el.innerHTML = (l.words?.length ? l.words.map(w => w.text) : l.text.split(/\s+/)).map(w => `<span>${esc(w)}</span>`).join(' '); }
+  const now = pTime() + lyrOffset(), spans = el.children; let lit = 0;
+  if (l.words?.length) { for (const w of l.words) if (w.t <= now + .05) lit++; }
+  else { const p = Math.min(1, (now - l.t) / lineSpan(lyrIdx)), total = l.text.replace(/\s+/g, '').length || 1; let acc = 0;
+    for (const sp of spans) { acc += sp.textContent.length; if ((acc - sp.textContent.length * .5) / total <= p) lit++; else break; } }
+  if (+el.dataset.lit !== lit) { el.dataset.lit = lit; for (let i = 0; i < spans.length; i++) spans[i].classList.toggle('lit', i < lit); }
+}
+function startKaraoke(){ document.querySelector('.lyr-lines')?.classList.toggle('k', !S.lite && !lyrEst); if (!kRaf && !S.lite) kRaf = requestAnimationFrame(karaoke); }
+/* Words-only lyrics: follow along with estimated timing (spread over the song by line length) */
+function estimateLines(plain, d){
+  if (!d || d < 40) return null;
+  const rows = String(plain).split('\n').map(x => x.trim()); while (rows.length && !rows[rows.length - 1]) rows.pop();
+  if (rows.filter(Boolean).length < 4) return null;
+  const w = rows.map(r => r ? r.length + 14 : 12), total = w.reduce((a, b) => a + b, 0), start = Math.min(18, d * .07), span = d * .93 - start;
+  let acc = 0; return rows.map((text, i) => { const t = start + span * acc / total; acc += w[i]; return { t, text }; });
+}
+/* Time lyrics yourself: play the song and tap as each line starts */
+function drawLyricSync(m, t){
+  const s = lyrSyncing, i = s.times.length;
+  m.innerHTML = `<div class="lyr" style="--lc:${hc(t.title + t.artist, 30)}"><div class="lyr-head"><div class="t-title">${esc(t.title)}</div><div class="t-artist">Tap <b>Next line</b> (or press Space) the moment each line starts</div></div>
+    <div class="lyr-lines sync">${s.lines.map((x, k) => `<p data-i="${k}" class="${k < i ? 'past' : k === i ? 'on' : ''}">${esc(x)}</p>`).join('')}</div>
+    <div class="syncbar"><button class="btn primary" id="syTap">Next line</button><span>${i} of ${s.lines.length}</span><button class="btn" id="syUndo" ${i ? '' : 'disabled'}>Undo</button><button class="btn" id="syRestart">Start over</button><button class="btn" id="syCancel">Cancel</button></div></div>`;
+  $('#syTap').onclick = syncTap; $('#syCancel').onclick = () => { lyrSyncing = null; render(); };
+  $('#syUndo').onclick = () => { s.times.pop(); pSeek(Math.max(0, (s.times[s.times.length - 1] || 0) - 2)); render(); };
+  $('#syRestart').onclick = () => { s.times = []; pSeek(0); pPlay(); render(); };
+  document.querySelector('.lyr-lines p.on')?.scrollIntoView({ block: 'center' });
+}
+function startLyricSync(t, rec){
+  const lines = (rec.synced ? rec.synced.map(l => l.text) : String(rec.plain || '').split('\n').map(x => x.trim())).filter(Boolean);
+  if (lines.length < 2) { toast('There are no lyrics to time yet'); return; }
+  lyrSyncing = { id: t.id, lines, times: [] }; pSeek(0); pPlay(); render();
+}
+async function syncTap(){
+  const s = lyrSyncing, t = current(); if (!s || !t || t.id !== s.id) return;
+  s.times.push(Math.max(0, pTime() - .2));                       // allow for reaction time
+  if (s.times.length < s.lines.length) { render(); return; }
+  const synced = s.lines.map((text, i) => ({ t: s.times[i], text })), rec = { id: t.id, synced, plain: s.lines.join('\n'), source: 'you', at: Date.now(), v: 2 };
+  await lyrPut(rec).catch(() => {}); lyrMem.set(t.id, rec); lyrSyncing = null; toast('Lyrics timed and saved'); pSeek(0); render();
+}
+
 const lyrOffset = () => (lyrFor && lyrMem.get(lyrFor)?.offset) || 0;
 function lyricsBody(rec, t){
   if (!rec) return spinner();
@@ -1863,18 +1927,26 @@ function lyricsBody(rec, t){
 function renderLyricsView(m){
   const t = current();
   if (!t) { m.innerHTML = `<div class="empty"><h3>Play a song to see its lyrics</h3></div>`; return; }
+  if (lyrSyncing && lyrSyncing.id !== t.id) lyrSyncing = null;
   lyrFor = t.id; lyrLines = null; lyrIdx = -1;
+  if (lyrSyncing) { drawLyricSync(m, t); return; }
   m.innerHTML = `<div class="lyr" style="--lc:${hc(t.title + t.artist, 30)}"><div class="lyr-head"><div class="t-title">${esc(t.title)}</div><div class="t-artist">${esc(t.artist)}</div></div><div id="lyrBox"></div></div>`;
   const box = $('#lyrBox'); box.innerHTML = lyricsBody(lyrMem.get(t.id) || null, t);
   const fill = rec => {
     if (current() !== t || S.view !== 'lyrics') return;
-    box.innerHTML = lyricsBody(rec, t); lyrLines = rec?.synced || null; lyrIdx = -1;
+    box.innerHTML = lyricsBody(rec, t); lyrLines = rec?.synced || null; lyrIdx = -1; lyrEst = false;
+    if (!lyrLines && rec?.plain) {                 // words only: follow along with estimated timing
+      const est = estimateLines(rec.plain, pDur() || t.duration), pl = box.querySelector('.lyr-plain');
+      if (est && pl) { lyrLines = est; lyrEst = true; pl.outerHTML = `<div class="lyr-lines est">${est.map((l, i) => `<p data-i="${i}">${esc(l.text) || '&nbsp;'}</p>`).join('')}</div>`;
+        const ft = box.querySelector('.lyr-foot'); if (ft) ft.firstChild.textContent = 'Timing is estimated for these lyrics — tap “Time it myself” to make it exact · '; }
+    }
+    $('#lyrSync')?.addEventListener('click', () => startLyricSync(t, rec));
     box.querySelectorAll('.lyr-lines p').forEach(p => p.onclick = () => { const l = lyrLines[+p.dataset.i]; pSeek(Math.max(0, l.t - lyrOffset())); lyrUserScroll = 0; });
     box.querySelectorAll('[data-off]').forEach(b => b.onclick = () => { rec.offset = Math.round(((rec.offset || 0) + +b.dataset.off) * 10) / 10; lyrPut(rec).catch(() => {}); $('#lyrOffV').textContent = `${rec.offset > 0 ? '+' : ''}${rec.offset.toFixed(1)}s`; lyrIdx = -1; lyricTick(); });
     $('#lyrRetry')?.addEventListener('click', () => { lyrMem.delete(t.id); getLyrics(t).then(fill); });
     $('#lyrEdit')?.addEventListener('click', () => pasteLyricsDialog(t, () => { if (S.view === 'lyrics') render(); }));
     $('#lyrAgain')?.addEventListener('click', async () => { if (!navigator.onLine) { toast("You're offline"); return; } lyrMem.delete(t.id); await lyrPut({ id: t.id, none: true, at: 0 }).catch(() => {}); box.innerHTML = spinner(); getLyrics(t).then(fill); });
-    lyricTick();
+    lyricTick(); startKaraoke();
   };
   getLyrics(t).then(fill);
   m.onwheel = m.ontouchmove = () => { lyrUserScroll = performance.now(); };
@@ -1886,7 +1958,7 @@ function lyricTick(){
     for (let k = 0; k < lyrLines.length && lyrLines[k].t <= now + .15; k++) i = k;
     if (i !== lyrIdx) {
       lyrIdx = i;
-      document.querySelectorAll('.lyr-lines p').forEach((p, k) => { p.classList.toggle('on', k === i); p.classList.toggle('past', k < i); });
+      document.querySelectorAll('.lyr-lines p').forEach((p, k) => { p.classList.toggle('on', k === i); p.classList.toggle('past', k < i); if (k !== i && p.dataset.k === '1') { p.dataset.k = ''; p.dataset.lit = ''; p.textContent = lyrLines[k].text || '♪'; } });
       const el = document.querySelector('.lyr-lines p.on');
       if (el && performance.now() - lyrUserScroll > 3500) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
