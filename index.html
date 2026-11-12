@@ -398,6 +398,8 @@
   .lyr-foot a{color:#fff}
   .lyr-off{display:inline-flex;align-items:center;gap:8px}
   .lyr-off button{border:1px solid rgba(255,255,255,.5);border-radius:500px;padding:3px 10px;font-size:12px;font-weight:700}
+  .modal textarea{width:100%;background:#3e3e3e;border:1px solid transparent;border-radius:4px;padding:12px 14px;outline:0;margin-bottom:18px;font:inherit;font-size:14px;color:var(--text);resize:vertical}
+  .lyr-msg a.pill,.lyr-msg .pill{display:inline-flex}
   .lyr-msg{color:rgba(255,255,255,.85);font-size:16px;padding:40px 0}
   .lyr-msg h3{font-size:28px;font-weight:800;margin-bottom:10px;color:#fff}
   .np-lyr{background:var(--lc)}
@@ -1584,12 +1586,14 @@ async function importFiles(files){
     const tg = /\.mp3$/i.test(f.name) || f.type === 'audio/mpeg' ? await id3Tags(f) : {};
     if (tg.title) meta.title = tg.title; if (tg.artist) meta.artist = tg.artist; meta.tagged = true;
     await dbPut({ ...meta, audio: f, art: tg.art || null }); if (tg.art) meta.artUrl = URL.createObjectURL(tg.art);
-    S.downloads.set(meta.id, meta); n++; prefetchLyrics(meta);
+    S.downloads.set(meta.id, meta); n++;
+    const lf = sideLyrics.get(f.name.replace(/\.[^.]+$/, '').toLowerCase()); if (lf) { try { await saveOwnLyrics(meta, await lf.text()); } catch {} } else prefetchLyrics(meta);
   }
   toast(n ? `Imported ${n} song${n>1?'s':''}${dup ? ` (${dup} already in library)` : ''}` : dup ? 'Those songs are already in your library' : 'No audio files found'); updateCounts(); render();
 }
 $('#fileIn').onchange = e => { importFiles([...e.target.files]); e.target.value = ''; };
-$('#dirIn').onchange = e => { const f = [...e.target.files].filter(x => /\.(mp3|m4a|aac|ogg|opus|wav|flac|webm)$/i.test(x.name)); toast(`Importing ${f.length} songs…`); importFiles(f); e.target.value = ''; };
+$('#dirIn').onchange = e => { const all = [...e.target.files], f = all.filter(x => /\.(mp3|m4a|aac|ogg|opus|wav|flac|webm)$/i.test(x.name)); sideLyrics = new Map(all.filter(x => /\.(lrc|txt)$/i.test(x.name)).map(x => [x.name.replace(/\.[^.]+$/, '').toLowerCase(), x])); toast(`Importing ${f.length} songs…`); importFiles(f); e.target.value = ''; };
+let sideLyrics = new Map();
 
 function toggleFollow(u){
   if (!u?.id) return;
@@ -1719,23 +1723,67 @@ function lookupNames(t){
   const artist = String(t.artist || '').split(/\s*(?:,|&| x | feat\.?| ft\.?| and )\s*/i)[0].trim();
   return { title, artist };
 }
-async function fetchLRCLIB(t){
-  const { title, artist } = lookupNames(t), dur = Math.round(t.duration || 0);
-  if (!title) return null;
-  const q = new URLSearchParams({ track_name: title, artist_name: artist });
-  let j = null;
-  const r = await fetch(`${LRCLIB}/get?${q}${dur ? `&duration=${dur}` : ''}`);
-  if (r.ok) j = await r.json();
-  if (!j || (!j.syncedLyrics && !j.plainLyrics && !j.instrumental)) {
-    const sr = await fetch(`${LRCLIB}/search?${q}`); let list = sr.ok ? await sr.json() : [];
-    if (!list.length && artist) { const s2 = await fetch(`${LRCLIB}/search?q=${encodeURIComponent(artist + ' ' + title)}`); list = s2.ok ? await s2.json() : []; }
-    list = list.filter(x => x.syncedLyrics || x.plainLyrics || x.instrumental);
-    list.sort((a, b) => (!!b.syncedLyrics - !!a.syncedLyrics) || (dur ? Math.abs((a.duration || 0) - dur) - Math.abs((b.duration || 0) - dur) : 0));
-    j = list.find(x => !dur || !x.duration || Math.abs(x.duration - dur) <= 8) || null;
-  }
-  if (!j) return null;
-  return { synced: parseLRC(j.syncedLyrics), plain: j.plainLyrics || null, instrumental: !!j.instrumental };
+const lyrNorm = x => String(x || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+const noArtist = a => !a || /^(unknown artist|local file|youtube|various artists)$/i.test(a);
+async function lyrJson(url, ms = 9000){
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(url, { signal: ctl.signal }); return r.ok ? await r.json() : null; } catch { return null; } finally { clearTimeout(tm); }
 }
+/* Source 1: LRCLIB — tries several ways of naming the song before giving up */
+async function fetchLRCLIB(t){
+  const { title, artist: a0 } = lookupNames(t), artist = noArtist(a0) ? '' : a0, dur = Math.round(t.duration || 0);
+  if (!title) return null;
+  const has = x => x && (x.syncedLyrics || x.plainLyrics || x.instrumental);
+  const pack = j => ({ synced: parseLRC(j.syncedLyrics), plain: j.plainLyrics || null, instrumental: !!j.instrumental });
+  if (artist) { const j = await lyrJson(`${LRCLIB}/get?${new URLSearchParams({ track_name: title, artist_name: artist })}${dur ? `&duration=${dur}` : ''}`); if (has(j)) return pack(j); }
+  // a title like "Artist - Song" (common on YouTube and in file names) also gets tried the other way round
+  const dash = String(t.title || '').match(/^(.+?)\s+[-–—]\s+(.+)$/), tn = lyrNorm(title), an = lyrNorm(artist);
+  const queries = [];
+  if (artist) queries.push(`track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(artist)}`, `q=${encodeURIComponent(artist + ' ' + title)}`);
+  if (dash) queries.push(`track_name=${encodeURIComponent(lookupNames({ title: dash[2] }).title)}&artist_name=${encodeURIComponent(dash[1])}`);
+  queries.push(`q=${encodeURIComponent(title)}`);
+  for (const q of queries) {
+    let list = await lyrJson(`${LRCLIB}/search?${q}`); if (!Array.isArray(list)) continue;
+    list = list.filter(has).map(x => {
+      const xt = lyrNorm(x.trackName), xa = lyrNorm(x.artistName);
+      const titleOk = xt === tn || xt.includes(tn) || tn.includes(xt) || (dash && lyrNorm(dash[2]).includes(xt));
+      const artistOk = !an || xa.includes(an) || an.includes(xa) || (dash && lyrNorm(dash[1]).includes(xa));
+      const dd = dur && x.duration ? Math.abs(x.duration - dur) : null;
+      return { x, ok: titleOk && (artistOk || (dd != null && dd <= 3)) && (dd == null || dd <= 12), score: (x.syncedLyrics ? 0 : 5) + (artistOk ? 0 : 4) + (dd == null ? 2 : dd / 3) };
+    }).filter(c => c.ok).sort((p, q2) => p.score - q2.score);
+    if (list.length) return pack(list[0].x);
+  }
+  return null;
+}
+/* Source 2: lyrics.ovh — words only (not timed), used when LRCLIB has nothing */
+async function fetchOVH(t){
+  const { title, artist: a0 } = lookupNames(t); let artist = noArtist(a0) ? '' : a0, tt = title;
+  const dash = String(t.title || '').match(/^(.+?)\s+[-–—]\s+(.+)$/); if (!artist && dash) { artist = dash[1]; tt = lookupNames({ title: dash[2] }).title; }
+  if (!artist || !tt) return null;
+  const j = await lyrJson(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(tt)}`, 10000);
+  const text = String(j?.lyrics || '').replace(/^Paroles de la chanson[^\n]*\n/i, '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
+  return text.length > 40 ? { synced: null, plain: text, instrumental: false } : null;
+}
+/* Your own lyrics: pasted in, or a .lrc / .txt file next to the song */
+function lyricsFromText(text){ const synced = parseLRC(text); return synced ? { synced, plain: synced.map(l => l.text).join('\n') } : { synced: null, plain: String(text).trim() }; }
+async function saveOwnLyrics(t, text){
+  const rec = { id: t.id, ...lyricsFromText(text), source: 'you', at: Date.now(), v: 2 };
+  await lyrPut(rec).catch(() => {}); lyrMem.set(t.id, rec); return rec;
+}
+function pasteLyricsDialog(t, then){
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  const old = lyrMem.get(t.id), cur = old?.source === 'you' ? (old.synced ? old.synced.map(l => `[${String(Math.floor(l.t / 60)).padStart(2, '0')}:${(l.t % 60).toFixed(2).padStart(5, '0')}]${l.text}`).join('\n') : old.plain || '') : '';
+  bg.innerHTML = `<form class="modal" style="max-width:560px"><h3>Add lyrics</h3><p>Paste the lyrics for “${esc(t.title)}”. Timed lyrics (lines starting like [01:23.45]) will follow along with the song. They're saved on this device and work offline.</p>
+    <textarea id="lyrTa" rows="12" placeholder="Paste lyrics here">${esc(cur)}</textarea>
+    <div class="row-btns">${old?.source === 'you' ? '<button type="button" class="btn" id="lyrDel" style="margin-right:auto">Remove</button>' : ''}<button type="button" class="btn" data-x>Cancel</button><button class="btn primary">Save</button></div></form>`;
+  document.body.appendChild(bg);
+  bg.onclick = e => { if (e.target === bg || e.target.closest('[data-x]')) bg.remove(); };
+  bg.querySelector('#lyrDel')?.addEventListener('click', async () => { const rec = { id: t.id, none: true, at: 0, v: 2 }; await lyrPut(rec).catch(() => {}); lyrMem.delete(t.id); bg.remove(); toast('Lyrics removed'); then?.(); });
+  bg.querySelector('form').onsubmit = async e => { e.preventDefault(); const v = bg.querySelector('#lyrTa').value.trim(); if (!v) return; await saveOwnLyrics(t, v); bg.remove(); toast('Lyrics saved'); then?.(); };
+  bg.querySelector('#lyrTa').focus();
+}
+const lyrSourceLabel = rec => rec.source === 'file' ? 'Lyrics from the song file' : rec.source === 'you' ? 'Lyrics you added' : rec.source === 'ovh' ? 'Lyrics from <a href="https://lyrics.ovh" target="_blank" rel="noopener">lyrics.ovh</a>' : 'Lyrics provided by <a href="https://lrclib.net" target="_blank" rel="noopener">LRCLIB</a>';
+const lyrTools = t => `<span class="lyr-off"><button id="lyrEdit">${lyrMem.get(t.id)?.source === 'you' ? 'Edit lyrics' : 'Use my own lyrics'}</button><button id="lyrAgain">Search again</button></span>`;
 /* Lyrics stored inside MP3 files (ID3 USLT / SYLT frames) — works fully offline */
 function id3Text(b, enc){
   if (enc === 0) return new TextDecoder('latin1').decode(b);
@@ -1781,13 +1829,17 @@ async function getLyrics(t, network = true){
   if (lyrMem.has(t.id)) return lyrMem.get(t.id);
   let rec = await lyrGet(t.id).catch(() => null);
   if (rec && (rec.synced || rec.plain || rec.instrumental)) { lyrMem.set(t.id, rec); return rec; }
-  if (rec?.none && Date.now() - rec.at < 3 * 864e5) return rec;
+  if (rec?.none && rec.v === 2 && Date.now() - rec.at < 2 * 864e5) return rec;   // looked recently with every source: don't ask again for a while
   if (S.downloads.has(t.id)) {
     const r = await dbGet(t.id).catch(() => null);
     if (r?.audio) { const e = await embeddedLyrics(r.audio).catch(() => null); if (e) { rec = { id: t.id, ...e, source: 'file', at: Date.now() }; lyrPut(rec).catch(() => {}); lyrMem.set(t.id, rec); return rec; } }
   }
   if (!network || !navigator.onLine) return { id: t.id, offline: true };
-  try { const f = await fetchLRCLIB(t); rec = f ? { id: t.id, ...f, source: 'lrclib', at: Date.now() } : { id: t.id, none: true, at: Date.now() }; }
+  try {
+    let f = await fetchLRCLIB(t), source = 'lrclib';
+    if (!f || (!f.synced && !f.plain && !f.instrumental)) { const o = await fetchOVH(t); if (o) { f = o; source = 'ovh'; } }
+    rec = f ? { id: t.id, ...f, source, at: Date.now(), v: 2 } : { id: t.id, none: true, at: Date.now(), v: 2 };
+  }
   catch { return { id: t.id, error: true }; }
   lyrPut(rec).catch(() => {}); lyrMem.set(t.id, rec); return rec;
 }
@@ -1799,13 +1851,14 @@ const lyrOffset = () => (lyrFor && lyrMem.get(lyrFor)?.offset) || 0;
 function lyricsBody(rec, t){
   if (!rec) return spinner();
   if (rec.synced) return `<div class="lyr-lines">${rec.synced.map((l, i) => `<p data-i="${i}">${esc(l.text) || '♪'}</p>`).join('')}</div>
-    <div class="lyr-foot">${rec.source === 'file' ? 'Lyrics from the song file' : 'Lyrics provided by <a href="https://lrclib.net" target="_blank" rel="noopener">LRCLIB</a>'}
+    <div class="lyr-foot">${lyrSourceLabel(rec)}${lyrTools(t)}
     <span class="lyr-off">Timing <button data-off="-0.5">−0.5s</button><b id="lyrOffV">${(rec.offset || 0) > 0 ? '+' : ''}${(rec.offset || 0).toFixed(1)}s</b><button data-off="0.5">+0.5s</button></span></div>`;
-  if (rec.plain) return `<div class="lyr-plain">${esc(rec.plain)}</div><div class="lyr-foot">These lyrics aren't synced to the song · ${rec.source === 'file' ? 'from the song file' : 'provided by <a href="https://lrclib.net" target="_blank" rel="noopener">LRCLIB</a>'}</div>`;
+  if (rec.plain) return `<div class="lyr-plain">${esc(rec.plain)}</div><div class="lyr-foot">These lyrics aren't timed to the song · ${lyrSourceLabel(rec)}${lyrTools(t)}</div>`;
   if (rec.instrumental) return `<div class="lyr-msg"><h3>Instrumental</h3>No words — just enjoy the music ♪</div>`;
   if (rec.offline) return `<div class="lyr-msg"><h3>You're offline</h3>Lyrics for this song haven't been saved yet. They're saved automatically when you play or download a song while online.</div>`;
   if (rec.error) return `<div class="lyr-msg"><h3>Couldn't load lyrics</h3><button class="pill white" id="lyrRetry">Try again</button></div>`;
-  return `<div class="lyr-msg"><h3>No lyrics for this one</h3>We couldn't find lyrics for “${esc(t.title)}”.</div>`;
+  return `<div class="lyr-msg"><h3>No lyrics found</h3>We looked in two lyrics libraries and couldn't find “${esc(t.title)}”. You can look them up on the web and paste them in — they'll be saved for next time, even offline.
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><a class="pill white" style="text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(`${noArtist(t.artist) ? '' : t.artist} ${t.title} lyrics`.trim())}">Search the web ↗</a><button class="pill white" id="lyrEdit">Paste lyrics</button><button class="pill ghost" id="lyrAgain" style="color:#fff;border:1px solid rgba(255,255,255,.5)">Search again</button></div></div>`;
 }
 function renderLyricsView(m){
   const t = current();
@@ -1819,6 +1872,8 @@ function renderLyricsView(m){
     box.querySelectorAll('.lyr-lines p').forEach(p => p.onclick = () => { const l = lyrLines[+p.dataset.i]; pSeek(Math.max(0, l.t - lyrOffset())); lyrUserScroll = 0; });
     box.querySelectorAll('[data-off]').forEach(b => b.onclick = () => { rec.offset = Math.round(((rec.offset || 0) + +b.dataset.off) * 10) / 10; lyrPut(rec).catch(() => {}); $('#lyrOffV').textContent = `${rec.offset > 0 ? '+' : ''}${rec.offset.toFixed(1)}s`; lyrIdx = -1; lyricTick(); });
     $('#lyrRetry')?.addEventListener('click', () => { lyrMem.delete(t.id); getLyrics(t).then(fill); });
+    $('#lyrEdit')?.addEventListener('click', () => pasteLyricsDialog(t, () => { if (S.view === 'lyrics') render(); }));
+    $('#lyrAgain')?.addEventListener('click', async () => { if (!navigator.onLine) { toast("You're offline"); return; } lyrMem.delete(t.id); await lyrPut({ id: t.id, none: true, at: 0 }).catch(() => {}); box.innerHTML = spinner(); getLyrics(t).then(fill); });
     lyricTick();
   };
   getLyrics(t).then(fill);
