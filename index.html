@@ -652,13 +652,31 @@ var NATIVE = !!(window.androidBridge || (window.Capacitor && window.Capacitor.is
 var nativeHidden = false, nativeLast = '';
 function nativeCall(m, o){ try { const C = window.Capacitor; if (C?.Plugins?.SautiBackground?.[m]) return Promise.resolve(C.Plugins.SautiBackground[m](o || {})); if (C?.nativePromise) return C.nativePromise('SautiBackground', m, o || {}); } catch (e) {} return Promise.resolve(); }
 function nativeListen(ev, cb){ try { const C = window.Capacitor; if (C?.Plugins?.SautiBackground?.addListener) return C.Plugins.SautiBackground.addListener(ev, cb); if (C?.nativeCallback) return C.nativeCallback('SautiBackground', 'addListener', { eventName: ev }, cb); } catch (e) {} }
+const FALLBACK_ART = new URL('icons/icon-512.png', location.href).href;
+const artDataCache = new Map();
+async function artData(t){
+  // covers saved on the device (downloads, imported files) are shrunk to a small picture the Android lock screen can show
+  if (artDataCache.has(t.id)) return artDataCache.get(t.id);
+  artDataCache.set(t.id, '');
+  try {
+    const bmp = await createImageBitmap(await (await fetch(t.artUrl)).blob()), side = Math.min(bmp.width, bmp.height), c = document.createElement('canvas');
+    c.width = c.height = 320; c.getContext('2d').drawImage(bmp, (bmp.width - side) / 2, (bmp.height - side) / 2, side, side, 0, 0, 320, 320);
+    artDataCache.set(t.id, c.toDataURL('image/jpeg', .85));
+    if (artDataCache.size > 40) artDataCache.delete(artDataCache.keys().next().value);
+    if (current()?.id === t.id) nativeUpdate(true);
+  } catch {}
+  return artDataCache.get(t.id);
+}
 function nativeUpdate(force){
   if (!NATIVE) return;
   try {
     const t = current(); if (!t) return;
-    const info = { title: t.title || 'Nightwave', artist: t.artist || '', artwork: /^https?:/.test(t.artUrl || '') ? t.artUrl : '',
+    let art = FALLBACK_ART;
+    if (/^https?:/.test(t.artUrl || '')) art = t.artUrl;
+    else if (/^(blob|data):/.test(t.artUrl || '')) { art = artDataCache.get(t.id) || FALLBACK_ART; if (!artDataCache.has(t.id)) artData(t); }
+    const info = { title: t.title || 'Nightwave', artist: t.artist || '', artwork: art,
       playing: !pPaused(), duration: Math.round(pDur() || t.duration || 0), position: Math.round(pTime() || 0) };
-    const key = JSON.stringify([info.title, info.artist, info.artwork, info.playing, info.duration]);
+    const key = JSON.stringify([info.title, info.artist, info.artwork.length + info.artwork.slice(-24), info.playing, info.duration]);
     if (key === nativeLast && !force) return; nativeLast = key;
     nativeCall('update', info);
   } catch (e) {}
@@ -1425,7 +1443,8 @@ syncModes();
 
 function mediaSession(t){
   if (!('mediaSession' in navigator)) return;
-  navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: t.artist, artwork: t.artUrl ? [{ src: t.artUrl, sizes: '480x480' }] : [] });
+  const art = t.artUrl || FALLBACK_ART;
+  navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: APP, artwork: ['96x96', '256x256', '512x512'].map(sizes => ({ src: art, sizes })) });
   const ms = navigator.mediaSession;
   ms.setActionHandler('play', pPlay); ms.setActionHandler('pause', pPause);
   ms.setActionHandler('nexttrack', () => next()); ms.setActionHandler('previoustrack', prev);

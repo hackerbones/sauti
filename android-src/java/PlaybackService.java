@@ -116,8 +116,13 @@ public class PlaybackService extends Service {
             MediaMetadataCompat.Builder md = new MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Nightwave")
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs > 0 ? durationMs : -1);
-            if (artwork != null) md.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, artwork);
+            if (artwork != null) {                             // lock screen + notification picture
+                md.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, artwork);
+                md.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, artwork);
+                md.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, artwork);
+            }
             session.setMetadata(md.build());
             session.setPlaybackState(new PlaybackStateCompat.Builder()
                     .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_PLAY_PAUSE
@@ -136,8 +141,23 @@ public class PlaybackService extends Service {
         });
     }
 
+    private Bitmap square(Bitmap b) {
+        int side = Math.min(b.getWidth(), b.getHeight());
+        Bitmap sq = Bitmap.createBitmap(b, (b.getWidth() - side) / 2, (b.getHeight() - side) / 2, side, side);
+        return side > 512 ? Bitmap.createScaledBitmap(sq, 512, 512, true) : sq;
+    }
+
     private void loadArtwork(String url) {
-        if (url == null || !url.startsWith("http")) return;
+        if (url == null) return;
+        if (url.startsWith("data:")) {                       // cover of a downloaded / imported song, sent by the app
+            try {
+                byte[] raw = android.util.Base64.decode(url.substring(url.indexOf(',') + 1), android.util.Base64.DEFAULT);
+                Bitmap b = BitmapFactory.decodeByteArray(raw, 0, raw.length);
+                if (b != null) { artwork = square(b); }
+            } catch (Exception ignored) { }
+            return;
+        }
+        if (!url.startsWith("http")) return;
         new Thread(() -> {
             try {
                 HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
@@ -146,7 +166,7 @@ public class PlaybackService extends Service {
                     Bitmap b = BitmapFactory.decodeStream(in);
                     if (b != null) main.post(() -> {
                         if (!url.equals(artworkUrl)) return;
-                        artwork = b;
+                        artwork = square(b);
                         update(title, artist, artworkUrl, playing, durationMs, positionMs);
                     });
                 }
